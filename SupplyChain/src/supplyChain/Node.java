@@ -1,0 +1,69 @@
+package supplyChain;
+
+import java.util.ArrayList;
+
+public abstract class Node {
+	
+	static int idCount;
+	
+	protected int Id;
+	protected int tier;		//1=Customer
+	protected ArrayList<Link> downstrLinks;
+	protected ArrayList<Link> upstrLinks;
+	
+	protected abstract void placeOrder();
+	protected abstract void efectShipment(Shipment shipment);
+	protected abstract void receive(Shipment shipment);
+	public abstract boolean isOrderShipable(Order order);
+	public abstract int getShipableAmount(Order order);
+	public abstract String getInformationString();
+	
+	
+	public Node(int tier){
+		this.Id = idCount++;
+		this.tier = tier;
+		this.downstrLinks = new ArrayList<Link>();
+		this.upstrLinks = new ArrayList<Link>();
+	};
+	
+	protected void addUpstrLink(Link link){
+		this.upstrLinks.add(link);
+	}
+	
+	protected void addDownstrLink(Link link){
+		this.downstrLinks.add(link);
+	}
+	
+	protected int getId(){
+		return this.Id;
+	}
+	
+	protected int getTier(){
+		return this.tier;
+	}
+	
+	public ArrayList<Link> getUpstrLinks(){
+		return this.upstrLinks;
+	}
+	
+	public void print(){
+		System.out.println("Node: " + this.Id + ", Tier: " + + this.tier + ", " + getLinksString());
+	}
+	
+	private String getLinksString(){
+		String string = "Links up: [";
+		for(Link link : upstrLinks){
+			string += link.getUpstrNode().getId() + ", ";
+		}
+		
+		string+= "], Links down: [";
+		for(Link link : downstrLinks){
+			string += link.getDownstrNode().getId() + ", ";
+		}
+		
+		string += "]";
+		
+		return string;	
+	}
+
+}
