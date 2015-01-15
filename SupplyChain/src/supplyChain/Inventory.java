@@ -10,6 +10,7 @@ public class Inventory {
 	private HashMap<Integer, Double> dueList;
 	
 	private ArrayList<Double> inventoryLevel;
+	private double serviceLevel;
 	private int reorderLevel;
 	private int reorderInterval;
 	private int lastOrderDate;
@@ -19,6 +20,7 @@ public class Inventory {
 	public Inventory(){
 		this.dueList = new HashMap<Integer, Double>();
 		this.inventoryLevel = new ArrayList<Double>();
+		this.serviceLevel = 0.95;
 		inventoryLevel.add(20.0);
 		reorderLevel = 10;
 		reorderInterval = -1;
@@ -63,6 +65,14 @@ public class Inventory {
 		this.lastOrderDate = date;
 	}
 	
+	public double getServiceLevel(){
+		return this.serviceLevel;
+	}
+	
+	public void setServiceLevel(double d){
+		this.serviceLevel = d;
+	}
+	
 	public double getOrderSize(){
 		return orderUpToLevel - inventoryLevel.get((int)RepastEssentials.GetTickCount());
 	}
@@ -81,6 +91,10 @@ public class Inventory {
 	
 	public HashMap<Integer, Double> getDueList(){
 		return this.dueList;
+	}
+	
+	public void setDueList(HashMap<Integer, Double> list){
+		this.dueList = list;
 	}
 	
 	public void setDueListEntry(int index, double amount){

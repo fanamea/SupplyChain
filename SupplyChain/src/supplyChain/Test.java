@@ -1,19 +1,17 @@
 package supplyChain;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
+
+import org.apache.commons.math3.*;
+import org.apache.commons.math3.distribution.NormalDistribution;
 
 public class Test {
 	
 	public static void main(String[] args){
-		ArrayList<Double> list = new ArrayList<Double>();
-		for(int i = 0; i<10; i++){
-			list.add((double)i);
-		}
-		ForecastAgent fcAgent = new ForecastAgent();
-		HashMap<Integer, Double> forecast = fcAgent.getMovingAverageFC(list, 5, 3);
-		
+		NormalDistribution normal = new NormalDistribution();
+		double quantile = normal.inverseCumulativeProbability(0.9);
+		System.out.println(quantile);
 	}
 	
 	public static void exampleSetUp(Setup setup){

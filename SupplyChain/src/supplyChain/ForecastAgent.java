@@ -26,7 +26,7 @@ public class ForecastAgent{
 	/**
 	 * Berechnet auf Grundlage der Parameter (Objektvariablen) und den OrderAmountHistories in den Links den forecastTotal (Objektvariable)
 	 */
-	public void calcForecastTotal(){
+	public void calcForecastTotal(int timeSpanFuture){
 		HashMap<Integer, Double> totalForecast = new HashMap<Integer, Double>();
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		for(Link link : linkList){
@@ -35,7 +35,7 @@ public class ForecastAgent{
 			for(int i = amountHistory.size(); i<=currentTick; i++){
 				amountHistory.add(i, 0.0);
 			}
-			HashMap<Integer, Double> linkForecast = getMovingAverageFC(amountHistory, this.movAvgTimeSpanPast, this.movAvgTimeSpanFuture);
+			HashMap<Integer, Double> linkForecast = getMovingAverageFC(amountHistory, this.movAvgTimeSpanPast, timeSpanFuture);
 			//Für den ersten Schleifendurchlauf
 			if(totalForecast.isEmpty()) totalForecast = linkForecast;
 			//Linkforecast zum totalForecast addieren
@@ -46,6 +46,10 @@ public class ForecastAgent{
 		}
 		forecastTotal = totalForecast;
 		
+	}
+	
+	public HashMap<Integer, Double> getOrderForecast(){
+		return this.forecastTotal;
 	}
 	
 	

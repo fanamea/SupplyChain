@@ -9,11 +9,11 @@ public class ProductionAgent {
 	
 	private Business biz;
 	private int productionTime;
-	private int productionCapacity;
+	private double productionCapacity;
 	private double setUpCost;
 	private HashMap<Link, Double> materialFactor;
-	private HashMap<Integer, Integer> productionStartPlan;
-	private HashMap<Integer, Integer> productionDueList;
+	private HashMap<Integer, Double> productionStartPlan;
+	private HashMap<Integer, Double> productionDueList;
 	private ArrayList<ProdJob> productionPipeLine;
 	private ArrayList<ProdJob> productionHistory;
 	
@@ -26,16 +26,47 @@ public class ProductionAgent {
 		for(Link link : biz.getUpstrLinks()){
 			materialFactor.put(link, link.getMaterialFactor());
 		}
-		productionStartPlan = new HashMap<Integer, Integer>();
-		productionDueList = new HashMap<Integer, Integer>();
+		productionStartPlan = new HashMap<Integer, Double>();
+		productionDueList = new HashMap<Integer, Double>();
+	}
+	
+	public void calcInInventoriesDueList(){
+		for
+	}
+	
+	public void calcProductionStartPlan(){
+		for(Integer i : productionDueList.keySet()){
+			int productionStart = i - productionTime;
+			if(productionStartPlan.containsKey(productionStart)){
+				double sum = productionStartPlan.get(productionStart) + productionDueList.get(i);
+				if(sum<productionCapacity){
+					productionStartPlan.put(productionStart, sum);
+				}
+				else{
+					productionStartPlan.put(productionStart, productionCapacity);
+					//TODO Restliche Menge verteilen
+				}
+			}
+			else{
+				productionStartPlan.put(productionStart, productionDueList.get(i));
+			}
+		}
 	}
 	
 	public void startProdJobs(){
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		if(productionStartPlan.containsKey(currentTick)){
-			double batchSize = productionStartPlan.get(currentTick);
-			ProdJob job = new ProdJob(currentTick, batchSize, productionTime);
-			productionPipeLine.add(job);
+			double PlannedBatchSize = productionStartPlan.get(currentTick);
+			double maxProduction = calcMaxProduction();
+			if(PlannedBatchSize == maxProduction){
+				ProdJob job = new ProdJob(currentTick, PlannedBatchSize, productionTime);
+				productionPipeLine.add(job);
+			}
+			else{
+				ProdJob job = new ProdJob(currentTick, maxProduction, productionTime);
+				productionPipeLine.add(job);
+				//TODO Fehlmenge behandeln
+			}
 		}
 	}
 	
@@ -73,6 +104,10 @@ public class ProductionAgent {
 		return Math.min(productionCapacity, max);
 	}
 	
+	public getResourceDemand(int date){
+		
+	}
+	
 	/**
 	 * Berechnet zu einem bestimmten Produktionsoutput den Ressourcenbedarf
 	 * @param output gewünschter Produktionsoutput
@@ -86,6 +121,10 @@ public class ProductionAgent {
 			demand.put(link, d);
 		}
 		return demand;
+	}
+	
+	public void handProductionDueList(HashMap<Integer, Double> dueList){
+		this.productionDueList = dueList;
 	}
 
 }

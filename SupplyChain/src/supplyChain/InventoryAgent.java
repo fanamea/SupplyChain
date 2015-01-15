@@ -3,17 +3,24 @@ package supplyChain;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.stat.*;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
 
 public class InventoryAgent {
 	
+	private Business biz;
 	private HashMap<Link, Inventory> inInventories;
 	private Inventory outInventory;
+	private int fcTimeSpanfuture;
 	
-	public InventoryAgent(ArrayList<Link> linkList){
+	public InventoryAgent(Business biz){
+		this.biz = biz;
 		this.inInventories = new HashMap<Link, Inventory>();
-		for(Link link : linkList){
+		for(Link link : biz.getUpstrLinks()){
 			inInventories.put(link, new Inventory());
 		}
 		this.outInventory = new Inventory();
@@ -23,8 +30,16 @@ public class InventoryAgent {
 	public void calcOutInventoryDueList(){
 		
 		//Forecast holen
+		HashMap<Integer, Double> forecast = biz.getForecastAgent().getOrderForecast();
 		
 		//Inventory-Entscheidung: Service Level?
+		HashMap<Integer, Double> dueList = new HashMap<Integer, Double>();
+		double sd = biz.getDeliveryAgent().calcOrdersSD();
+		for(Integer i : forecast.keySet()){
+			double fc = dueList.get(i);
+			double safetyStock = this.calcSafetyStock(sd, outInventory.getServiceLevel());
+			dueList.put(i, fc + safetyStock);
+		}		
 		
 		//Quasi productionFinishList
 		
@@ -117,6 +132,20 @@ public class InventoryAgent {
 		for(Inventory inventory : inInventories.values()){
 			inventory.prepareTick();
 		}
+	}
+	
+	public double calcSafetyStock(double sd, double serviceLevel){
+		NormalDistribution normal = new NormalDistribution(0, sd);
+		double safetyStock = normal.inverseCumulativeProbability(serviceLevel);
+		return safetyStock;
+	}
+	
+	public double calcSD(ArrayList<Double> history){
+		DescriptiveStatistics stats = new DescriptiveStatistics();
+		for(Double d : history){
+			stats.addValue(d);
+		}
+		return stats.getStandardDeviation();
 	}
 	
 
