@@ -46,6 +46,10 @@ public abstract class Node {
 		return this.upstrLinks;
 	}
 	
+	public ArrayList<Link> getDownstrLinks(){
+		return this.downstrLinks;
+	}
+	
 	public void print(){
 		System.out.println("Node: " + this.Id + ", Tier: " + + this.tier + ", " + getLinksString());
 	}

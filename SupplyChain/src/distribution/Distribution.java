@@ -1,7 +1,7 @@
 /**
  * 
  */
-package supplyChain;
+package distribution;
 
 import java.util.ArrayList;
 

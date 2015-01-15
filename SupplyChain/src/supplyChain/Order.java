@@ -7,12 +7,14 @@ public class Order {
 	private static int count;
 	
 	private int Id;
+	private Link link;
 	private int date;
-	private int size;
-	private int shipped;
+	private double size;
+	private double shipped;
 	
-	public Order(int d, int s){
+	public Order(Link link, int d, double s){
 		this.Id = count++;
+		this.link = link;
 		this.date = d;
 		this.size = s;
 		this.shipped = 0;
@@ -22,11 +24,15 @@ public class Order {
 		return this.date;
 	}
 	
-	public int getSize(){
+	public Link getLink(){
+		return this.link;
+	}
+	
+	public double getSize(){
 		return this.size;
 	}
 	
-	public void incrShipped(int i){
+	public void incrShipped(double i){
 		shipped += i;
 	}
 	
@@ -34,7 +40,7 @@ public class Order {
 		return size==shipped;
 	}
 	
-	public int getShortage(){
+	public double getShortage(){
 		return size-shipped;
 	}
 	

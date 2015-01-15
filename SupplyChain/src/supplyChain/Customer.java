@@ -2,6 +2,8 @@ package supplyChain;
 
 import java.util.ArrayList;
 
+import distribution.Distribution;
+import distribution.DistributionNormal;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
 

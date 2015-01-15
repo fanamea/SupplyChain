@@ -1,19 +1,19 @@
 package supplyChain;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 
 public class Test {
 	
 	public static void main(String[] args){
-		ArrayList<Integer> list = new ArrayList<Integer>();
-		list.add(0);
-		list.add(1);
-		list.add(2);
-		list.add(3);
-		list.add(4);
-		for(Integer i : list){
-			System.out.println(i);
+		ArrayList<Double> list = new ArrayList<Double>();
+		for(int i = 0; i<10; i++){
+			list.add((double)i);
 		}
+		ForecastAgent fcAgent = new ForecastAgent();
+		HashMap<Integer, Double> forecast = fcAgent.getMovingAverageFC(list, 5, 3);
+		
 	}
 	
 	public static void exampleSetUp(Setup setup){

@@ -7,28 +7,32 @@ import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
 
 public class Business extends Node{
-		
-	private Inventory inventory;
-	private Factory factory;
 	
+	private DeliveryAgent deliveryAgent;
+	private ForecastAgent forecastAgent;
+	private InventoryAgent inventoryAgent;
+	private ProductionAgent productionAgent;
+	private OrderAgent orderAgent;
+	
+		
 	public Business(int tier){
 		super(tier);
-		this.inventory = new Inventory();
-		this.factory = new Factory(this);
+		this.inventoryAgent = new InventoryAgent(this.upstrLinks);
+		this.productionAgent = new ProductionAgent(this);
 		
 	}
 	
-	public void receive(Shipment shipment){
-		inventory.incrInventory(shipment.getSize());
+	@ScheduledMethod(start = 1, interval = 1, priority = 10)
+	public void prepareTick(){
+		inventoryAgent.prepareTick();
 	}
 	
-	
-	@ScheduledMethod(start = 1, interval = 1, priority = 6)
-	public void ship(){
-		//System.out.println("ship");
-		int date = (int)RepastEssentials.GetTickCount();
-		for(Link link : downstrLinks){
-			link.executeOrders();
+	@ScheduledMethod(start = 1, interval = 1, priority = 9)
+	public void receiveShipments(){
+		ArrayList<Shipment> shipments = new ArrayList<Shipment>();
+		for(Link link : upstrLinks){
+			shipments = link.getArrivingShipments();
+			inventoryAgent.processInShipments(link, shipments);
 		}
 	}
 	
@@ -36,46 +40,56 @@ public class Business extends Node{
 	public void placeOrder(){
 		if(upstrLinks.size()==0) return;
 		//System.out.println("placeOrder");
-		if(inventory.checkReorder()){
-			int date = (int)RepastEssentials.GetTickCount();
-			upstrLinks.get(0).addOrder(new Order(date, inventory.getOrderSize()));
-			inventory.setLastOrderDate(date);
+		orderAgent.placeOrders();
 			//System.out.println("Order added");
+		}	
+	@ScheduledMethod(start = 1, interval = 1, priority = 6)
+	public void fetchOrders(){
+		ArrayList<Order> newOrders = new ArrayList<Order>();
+		for(Link link : this.downstrLinks){
+			newOrders.addAll(link.fetchOrders());
 		}
-	}	
+	}
+	
+	@ScheduledMethod(start = 1, interval = 1, priority = 5)
+	public void dispatchShipments(){
+		this.deliveryAgent.dispatchShipments();
+	}
+	
+		
 	
 	public void addDownstrPartner(Link b){
 		downstrLinks.add(b);
 	}
 	
 	public void addUpstrPartner(Link b){
-		this.inventory.setInfinite(true);
+		this.inventoryAgent.setInfiniteInInventories(false);
 		upstrLinks.add(b);
 	}
 	
-	public void efectShipment(Shipment shipment){
-		if(upstrLinks.size()==0) return;
-		this.inventory.lowerInventory(shipment.getSize());
+	public DeliveryAgent getDeliveryAgent(){
+		return this.deliveryAgent;
 	}
 	
-	@ScheduledMethod(start = 1, interval = 1, priority = 10)
-	public void updateInventory(){
-		inventory.updateInventory();
+	public ForecastAgent getForecastAgent(){
+		return this.forecastAgent;
 	}
 	
-	public boolean isOrderShipable(Order order){
-		if(order.getSize()<=inventory.getInventoryLevel())
-			return true;
-		else return false;
+	public InventoryAgent getInventoryAgent(){
+		return this.inventoryAgent;
 	}
 	
-	public int getShipableAmount(Order order){
-		return Math.min(order.getSize(), inventory.getInventoryLevel());
+	public ProductionAgent ProductionAgent(){
+		return this.productionAgent;
+	}
+	
+	public OrderAgent getOrderAgent(){
+		return this.orderAgent;
 	}
 	
 	public String getInformationString(){
 		String string = "";
-		string += "Node: " + this.Id + ", Tier: " + this.tier + "Inventory: " + this.inventory.getInventoryLevel() + "\n";
+		string += "Node: " + this.Id + ", Tier: " + this.tier + "Inventory: " + this.inventoryAgent.getInventoryLevel() + "\n";
 		return string;
 	}
 

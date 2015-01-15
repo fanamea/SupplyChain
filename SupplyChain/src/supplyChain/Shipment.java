@@ -5,13 +5,15 @@ public class Shipment {
 	private static int count;
 	
 	private int Id;
+	private Link link;
 	private int date;
-	private int size;
+	private double size;
 	private int leadTime;
 	private Order order;
 	
-	public Shipment(int d, int s, int lt, Order order){
+	public Shipment(Link link, int d, double s, int lt, Order order){
 		this.Id = count++;
+		this.link = link;
 		this.date = d;
 		this.size = s;
 		this.leadTime = lt;
@@ -22,7 +24,7 @@ public class Shipment {
 		return this.date;
 	}
 	
-	public int getSize(){
+	public double getSize(){
 		return this.size;
 	}
 	

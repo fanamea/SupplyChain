@@ -1,7 +1,7 @@
 /**
  * 
  */
-package supplyChain;
+package distribution;
 
 import java.util.ArrayList;
 
@@ -9,27 +9,23 @@ import org.jdom.Element;
 
 import repast.simphony.random.RandomHelper;
 
-/**
- * @author Johannes Ponge
- *
- */
-public class DistributionUniform extends Distribution {
+public class DistributionNormal extends Distribution {
 	
-	private String name = "uniform";
-	private double min;
-	private double max;
+	private String name = "normal";
+	private double my;
+	private double sigma;
 	
 	/* --------- KONSTRUKTOREN --------- */
 	
-	public DistributionUniform(double min, double max){
-		this.min = min;
-		this.max = max;
+	public DistributionNormal(double my, double sigma){
+		this.my = my;
+		this.sigma = sigma;
 	}
 	
 	/* --------- PUBLIC METHODEN --------- */
 	@Override
 	public double computeRandom() {
-		return RandomHelper.createUniform(min, max).nextDouble();
+		return RandomHelper.createNormal(my, sigma).nextDouble();
 	}
 
 	@Override
@@ -40,33 +36,31 @@ public class DistributionUniform extends Distribution {
 	@Override
 	public ArrayList<Double> getParameter(){
 		ArrayList<Double> params = new ArrayList<Double>();
-		params.add(this.min);
-		params.add(this.max);
+		params.add(this.sigma);
 		return params;
 	}
 
-	
+	@Override
+	public Element toXML() {
+		Element res = new Element("normal");
+		res.setAttribute("sigma" , ""+this.sigma);
+		
+		return res;
+	}
 
 	@Override
 	public String getParameterName(){
-		return "shift";
+		return "sigma";
 	}
 	
 	@Override
 	public void setParameter(ArrayList<Double> params){
-		this.min = params.get(0);
-		this.max = params.get(1);
+		this.sigma = params.get(0);
 	}
 	
 	/* --------- PRINT METHODEN --------- */
 	
 	public String toString(){
-		return "Gleichverteilung (min = " + min + ", max =" + max + ")";
-	}
-
-	@Override
-	public Element toXML() {
-		// TODO Auto-generated method stub
-		return null;
+		return "Normalverteilung (sigma = " + sigma + ")";
 	}
 }

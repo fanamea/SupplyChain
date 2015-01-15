@@ -1,22 +1,25 @@
 package supplyChain;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
-import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
 
 public class Inventory {
 	
-	private ArrayList<Integer> inventoryLevel;
+	private HashMap<Integer, Double> dueList;
+	
+	private ArrayList<Double> inventoryLevel;
 	private int reorderLevel;
 	private int reorderInterval;
 	private int lastOrderDate;
 	private int orderUpToLevel;
-	private boolean infinite;
+	private boolean infinite;				//Unendliches Lager (Ressource supplier)
 	
 	public Inventory(){
-		this.inventoryLevel = new ArrayList<Integer>();
-		inventoryLevel.add(20);
+		this.dueList = new HashMap<Integer, Double>();
+		this.inventoryLevel = new ArrayList<Double>();
+		inventoryLevel.add(20.0);
 		reorderLevel = 10;
 		reorderInterval = -1;
 		orderUpToLevel = 30;
@@ -24,7 +27,7 @@ public class Inventory {
 	}
 	
 	
-	public void updateInventory(){
+	public void prepareTick(){
 		int date = (int)RepastEssentials.GetTickCount();
 		inventoryLevel.add(inventoryLevel.get(date-1));
 		//System.out.println("Inventory: date: " + date + ", level: " + inventoryLevel.get(date));
@@ -34,13 +37,13 @@ public class Inventory {
 		//TODO: Auf grundlage des strings reorderLevel, reorderInterval setzen
 	}
 	
-	public void lowerInventory(int size){
-		int currentLevel = this.inventoryLevel.get((int)RepastEssentials.GetTickCount());
+	public void lowerInventory(double size){
+		double currentLevel = this.inventoryLevel.get((int)RepastEssentials.GetTickCount());
 		this.inventoryLevel.set((int)RepastEssentials.GetTickCount(), currentLevel - size);
 	}
 	
-	public void incrInventory(int size){
-		int currentLevel = this.inventoryLevel.get((int)RepastEssentials.GetTickCount());
+	public void incrInventory(double size){
+		double currentLevel = this.inventoryLevel.get((int)RepastEssentials.GetTickCount());
 		this.inventoryLevel.set((int)RepastEssentials.GetTickCount(), currentLevel + size);
 	}
 	
@@ -60,7 +63,7 @@ public class Inventory {
 		this.lastOrderDate = date;
 	}
 	
-	public int getOrderSize(){
+	public double getOrderSize(){
 		return orderUpToLevel - inventoryLevel.get((int)RepastEssentials.GetTickCount());
 	}
 	
@@ -72,8 +75,20 @@ public class Inventory {
 		this.infinite = b;
 	}
 	
-	public int getInventoryLevel(){
+	public double getInventoryLevel(){
 		return inventoryLevel.get(inventoryLevel.size()-1);
+	}
+	
+	public HashMap<Integer, Double> getDueList(){
+		return this.dueList;
+	}
+	
+	public void setDueListEntry(int index, double amount){
+		this.dueList.put(index, amount);
+	}
+	
+	public double getDueListEntry(int index){
+		return this.dueList.get(index);
 	}
 
 }

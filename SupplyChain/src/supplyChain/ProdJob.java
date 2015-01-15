@@ -6,23 +6,22 @@ private static int count;
 	
 	private int Id;
 	private int date;
-	private int size;
+	private double size;
 	private int leadTime;
 	private Order order;
 	
-	public ProdJob(int d, int s, int lt, Order order){
+	public ProdJob(int d, double s, int lt){
 		this.Id = count++;
 		this.date = d;
 		this.size = s;
 		this.leadTime = lt;
-		this.order = order;
 	}
 	
 	public int getDate(){
 		return this.date;
 	}
 	
-	public int getSize(){
+	public double getSize(){
 		return this.size;
 	}
 	
