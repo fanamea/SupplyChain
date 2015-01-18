@@ -21,11 +21,13 @@ public class Customer extends Node{
 		this.demandDistr = distr;
 	}
 	
-	@ScheduledMethod(start = 1, interval = 1, priority = 8)
+	@ScheduledMethod(start = 1, interval = 1, priority = 7)
 	public void placeOrder(){
 		//System.out.println("placeOrderCustomer");
 		int size = (int)Math.round(demandDistr.computeRandom());
-		upstrLinks.get(0).addOrder(new Order((int)RepastEssentials.GetTickCount(), size));
+		ArrayList<Order> orderList = new ArrayList<Order>();
+		orderList.add(new Order(upstrLinks.get(0),(int)RepastEssentials.GetTickCount(), size));
+		upstrLinks.get(0).putOrders(orderList);
 	}
 	
 	public void efectShipment(Shipment shipment){		

@@ -133,6 +133,16 @@ public class Link {
 		this.orderDueList.put(index, amount);
 	}
 	
+	@ScheduledMethod(start=1, interval=1, priority=1)
+	public void printHistory(){
+		System.out.println(orderAmountHistory);
+		
+		for(Shipment shipment : shipmentHistory){
+			System.out.print(shipment.getSize() + ", ");
+		}
+		System.out.println("");
+	}
+	
 	public String getInformationString(){
 		String string = "";
 		string += "Link: Up " + this.upstrNode.getId() + ", Down " + this.downstrNode.getId() + "\n"

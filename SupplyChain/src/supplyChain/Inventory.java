@@ -11,10 +11,10 @@ public class Inventory {
 	
 	private ArrayList<Double> inventoryLevel;
 	private double serviceLevel;
-	private int reorderLevel;
+	private double reorderLevel;
 	private int reorderInterval;
 	private int lastOrderDate;
-	private int orderUpToLevel;
+	private double orderUpToLevel;
 	private boolean infinite;				//Unendliches Lager (Ressource supplier)
 	
 	public Inventory(){
@@ -49,16 +49,21 @@ public class Inventory {
 		this.inventoryLevel.set((int)RepastEssentials.GetTickCount(), currentLevel + size);
 	}
 	
-	public boolean checkReorder(){
+	public double getOrder(){
+		int currentTick = (int)RepastEssentials.GetTickCount();
+		double curInvLevel = inventoryLevel.get(currentTick);
 		if(reorderLevel != -1){
 			//System.out.println("reorderLevel");
-			return inventoryLevel.get(inventoryLevel.size()-1)<=reorderLevel;
+			if(curInvLevel <= reorderLevel)
+				return orderUpToLevel-curInvLevel;
+			
 		}
 		else if(reorderInterval != -1){
 			//System.out.println("reorderInterval");
-			return RepastEssentials.GetTickCount()-lastOrderDate == reorderInterval;
+			if(currentTick-lastOrderDate == reorderInterval)
+				return orderUpToLevel-curInvLevel;
 		}
-		else return false;
+		return 0.0;
 	}
 	
 	public void setLastOrderDate(int date){

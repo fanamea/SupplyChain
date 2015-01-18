@@ -135,7 +135,11 @@ public class Setup {
 		}
 	}
 	
-	@ScheduledMethod(start = 1, interval = 1, priority = 11)
+	public void printLinks(){
+		for
+	}
+	
+	//@ScheduledMethod(start = 1, interval = 1, priority = 11)
 	public void printInformation(){
 		String string = "Date: " + (int)RepastEssentials.GetTickCount();
 		for(Node node : nodes){

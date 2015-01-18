@@ -11,11 +11,6 @@ public abstract class Node {
 	protected ArrayList<Link> downstrLinks;
 	protected ArrayList<Link> upstrLinks;
 	
-	protected abstract void placeOrder();
-	protected abstract void efectShipment(Shipment shipment);
-	protected abstract void receive(Shipment shipment);
-	public abstract boolean isOrderShipable(Order order);
-	public abstract int getShipableAmount(Order order);
 	public abstract String getInformationString();
 	
 	

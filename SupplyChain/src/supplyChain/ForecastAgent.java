@@ -74,9 +74,9 @@ public class ForecastAgent{
 		for(int i = history.size(); i<history.size() + timeSpanFuture; i++){
 			forecast.put(i, historyCopy.get(i));
 		}
-		System.out.println(history);
-		System.out.println(historyCopy);
-		System.out.println(forecast);
+		//System.out.println(history);
+		//System.out.println(historyCopy);
+		//System.out.println(forecast);
 		return forecast;
 	}
 

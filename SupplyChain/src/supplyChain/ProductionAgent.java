@@ -28,10 +28,8 @@ public class ProductionAgent {
 		}
 		productionStartPlan = new HashMap<Integer, Double>();
 		productionDueList = new HashMap<Integer, Double>();
-	}
-	
-	public void calcInInventoriesDueList(){
-		for
+		productionPipeLine = new ArrayList<ProdJob>();
+		productionHistory = new ArrayList<ProdJob>();
 	}
 	
 	public void calcProductionStartPlan(){
@@ -104,8 +102,11 @@ public class ProductionAgent {
 		return Math.min(productionCapacity, max);
 	}
 	
-	public getResourceDemand(int date){
-		
+	public double getResourceDemand(int date, Link link){
+		if(productionDueList.containsKey(date))
+			return productionDueList.get(date)*materialFactor.get(link);		
+		else
+			return 0.0;
 	}
 	
 	/**
@@ -125,6 +126,10 @@ public class ProductionAgent {
 	
 	public void handProductionDueList(HashMap<Integer, Double> dueList){
 		this.productionDueList = dueList;
+	}
+	
+	public  HashMap<Integer, Double> getProductionDueList(){
+		return this.productionDueList;
 	}
 
 }

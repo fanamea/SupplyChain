@@ -17,8 +17,11 @@ public class Business extends Node{
 		
 	public Business(int tier){
 		super(tier);
-		this.inventoryAgent = new InventoryAgent(this.upstrLinks);
+		this.deliveryAgent = new DeliveryAgent(this);
+		this.forecastAgent = new ForecastAgent(this);
+		this.inventoryAgent = new InventoryAgent(this);
 		this.productionAgent = new ProductionAgent(this);
+		this.orderAgent = new OrderAgent(this);
 		
 	}
 	
@@ -36,14 +39,20 @@ public class Business extends Node{
 		}
 	}
 	
-	@ScheduledMethod(start = 1, interval = 1, priority = 7)
+	@ScheduledMethod(start=1, interval=1, priority = 8)
+	public void produce(){
+		productionAgent.startProdJobs();
+		inventoryAgent.processEndProduction(productionAgent.getArrivingProduction());
+	}
+	
+	@ScheduledMethod(start = 1, interval = 1, priority = 6)
 	public void placeOrder(){
 		if(upstrLinks.size()==0) return;
 		//System.out.println("placeOrder");
 		orderAgent.placeOrders();
 			//System.out.println("Order added");
 		}	
-	@ScheduledMethod(start = 1, interval = 1, priority = 6)
+	@ScheduledMethod(start = 1, interval = 1, priority = 5)
 	public void fetchOrders(){
 		ArrayList<Order> newOrders = new ArrayList<Order>();
 		for(Link link : this.downstrLinks){
@@ -51,12 +60,20 @@ public class Business extends Node{
 		}
 	}
 	
-	@ScheduledMethod(start = 1, interval = 1, priority = 5)
+	@ScheduledMethod(start = 1, interval = 1, priority = 4)
 	public void dispatchShipments(){
 		this.deliveryAgent.dispatchShipments();
 	}
 	
-		
+	@ScheduledMethod(start=11, interval = 10, priority = 3)
+	public void plan(){
+		forecastAgent.calcForecastTotal(10);
+		inventoryAgent.calcOutInventoryDueList();
+		productionAgent.handProductionDueList(inventoryAgent.getOutInventoryDueList());
+		productionAgent.calcProductionStartPlan();
+		//inventoryAgent.calcInInventoriesDueLists();
+		//OrderAgent
+	}
 	
 	public void addDownstrPartner(Link b){
 		downstrLinks.add(b);
@@ -79,7 +96,7 @@ public class Business extends Node{
 		return this.inventoryAgent;
 	}
 	
-	public ProductionAgent ProductionAgent(){
+	public ProductionAgent getProductionAgent(){
 		return this.productionAgent;
 	}
 	
@@ -92,5 +109,6 @@ public class Business extends Node{
 		string += "Node: " + this.Id + ", Tier: " + this.tier + "Inventory: " + this.inventoryAgent.getInventoryLevel() + "\n";
 		return string;
 	}
+
 
 }

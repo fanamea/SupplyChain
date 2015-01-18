@@ -17,6 +17,10 @@ public class InventoryAgent {
 	private Inventory outInventory;
 	private int fcTimeSpanfuture;
 	
+	private boolean orderUpToLevel;
+	private int periodic;
+	private boolean continuous;
+	
 	public InventoryAgent(Business biz){
 		this.biz = biz;
 		this.inInventories = new HashMap<Link, Inventory>();
@@ -24,6 +28,7 @@ public class InventoryAgent {
 			inInventories.put(link, new Inventory());
 		}
 		this.outInventory = new Inventory();
+		this.orderUpToLevel = true;
 	}
 	
 	//TODO
@@ -36,23 +41,28 @@ public class InventoryAgent {
 		HashMap<Integer, Double> dueList = new HashMap<Integer, Double>();
 		double sd = biz.getDeliveryAgent().calcOrdersSD();
 		for(Integer i : forecast.keySet()){
-			double fc = dueList.get(i);
+			double fc = forecast.get(i);
 			double safetyStock = this.calcSafetyStock(sd, outInventory.getServiceLevel());
 			dueList.put(i, fc + safetyStock);
 		}		
 		
 		//Quasi productionFinishList
-		
+		biz.getProductionAgent().handProductionDueList(dueList);		
 	}
 	
 	//TODO
 	public void calcInInventoriesDueLists(){
 		
-		//productionStartList holen
-		
-		//Anpassen von OrderUpToLevel, etc.?
-		//Entscheidung über Bestellung hier oder OrderAgent?
-		
+		//Über alle Inventories
+		for(Link link : this.inInventories.keySet()){
+			Inventory inventory = inInventories.get(link);
+			HashMap<Integer, Double> productionDueList = biz.getProductionAgent().getProductionDueList();
+			//Über alle Eintrage in productionDueList
+			for(Integer date : productionDueList.keySet()){
+				double amount = biz.getProductionAgent().getResourceDemand(date, link);
+				inventory.setDueListEntry(date, amount);
+			}			
+		}		
 	}
 	
 	/**
@@ -128,6 +138,18 @@ public class InventoryAgent {
 		}
 	}
 	
+	public HashMap<Link, Double> getOrders(){
+		HashMap<Link, Double> orders = new HashMap<Link, Double>();
+		if(orderUpToLevel){
+			for(Link link : inInventories.keySet()){
+				double amount = inInventories.get(link).getOrder();
+				if(amount!=0.0)
+					orders.put(link, amount);
+			}
+		}
+		return orders;
+	}
+	
 	public void prepareTick(){
 		for(Inventory inventory : inInventories.values()){
 			inventory.prepareTick();
@@ -148,5 +170,8 @@ public class InventoryAgent {
 		return stats.getStandardDeviation();
 	}
 	
+	public HashMap<Integer, Double> getOutInventoryDueList(){
+		return this.outInventory.getDueList();
+	}
 
 }
