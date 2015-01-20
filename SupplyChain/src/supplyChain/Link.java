@@ -2,6 +2,7 @@ package supplyChain;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
@@ -18,9 +19,9 @@ public class Link {
 	private double shortageCost;
 	private ArrayList<Order> orderHistory;
 	private ArrayList<Double> orderAmountHistory;
-	private ArrayList<Order> orderPipeLine;
+	private CopyOnWriteArrayList<Order> orderPipeLine;
 	private ArrayList<Shipment> shipmentHistory;
-	private ArrayList<Shipment> shipmentPipeLine;
+	private CopyOnWriteArrayList<Shipment> shipmentPipeLine;
 	private HashMap<Integer, Double> orderDueList;
 	
 	
@@ -30,11 +31,12 @@ public class Link {
 		this.downstrNode = down;
 		upstrNode.addDownstrLink(this);
 		downstrNode.addUpstrLink(this);
+		materialFactor = 1;
 		orderHistory = new ArrayList<Order>();
 		orderAmountHistory = new ArrayList<Double>();
-		orderPipeLine = new ArrayList<Order>();
+		orderPipeLine = new CopyOnWriteArrayList<Order>();
 		shipmentHistory = new ArrayList<Shipment>();
-		shipmentPipeLine = new ArrayList<Shipment>();
+		shipmentPipeLine = new CopyOnWriteArrayList<Shipment>();
 		orderDueList = new HashMap<Integer, Double>();
 	}
 	
@@ -132,13 +134,14 @@ public class Link {
 	public void setOrderDueListEntry(int index, double amount){
 		this.orderDueList.put(index, amount);
 	}
-	
-	@ScheduledMethod(start=1, interval=1, priority=1)
+
 	public void printHistory(){
+		System.out.println("Link Id: " + this.Id);
 		System.out.println(orderAmountHistory);
 		
+		System.out.println("   Shipments:");
 		for(Shipment shipment : shipmentHistory){
-			System.out.print(shipment.getSize() + ", ");
+			System.out.print("   " + shipment.getSize() + ", ");
 		}
 		System.out.println("");
 	}

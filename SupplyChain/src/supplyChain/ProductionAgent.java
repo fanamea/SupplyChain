@@ -2,6 +2,7 @@ package supplyChain;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import repast.simphony.essentials.RepastEssentials;
 
@@ -14,13 +15,13 @@ public class ProductionAgent {
 	private HashMap<Link, Double> materialFactor;
 	private HashMap<Integer, Double> productionStartPlan;
 	private HashMap<Integer, Double> productionDueList;
-	private ArrayList<ProdJob> productionPipeLine;
+	private CopyOnWriteArrayList<ProdJob> productionPipeLine;
 	private ArrayList<ProdJob> productionHistory;
 	
 	public ProductionAgent(Business biz){
 		this.biz = biz;
-		this.productionTime = 1;
-		this.productionCapacity = 5;
+		this.productionTime = 2;
+		this.productionCapacity = 10;
 		this.setUpCost = 1;
 		this.materialFactor = new HashMap<Link, Double>();
 		for(Link link : biz.getUpstrLinks()){
@@ -28,7 +29,7 @@ public class ProductionAgent {
 		}
 		productionStartPlan = new HashMap<Integer, Double>();
 		productionDueList = new HashMap<Integer, Double>();
-		productionPipeLine = new ArrayList<ProdJob>();
+		productionPipeLine = new CopyOnWriteArrayList<ProdJob>();
 		productionHistory = new ArrayList<ProdJob>();
 	}
 	
@@ -56,13 +57,44 @@ public class ProductionAgent {
 		if(productionStartPlan.containsKey(currentTick)){
 			double PlannedBatchSize = productionStartPlan.get(currentTick);
 			double maxProduction = calcMaxProduction();
-			if(PlannedBatchSize == maxProduction){
+			if(PlannedBatchSize <= maxProduction){
 				ProdJob job = new ProdJob(currentTick, PlannedBatchSize, productionTime);
 				productionPipeLine.add(job);
+				biz.getInventoryAgent().processStartProduction(job);
 			}
 			else{
 				ProdJob job = new ProdJob(currentTick, maxProduction, productionTime);
 				productionPipeLine.add(job);
+				biz.getInventoryAgent().processStartProduction(job);
+				//TODO Fehlmenge behandeln
+			}
+			
+		}
+	}
+	
+	/**
+	 * Übergangsweise vereinfachte production ohne Planung.
+	 * Anstelle von startProdJobs
+	 */
+	public void produce(){
+		double amount = biz.getInventoryAgent().getProductionSize();
+		int currentTick = (int)RepastEssentials.GetTickCount();
+		if(amount!=0.0){
+			double plannedBatchSize = amount;
+			double maxProduction = calcMaxProduction();
+			System.out.println("plannedBatchSize: " + plannedBatchSize + ", maxProduction: " + maxProduction);
+			if(plannedBatchSize <= maxProduction){
+				
+				ProdJob job = new ProdJob(currentTick, plannedBatchSize, productionTime);
+				System.out.println("ProdJob: " + job.getSize());
+				productionPipeLine.add(job);
+				biz.getInventoryAgent().processStartProduction(job);
+			}
+			else{
+				ProdJob job = new ProdJob(currentTick, maxProduction, productionTime);
+				System.out.println("ProdJob: " + job.getSize());
+				productionPipeLine.add(job);
+				biz.getInventoryAgent().processStartProduction(job);
 				//TODO Fehlmenge behandeln
 			}
 		}
@@ -92,6 +124,7 @@ public class ProductionAgent {
 		ArrayList<Double> quotients = new ArrayList<Double>();
 		
 		for(Link link : biz.getUpstrLinks()){
+			System.out.println("debug: Biz: " + biz.getId() + "Link: " + link.getId());
 			double quotient = biz.getInventoryAgent().getInInventoryLevel(link)/link.getMaterialFactor();
 			quotients.add(quotient);
 		}

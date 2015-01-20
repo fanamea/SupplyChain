@@ -44,6 +44,10 @@ public class Setup {
 		links.add(new Link(nodes.get(9), nodes.get(7)));
 		links.add(new Link(nodes.get(10), nodes.get(7)));
 		
+		for(Node node : nodes){
+			node.initNode();
+		}
+		
 	}
 	
 	public void setUpAgents(){
@@ -135,8 +139,11 @@ public class Setup {
 		}
 	}
 	
+	@ScheduledMethod(start = 1, interval = 1, priority = 1)
 	public void printLinks(){
-		for
+		for(Link link : links){
+			link.printHistory();
+		}
 	}
 	
 	//@ScheduledMethod(start = 1, interval = 1, priority = 11)

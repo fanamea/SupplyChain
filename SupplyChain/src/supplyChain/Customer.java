@@ -16,6 +16,9 @@ public class Customer extends Node{
 		demandDistr = new DistributionNormal(5, 1);
 	}
 	
+	public void initNode(){		
+	}
+	
 	
 	public void setDemandDistr(Distribution distr){
 		this.demandDistr = distr;

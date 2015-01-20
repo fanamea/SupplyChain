@@ -32,7 +32,7 @@ public class Inventory {
 	public void prepareTick(){
 		int date = (int)RepastEssentials.GetTickCount();
 		inventoryLevel.add(inventoryLevel.get(date-1));
-		//System.out.println("Inventory: date: " + date + ", level: " + inventoryLevel.get(date));
+		//System.out.println("Inventory: date: " + date + ", inventory: " + inventoryLevel);
 	}
 	
 	public void setInventoryPolicy(String policy){

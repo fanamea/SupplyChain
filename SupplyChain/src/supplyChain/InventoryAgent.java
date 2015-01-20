@@ -87,6 +87,10 @@ public class InventoryAgent {
 		}
 	}
 	
+	public void processOutShipment(Shipment shipment){
+		outInventory.lowerInventory(shipment.getSize());
+	}
+	
 	/**
 	 * Verarbeitet die Fertigstellung eines ProdJobs im Inventory
 	 * @param production
@@ -101,12 +105,11 @@ public class InventoryAgent {
 	 * Verarbeitet den Beginn eines ProdJobs im Inventory
 	 * @param productionJobs
 	 */
-	public void processStartProduction(ArrayList<ProdJob> productionJobs){
-		for(ProdJob job : productionJobs){
-			for(Link link : inInventories.keySet()){
+	public void processStartProduction(ProdJob prodJob){
+		System.out.println("processStartProduction: " + prodJob.getSize());
+		for(Link link : inInventories.keySet()){				
 				Inventory inventory = inInventories.get(link);
-				inventory.lowerInventory(job.getSize()*link.getMaterialFactor());
-			}
+				inventory.lowerInventory(prodJob.getSize()*link.getMaterialFactor());
 		}
 	}
 	
@@ -150,10 +153,18 @@ public class InventoryAgent {
 		return orders;
 	}
 	
+	public double getProductionSize(){
+		if(orderUpToLevel){
+			return outInventory.getOrder();
+		}
+		return 0.0;
+	}
+	
 	public void prepareTick(){
 		for(Inventory inventory : inInventories.values()){
 			inventory.prepareTick();
 		}
+		outInventory.prepareTick();
 	}
 	
 	public double calcSafetyStock(double sd, double serviceLevel){

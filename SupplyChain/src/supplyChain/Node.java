@@ -11,6 +11,7 @@ public abstract class Node {
 	protected ArrayList<Link> downstrLinks;
 	protected ArrayList<Link> upstrLinks;
 	
+	public abstract void initNode();
 	public abstract String getInformationString();
 	
 	

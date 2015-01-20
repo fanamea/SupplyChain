@@ -16,13 +16,15 @@ public class Business extends Node{
 	
 		
 	public Business(int tier){
-		super(tier);
+		super(tier);		
+	}
+	
+	public void initNode(){
 		this.deliveryAgent = new DeliveryAgent(this);
 		this.forecastAgent = new ForecastAgent(this);
 		this.inventoryAgent = new InventoryAgent(this);
 		this.productionAgent = new ProductionAgent(this);
 		this.orderAgent = new OrderAgent(this);
-		
 	}
 	
 	@ScheduledMethod(start = 1, interval = 1, priority = 10)
@@ -41,7 +43,7 @@ public class Business extends Node{
 	
 	@ScheduledMethod(start=1, interval=1, priority = 8)
 	public void produce(){
-		productionAgent.startProdJobs();
+		productionAgent.produce();
 		inventoryAgent.processEndProduction(productionAgent.getArrivingProduction());
 	}
 	
@@ -58,6 +60,7 @@ public class Business extends Node{
 		for(Link link : this.downstrLinks){
 			newOrders.addAll(link.fetchOrders());
 		}
+		deliveryAgent.processOrders(newOrders);
 	}
 	
 	@ScheduledMethod(start = 1, interval = 1, priority = 4)
@@ -65,7 +68,7 @@ public class Business extends Node{
 		this.deliveryAgent.dispatchShipments();
 	}
 	
-	@ScheduledMethod(start=11, interval = 10, priority = 3)
+	//@ScheduledMethod(start=11, interval = 10, priority = 3)
 	public void plan(){
 		forecastAgent.calcForecastTotal(10);
 		inventoryAgent.calcOutInventoryDueList();
