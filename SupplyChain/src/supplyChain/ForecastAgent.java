@@ -9,7 +9,10 @@ public class ForecastAgent{
 	
 	private Business biz;
 	private ArrayList<Link> linkList;
-	private HashMap<Integer, Double> forecastTotal;
+	private HashMap<Integer, Double> orderForecast; 
+	private double avgOrderFC;
+	
+	
 	private int movAvgTimeSpanPast;
 	private int movAvgTimeSpanFuture;
 	
@@ -20,6 +23,7 @@ public class ForecastAgent{
 	public ForecastAgent(Business biz){
 		this.biz = biz;
 		this.linkList = biz.getDownstrLinks();
+		this.movAvgTimeSpanPast = 9;
 	}
 	
 	
@@ -44,12 +48,23 @@ public class ForecastAgent{
 				totalForecast.put(i, sum);
 			}			
 		}
-		forecastTotal = totalForecast;
+		orderForecast = totalForecast;
+		
+		//AVG berechnen
+		double sum = 0;
+		for(Integer date : totalForecast.keySet()){
+			sum += totalForecast.get(date);
+		}
+		this.avgOrderFC = sum/timeSpanFuture;	
 		
 	}
 	
+	public double getAvgOrderFC(){
+		return this.avgOrderFC;
+	}
+	
 	public HashMap<Integer, Double> getOrderForecast(){
-		return this.forecastTotal;
+		return this.orderForecast;
 	}
 	
 	

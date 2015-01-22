@@ -140,21 +140,14 @@ public class Setup {
 	}
 	
 	@ScheduledMethod(start = 1, interval = 1, priority = 1)
-	public void printLinks(){
-		for(Link link : links){
-			link.printHistory();
-		}
-	}
-	
-	//@ScheduledMethod(start = 1, interval = 1, priority = 11)
 	public void printInformation(){
-		String string = "Date: " + (int)RepastEssentials.GetTickCount();
+		String string = "Date: " + (int)RepastEssentials.GetTickCount() + "\n";
 		for(Node node : nodes){
 			string += node.getInformationString();
 		}
 		string += "\n";
 		for(Link link : links){
-			string += link.getInformationString();
+			string += link.getAmountInformation() + "\n";
 		}
 		string += "\n \n";
 		System.out.print(string);

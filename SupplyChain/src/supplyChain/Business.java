@@ -68,14 +68,11 @@ public class Business extends Node{
 		this.deliveryAgent.dispatchShipments();
 	}
 	
-	//@ScheduledMethod(start=11, interval = 10, priority = 3)
+	@ScheduledMethod(start=11, interval = 10, priority = 3)
 	public void plan(){
 		forecastAgent.calcForecastTotal(10);
-		inventoryAgent.calcOutInventoryDueList();
-		productionAgent.handProductionDueList(inventoryAgent.getOutInventoryDueList());
-		productionAgent.calcProductionStartPlan();
-		//inventoryAgent.calcInInventoriesDueLists();
-		//OrderAgent
+		inventoryAgent.handDemandForecast(forecastAgent.getOrderForecast());
+		inventoryAgent.recalcAimLevels();
 	}
 	
 	public void addDownstrPartner(Link b){
@@ -109,7 +106,9 @@ public class Business extends Node{
 	
 	public String getInformationString(){
 		String string = "";
-		string += "Node: " + this.Id + ", Tier: " + this.tier + "Inventory: " + this.inventoryAgent.getInventoryLevel() + "\n";
+		string += "Node: " + this.Id + ", Tier: " + this.tier + "\n";
+		string += "   InventoryAgent: \n" 
+				+ inventoryAgent.getInformationString();
 		return string;
 	}
 

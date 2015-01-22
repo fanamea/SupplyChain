@@ -9,9 +9,8 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 public class Test {
 	
 	public static void main(String[] args){
-		NormalDistribution normal = new NormalDistribution();
-		double quantile = normal.inverseCumulativeProbability(0.9);
-		System.out.println(quantile);
+		String string = "blabla \nblabla";
+		System.out.println(string);
 	}
 	
 	public static void exampleSetUp(Setup setup){

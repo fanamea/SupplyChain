@@ -15,16 +15,18 @@ public class Inventory {
 	private int reorderInterval;
 	private int lastOrderDate;
 	private double orderUpToLevel;
+	private double aimLevel;
 	private boolean infinite;				//Unendliches Lager (Ressource supplier)
 	
 	public Inventory(){
 		this.dueList = new HashMap<Integer, Double>();
 		this.inventoryLevel = new ArrayList<Double>();
 		this.serviceLevel = 0.95;
-		inventoryLevel.add(20.0);
-		reorderLevel = 10;
+		inventoryLevel.add(30.0);
+		reorderLevel = -1;
 		reorderInterval = -1;
-		orderUpToLevel = 30;
+		orderUpToLevel = -1;
+		aimLevel = 30;
 		infinite = false;
 	}
 	
@@ -62,6 +64,11 @@ public class Inventory {
 			//System.out.println("reorderInterval");
 			if(currentTick-lastOrderDate == reorderInterval)
 				return orderUpToLevel-curInvLevel;
+		}
+		else if(aimLevel != -1){
+			//System.out.println("AimLevel: " + aimLevel + ", curInvLevel: " + curInvLevel);
+			if(curInvLevel <= aimLevel)
+				return aimLevel-curInvLevel;
 		}
 		return 0.0;
 	}
@@ -109,5 +116,24 @@ public class Inventory {
 	public double getDueListEntry(int index){
 		return this.dueList.get(index);
 	}
+	
+	public void setReorderLevel(double level){
+		this.reorderLevel = level;
+	}
+	
+	public double getAimLevel(){
+		return this.aimLevel;
+	}
+	
+	public void setAimLevel(double level){
+		this.aimLevel = level;
+	}
+	
+	public String getInformationString(){
+		String string = "";
+		string += "AimLevel: " + aimLevel + ";   Inventory Level: " + inventoryLevel;
+		return string;
+	}
+	
 
 }

@@ -17,9 +17,13 @@ public class InventoryAgent {
 	private Inventory outInventory;
 	private int fcTimeSpanfuture;
 	
+	private HashMap<Integer, Double> demandForecast;
+	
+	private double serviceLevel;
 	private boolean orderUpToLevel;
 	private int periodic;
 	private boolean continuous;
+	
 	
 	public InventoryAgent(Business biz){
 		this.biz = biz;
@@ -28,8 +32,46 @@ public class InventoryAgent {
 			inInventories.put(link, new Inventory());
 		}
 		this.outInventory = new Inventory();
-		this.orderUpToLevel = true;
+		this.orderUpToLevel = false;
 	}
+	
+	public double calcAimLevel(double avgOrder, double avgLeadTime, double sdOrder, double sdLeadTime, double serviceLevel){
+		//System.out.println("calcAimLevel: avgOrder: " + avgOrder + ", avgLeadTime: " + avgLeadTime + ", sdOrder: " + sdOrder + ", sdLeadTime " + sdLeadTime);
+		return avgLeadTime*avgOrder + this.calcSafetyStock(sdOrder, avgLeadTime, serviceLevel);
+	}
+	
+	/**
+	 * Setzt für alle Inventories den reorderPoint neu.
+	 * Basis sind die am Anfang deklarierten Variablen. Wegen AVG also nur für normalverteilt überhaupt ansatzweise vernünftig!!
+	 */
+	public void recalcAimLevels(){
+		double avgOrder;
+		double avgLeadTime;
+		double sdOrder;
+		double sdLeadTime;
+		double aimLevel;
+		
+		//InInventories
+		for(Link link : inInventories.keySet()){
+			Inventory inventory = inInventories.get(link);
+			avgOrder = biz.getForecastAgent().getAvgOrderFC()*link.getMaterialFactor();
+			avgLeadTime = link.getAvgLeadTime();
+			sdOrder = biz.getDeliveryAgent().calcOrdersSD()*link.getMaterialFactor();
+			sdLeadTime = link.getSDLeadTime();
+			aimLevel = calcAimLevel(avgOrder, avgLeadTime, sdOrder, sdLeadTime, inventory.getServiceLevel());
+			//System.out.println("Neuer ReorderPoint: " + inventory.getAimLevel() + " -> " +  aimLevel);
+			inventory.setAimLevel(aimLevel);
+		}
+		//OutInventory
+		avgOrder = biz.getForecastAgent().getAvgOrderFC();
+		avgLeadTime = biz.getProductionAgent().getProductionTime();
+		sdOrder = biz.getDeliveryAgent().calcOrdersSD();
+		sdLeadTime = 0;
+		aimLevel = calcAimLevel(avgOrder, avgLeadTime, sdOrder, sdLeadTime, outInventory.getServiceLevel());
+		outInventory.setAimLevel(aimLevel);
+	}
+	
+	
 	
 	//TODO
 	public void calcOutInventoryDueList(){
@@ -42,7 +84,7 @@ public class InventoryAgent {
 		double sd = biz.getDeliveryAgent().calcOrdersSD();
 		for(Integer i : forecast.keySet()){
 			double fc = forecast.get(i);
-			double safetyStock = this.calcSafetyStock(sd, outInventory.getServiceLevel());
+			double safetyStock = this.calcSafetyStock(sd, 0, outInventory.getServiceLevel());
 			dueList.put(i, fc + safetyStock);
 		}		
 		
@@ -106,7 +148,7 @@ public class InventoryAgent {
 	 * @param productionJobs
 	 */
 	public void processStartProduction(ProdJob prodJob){
-		System.out.println("processStartProduction: " + prodJob.getSize());
+		//System.out.println("processStartProduction: " + prodJob.getSize());
 		for(Link link : inInventories.keySet()){				
 				Inventory inventory = inInventories.get(link);
 				inventory.lowerInventory(prodJob.getSize()*link.getMaterialFactor());
@@ -143,21 +185,20 @@ public class InventoryAgent {
 	
 	public HashMap<Link, Double> getOrders(){
 		HashMap<Link, Double> orders = new HashMap<Link, Double>();
-		if(orderUpToLevel){
-			for(Link link : inInventories.keySet()){
-				double amount = inInventories.get(link).getOrder();
-				if(amount!=0.0)
-					orders.put(link, amount);
-			}
+		for(Link link : inInventories.keySet()){
+			double amount = inInventories.get(link).getOrder();
+			if(amount!=0.0)
+				orders.put(link, amount);
 		}
 		return orders;
 	}
 	
 	public double getProductionSize(){
-		if(orderUpToLevel){
 			return outInventory.getOrder();
-		}
-		return 0.0;
+	}
+	
+	public void handDemandForecast(HashMap<Integer, Double> forecast){
+		this.demandForecast = forecast;
 	}
 	
 	public void prepareTick(){
@@ -167,9 +208,19 @@ public class InventoryAgent {
 		outInventory.prepareTick();
 	}
 	
-	public double calcSafetyStock(double sd, double serviceLevel){
+	/**
+	 * Zusätzlichen SafetyStock!!
+	 * @param sd
+	 * @param serviceLevel
+	 * @return
+	 */
+	public double calcSafetyStock(double sd, double avgLeadTime, double serviceLevel){
+		//TODO: krasser Workaround!!!
+		//System.out.println("calcSafetyStock: sd: " + sd + ", avgLeadTime: " + avgLeadTime + ", serviceLevel: " + serviceLevel);
+		if(sd==0) sd=0.001;
 		NormalDistribution normal = new NormalDistribution(0, sd);
-		double safetyStock = normal.inverseCumulativeProbability(serviceLevel);
+		double safetyStock = Math.sqrt(avgLeadTime)*normal.inverseCumulativeProbability(serviceLevel);
+		//System.out.println("SafetyStock: " + safetyStock);
 		return safetyStock;
 	}
 	
@@ -183,6 +234,30 @@ public class InventoryAgent {
 	
 	public HashMap<Integer, Double> getOutInventoryDueList(){
 		return this.outInventory.getDueList();
+	}
+	
+	public void setServiceLevels(double serviceLevel){
+		for(Inventory inventory : inInventories.values()){
+			inventory.setServiceLevel(serviceLevel);
+		}
+		outInventory.setServiceLevel(serviceLevel);
+	}
+	
+	public double getOutInventory(){
+		return outInventory.getInventoryLevel();
+	}
+	
+	public String getInformationString(){
+		String string = "";
+		string += "      InInventories: \n";
+		for(Link link :inInventories.keySet()){
+			string += "         Link: " + link.getId() + "\n" 
+					+ "            " + inInventories.get(link).getInformationString() + "\n";
+		}
+		string += "      OutInventory: " + "\n"
+				+ "            " + outInventory.getInformationString() + "\n";
+		
+		return string;
 	}
 
 }

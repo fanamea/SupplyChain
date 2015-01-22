@@ -1,5 +1,7 @@
 package supplyChain;
 
+import java.util.ArrayList;
+
 public class Order {
 	
 	//TODO Teillieferungen
@@ -11,6 +13,7 @@ public class Order {
 	private int date;
 	private double size;
 	private double shipped;
+	ArrayList<Shipment> shipments;
 	
 	public Order(Link link, int d, double s){
 		this.Id = count++;
@@ -18,6 +21,7 @@ public class Order {
 		this.date = d;
 		this.size = s;
 		this.shipped = 0;
+		this.shipments = new ArrayList<Shipment>();
 	}
 	
 	public int getDate(){
@@ -42,6 +46,14 @@ public class Order {
 	
 	public double getShortage(){
 		return size-shipped;
+	}
+	
+	public void addShipment(Shipment shipment){
+		this.shipments.add(shipment);
+	}
+	
+	public ArrayList<Shipment> getShipments(){
+		return this.shipments;
 	}
 	
 	public String toString(){

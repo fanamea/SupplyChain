@@ -82,17 +82,17 @@ public class ProductionAgent {
 		if(amount!=0.0){
 			double plannedBatchSize = amount;
 			double maxProduction = calcMaxProduction();
-			System.out.println("plannedBatchSize: " + plannedBatchSize + ", maxProduction: " + maxProduction);
+			//System.out.println("plannedBatchSize: " + plannedBatchSize + ", maxProduction: " + maxProduction);
 			if(plannedBatchSize <= maxProduction){
 				
 				ProdJob job = new ProdJob(currentTick, plannedBatchSize, productionTime);
-				System.out.println("ProdJob: " + job.getSize());
+				//System.out.println("ProdJob: " + job.getSize());
 				productionPipeLine.add(job);
 				biz.getInventoryAgent().processStartProduction(job);
 			}
 			else{
 				ProdJob job = new ProdJob(currentTick, maxProduction, productionTime);
-				System.out.println("ProdJob: " + job.getSize());
+				//System.out.println("ProdJob: " + job.getSize());
 				productionPipeLine.add(job);
 				biz.getInventoryAgent().processStartProduction(job);
 				//TODO Fehlmenge behandeln
@@ -124,7 +124,7 @@ public class ProductionAgent {
 		ArrayList<Double> quotients = new ArrayList<Double>();
 		
 		for(Link link : biz.getUpstrLinks()){
-			System.out.println("debug: Biz: " + biz.getId() + "Link: " + link.getId());
+			//System.out.println("debug: Biz: " + biz.getId() + "Link: " + link.getId());
 			double quotient = biz.getInventoryAgent().getInInventoryLevel(link)/link.getMaterialFactor();
 			quotients.add(quotient);
 		}
@@ -163,6 +163,10 @@ public class ProductionAgent {
 	
 	public  HashMap<Integer, Double> getProductionDueList(){
 		return this.productionDueList;
+	}
+	
+	public int getProductionTime(){
+		return this.productionTime;
 	}
 
 }

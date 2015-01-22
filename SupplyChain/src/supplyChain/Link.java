@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
 
@@ -23,6 +25,7 @@ public class Link {
 	private ArrayList<Shipment> shipmentHistory;
 	private CopyOnWriteArrayList<Shipment> shipmentPipeLine;
 	private HashMap<Integer, Double> orderDueList;
+	private DescriptiveStatistics leadTimeData;
 	
 	
 	public Link(Node up, Node down){
@@ -38,6 +41,7 @@ public class Link {
 		shipmentHistory = new ArrayList<Shipment>();
 		shipmentPipeLine = new CopyOnWriteArrayList<Shipment>();
 		orderDueList = new HashMap<Integer, Double>();
+		leadTimeData = new DescriptiveStatistics();
 	}
 	
 	/**
@@ -48,12 +52,31 @@ public class Link {
 		ArrayList<Shipment> ret = new ArrayList<Shipment>();
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		for(Shipment shipment : shipmentPipeLine){
-			if(shipment.getDate() + shipment.getLeadTime() == currentTick){
+			if(shipment.getDate() + shipment.getDuration() == currentTick){
 				ret.add(shipment);
 				shipmentPipeLine.remove(shipment);
+				maintainLeadTimeData(shipment);				
 			}
 		}
 		return ret;
+	}
+	
+	/**
+	 * Bei Teillieferungen gewichteter Durchschnitt
+	 * @param shipment
+	 */
+	public void maintainLeadTimeData(Shipment shipment){
+		Order order = shipment.getOrder();
+		double sum = 0;
+		if(order.isShipped()){
+			ArrayList<Shipment> shipments = order.getShipments();
+			for(Shipment shipm : shipments){
+				double leadTime = shipm.getArriving()-order.getDate();
+				double weight = shipm.getSize()/order.getSize();
+				sum += weight*leadTime;
+			}
+		}
+		this.leadTimeData.addValue(sum);
 	}
 	
 	public void induceShipment(Shipment shipment){
@@ -62,8 +85,8 @@ public class Link {
 	}
 	
 	//TODO: Leadtime generieren
-	public int genLeadTime(){
-		return 1;
+	public int genDuration(){
+		return 2;
 	}
 	
 	/**
@@ -91,8 +114,14 @@ public class Link {
 		return copy;
 	}
 	
-	public void addShipment(Shipment shipment){
-		shipmentHistory.add(shipment);
+	
+	public double getAvgLeadTime(){
+		//System.out.println("getAvgLeadTime: " + leadTimeData.getMean() + "Link ID: " + getId() + ", Data: " +  this.leadTimeData);
+		return this.leadTimeData.getMean();
+	}
+	
+	public double getSDLeadTime(){
+		return this.leadTimeData.getStandardDeviation();
 	}
 	
 	public ArrayList<Order> getOrderHistory(){
@@ -135,16 +164,17 @@ public class Link {
 		this.orderDueList.put(index, amount);
 	}
 
-	public void printHistory(){
-		System.out.println("Link Id: " + this.Id);
-		System.out.println(orderAmountHistory);
-		
-		System.out.println("   Shipments:");
+	public String getAmountInformation(){
+		String string = "";
+		string += "Link: " + getId() + ", Up " + this.upstrNode.getId() + ", Down " + this.downstrNode.getId() + "\n"
+				+ "   OrderAmount History: " + orderAmountHistory + "\n"
+				+ "   Shipments:";
 		for(Shipment shipment : shipmentHistory){
-			System.out.print("   " + shipment.getSize() + ", ");
+			string += "   " + shipment.getSize() + ", ";
 		}
-		System.out.println("");
+		return string;
 	}
+
 	
 	public String getInformationString(){
 		String string = "";
@@ -157,7 +187,6 @@ public class Link {
 		for(Shipment shipment : shipmentHistory){
 			string += "      " + shipment.toString() + "\n";
 		}
-		string += "\n";
 		return string;
 	}
 	
