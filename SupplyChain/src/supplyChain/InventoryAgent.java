@@ -13,7 +13,7 @@ import repast.simphony.essentials.RepastEssentials;
 public class InventoryAgent {
 	
 	private Business biz;
-	private HashMap<Link, Inventory> inInventories;
+	private HashMap<Material, Inventory> inInventories;
 	private Inventory outInventory;
 	private int fcTimeSpanfuture;
 	
@@ -23,13 +23,14 @@ public class InventoryAgent {
 	private boolean orderUpToLevel;
 	private int periodic;
 	private boolean continuous;
+	private boolean infiniteSupplier;
 	
 	
 	public InventoryAgent(Business biz){
 		this.biz = biz;
-		this.inInventories = new HashMap<Link, Inventory>();
-		for(Link link : biz.getUpstrLinks()){
-			inInventories.put(link, new Inventory());
+		this.inInventories = new HashMap<Material, Inventory>();
+		for(Material material : biz.getProductionAgent().getBillOfMaterial().keySet()){
+			inInventories.put(material, new Inventory());
 		}
 		this.outInventory = new Inventory();
 		this.orderUpToLevel = false;
@@ -52,12 +53,12 @@ public class InventoryAgent {
 		double aimLevel;
 		
 		//InInventories
-		for(Link link : inInventories.keySet()){
-			Inventory inventory = inInventories.get(link);
-			avgOrder = biz.getForecastAgent().getAvgOrderFC()*link.getMaterialFactor();
-			avgLeadTime = link.getAvgLeadTime();
-			sdOrder = biz.getDeliveryAgent().calcOrdersSD()*link.getMaterialFactor();
-			sdLeadTime = link.getSDLeadTime();
+		for(Material material : inInventories.keySet()){
+			Inventory inventory = inInventories.get(material);
+			avgOrder = biz.getForecastAgent().getAvgOrderFC()*biz.getProductionAgent().getBillOfMaterial().get(material);
+			avgLeadTime = biz.getOrderAgent().calcMeanLeadTime(material);
+			sdOrder = biz.getDeliveryAgent().calcOrdersSD()*biz.getProductionAgent().getBillOfMaterial().get(material);
+			sdLeadTime = biz.getOrderAgent().calcSDLeadTime(material);
 			aimLevel = calcAimLevel(avgOrder, avgLeadTime, sdOrder, sdLeadTime, inventory.getServiceLevel());
 			//System.out.println("Neuer ReorderPoint: " + inventory.getAimLevel() + " -> " +  aimLevel);
 			inventory.setAimLevel(aimLevel);
@@ -96,63 +97,61 @@ public class InventoryAgent {
 	public void calcInInventoriesDueLists(){
 		
 		//Über alle Inventories
-		for(Link link : this.inInventories.keySet()){
-			Inventory inventory = inInventories.get(link);
+		for(Material material : this.inInventories.keySet()){
+			Inventory inventory = inInventories.get(material);
 			HashMap<Integer, Double> productionDueList = biz.getProductionAgent().getProductionDueList();
 			//Über alle Eintrage in productionDueList
 			for(Integer date : productionDueList.keySet()){
-				double amount = biz.getProductionAgent().getResourceDemand(date, link);
+				double amount = biz.getProductionAgent().getResourceDemand(date, material);
 				inventory.setDueListEntry(date, amount);
 			}			
 		}		
 	}
-	
-	/**
-	 * Verarbeitet eine Liste von eingehenden Lieferungen
-	 * @param link Zugehöriger Link
-	 * @param shipments Liste von zu verarbeitenen shipments
-	 */
-	public void processInShipments(Link link, ArrayList<Shipment> shipments){
-		Inventory inventory = inInventories.get(link);
-		for(Shipment shipment : shipments){
-			inventory.incrInventory(shipment.getSize());
-		}		
-	}	
-	
-	/**
-	 * Verarbeitet eine Liste von ausgehenden Lieferungen
-	 * @param shipments Liste von zu verarbeitenen shipments
-	 */
-	public void processOutShipments(ArrayList<Shipment> shipments){
-		for(Shipment shipment : shipments){
-			outInventory.lowerInventory(shipment.getSize());
+		
+	public void storeMaterials(HashMap<Material, Double> materials){
+		for(Material material : materials.keySet()){
+			inInventories.get(material).incrInventory(materials.get(material));
 		}
 	}
 	
-	public void processOutShipment(Shipment shipment){
-		outInventory.lowerInventory(shipment.getSize());
+	public void storeProducts(double products){
+		outInventory.incrInventory(products);
+	}
+	
+	
+	/**
+	 * TODO: Backlogging speichern
+	 * Gibt auf ein Material Request eine MaterialLieferung zurück.
+	 * Material schon im Inentory abgezogen, frei zur Verwendung in production.
+	 * @param request
+	 * @return
+	 */
+	public HashMap<Material, Double> requestMaterials(HashMap<Material, Double> request){
+		HashMap<Material, Double> delivery = new HashMap<Material, Double>();
+		for(Material material : request.keySet()){
+			Inventory inventory = inInventories.get(material);
+			double req = request.get(material);
+			double inventoryLevel = inventory.getInventoryLevel();
+			double del = Math.min(inventoryLevel, req);
+			delivery.put(material, del);
+			inventory.lowerInventory(del);			
+		}
+		return delivery;
 	}
 	
 	/**
-	 * Verarbeitet die Fertigstellung eines ProdJobs im Inventory
-	 * @param production
+	 * TODO: Backlogging speichern
+	 * Gibt auf ein Product Request eine Produktlieferung zurück.
+	 * Produktverbrauch schon im Inventory abgezogen, frei zur Auslieferung.
+	 * @param request
+	 * @return
 	 */
-	public void processEndProduction(ArrayList<ProdJob> production){
-		for(ProdJob job : production){
-			outInventory.incrInventory(job.getSize());
-		}
-	}
-	
-	/**
-	 * Verarbeitet den Beginn eines ProdJobs im Inventory
-	 * @param productionJobs
-	 */
-	public void processStartProduction(ProdJob prodJob){
-		//System.out.println("processStartProduction: " + prodJob.getSize());
-		for(Link link : inInventories.keySet()){				
-				Inventory inventory = inInventories.get(link);
-				inventory.lowerInventory(prodJob.getSize()*link.getMaterialFactor());
-		}
+	public double requestProducts(double request){
+		if(infiniteSupplier) return request;
+		
+		double delivery = Math.min(outInventory.getInventoryLevel(), request);
+		outInventory.lowerInventory(delivery);
+		return delivery;
 	}
 	
 	/**
@@ -160,8 +159,8 @@ public class InventoryAgent {
 	 * @param link
 	 * @return Inventory Level des entsprechenden Links
 	 */
-	public double getInInventoryLevel(Link link){
-		return inInventories.get(link).getInventoryLevel();
+	public double getInInventoryLevel(Material material){
+		return inInventories.get(material).getInventoryLevel();
 	}
 	
 	/**
@@ -183,12 +182,12 @@ public class InventoryAgent {
 		}
 	}
 	
-	public HashMap<Link, Double> getOrders(){
-		HashMap<Link, Double> orders = new HashMap<Link, Double>();
-		for(Link link : inInventories.keySet()){
-			double amount = inInventories.get(link).getOrder();
+	public HashMap<Material, Double> getOrders(){
+		HashMap<Material, Double> orders = new HashMap<Material, Double>();
+		for(Material material : inInventories.keySet()){
+			double amount = inInventories.get(material).getOrder();
 			if(amount!=0.0)
-				orders.put(link, amount);
+				orders.put(material, amount);
 		}
 		return orders;
 	}
@@ -250,9 +249,9 @@ public class InventoryAgent {
 	public String getInformationString(){
 		String string = "";
 		string += "      InInventories: \n";
-		for(Link link :inInventories.keySet()){
-			string += "         Link: " + link.getId() + "\n" 
-					+ "            " + inInventories.get(link).getInformationString() + "\n";
+		for(Material material :inInventories.keySet()){
+			string += "         Material: " + material.getId() + "\n" 
+					+ "            " + inInventories.get(material).getInformationString() + "\n";
 		}
 		string += "      OutInventory: " + "\n"
 				+ "            " + outInventory.getInformationString() + "\n";

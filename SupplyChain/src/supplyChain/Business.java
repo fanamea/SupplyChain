@@ -37,7 +37,7 @@ public class Business extends Node{
 		ArrayList<Shipment> shipments = new ArrayList<Shipment>();
 		for(Link link : upstrLinks){
 			shipments = link.getArrivingShipments();
-			inventoryAgent.processInShipments(link, shipments);
+			orderAgent.processInShipments(shipments);
 		}
 	}
 	

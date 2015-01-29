@@ -16,7 +16,7 @@ public class Link {
 	private int Id;
 	private Node upstrNode;
 	private Node downstrNode;
-	private double materialFactor;
+	private Material material;
 	private double transportationCost;
 	private double shortageCost;
 	private ArrayList<Order> orderHistory;
@@ -34,14 +34,13 @@ public class Link {
 		this.downstrNode = down;
 		upstrNode.addDownstrLink(this);
 		downstrNode.addUpstrLink(this);
-		materialFactor = 1;
+		this.material = new Material("");   //TODO: BillOfMaterial beim Setup einlesen
 		orderHistory = new ArrayList<Order>();
 		orderAmountHistory = new ArrayList<Double>();
 		orderPipeLine = new CopyOnWriteArrayList<Order>();
 		shipmentHistory = new ArrayList<Shipment>();
 		shipmentPipeLine = new CopyOnWriteArrayList<Shipment>();
 		orderDueList = new HashMap<Integer, Double>();
-		leadTimeData = new DescriptiveStatistics();
 	}
 	
 	/**
@@ -54,29 +53,10 @@ public class Link {
 		for(Shipment shipment : shipmentPipeLine){
 			if(shipment.getDate() + shipment.getDuration() == currentTick){
 				ret.add(shipment);
-				shipmentPipeLine.remove(shipment);
-				maintainLeadTimeData(shipment);				
+				shipmentPipeLine.remove(shipment);	
 			}
 		}
 		return ret;
-	}
-	
-	/**
-	 * Bei Teillieferungen gewichteter Durchschnitt
-	 * @param shipment
-	 */
-	public void maintainLeadTimeData(Shipment shipment){
-		Order order = shipment.getOrder();
-		double sum = 0;
-		if(order.isShipped()){
-			ArrayList<Shipment> shipments = order.getShipments();
-			for(Shipment shipm : shipments){
-				double leadTime = shipm.getArriving()-order.getDate();
-				double weight = shipm.getSize()/order.getSize();
-				sum += weight*leadTime;
-			}
-		}
-		this.leadTimeData.addValue(sum);
 	}
 	
 	public void induceShipment(Shipment shipment){
@@ -144,10 +124,6 @@ public class Link {
 		return this.upstrNode;
 	}
 	
-	public double getMaterialFactor(){
-		return this.materialFactor;
-	}
-	
 	public int getId(){
 		return this.Id;
 	}
@@ -162,6 +138,10 @@ public class Link {
 	
 	public void setOrderDueListEntry(int index, double amount){
 		this.orderDueList.put(index, amount);
+	}
+	
+	public Material getMaterial(){
+		return this.material;
 	}
 
 	public String getAmountInformation(){

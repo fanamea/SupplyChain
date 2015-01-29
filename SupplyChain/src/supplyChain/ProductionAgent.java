@@ -12,7 +12,8 @@ public class ProductionAgent {
 	private int productionTime;
 	private double productionCapacity;
 	private double setUpCost;
-	private HashMap<Link, Double> materialFactor;
+	
+	private HashMap<Material, Double> billOfMaterial;
 	private HashMap<Integer, Double> productionStartPlan;
 	private HashMap<Integer, Double> productionDueList;
 	private CopyOnWriteArrayList<ProdJob> productionPipeLine;
@@ -23,9 +24,9 @@ public class ProductionAgent {
 		this.productionTime = 2;
 		this.productionCapacity = 10;
 		this.setUpCost = 1;
-		this.materialFactor = new HashMap<Link, Double>();
+		this.billOfMaterial = new HashMap<Material, Double>();
 		for(Link link : biz.getUpstrLinks()){
-			materialFactor.put(link, link.getMaterialFactor());
+			billOfMaterial.put(link.getMaterial(), 1.0);   //TODO: BillOfMaterial bei Setup einlesen
 		}
 		productionStartPlan = new HashMap<Integer, Double>();
 		productionDueList = new HashMap<Integer, Double>();
@@ -79,26 +80,28 @@ public class ProductionAgent {
 	public void produce(){
 		double amount = biz.getInventoryAgent().getProductionSize();
 		int currentTick = (int)RepastEssentials.GetTickCount();
+		
 		if(amount!=0.0){
 			double plannedBatchSize = amount;
 			double maxProduction = calcMaxProduction();
+			HashMap<Material, Double> request = calcRessourceDemand(maxProduction);
+			HashMap<Material, Double> delivery = biz.getInventoryAgent().requestMaterials(request);
 			//System.out.println("plannedBatchSize: " + plannedBatchSize + ", maxProduction: " + maxProduction);
 			if(plannedBatchSize <= maxProduction){
 				
 				ProdJob job = new ProdJob(currentTick, plannedBatchSize, productionTime);
 				//System.out.println("ProdJob: " + job.getSize());
 				productionPipeLine.add(job);
-				biz.getInventoryAgent().processStartProduction(job);
 			}
 			else{
 				ProdJob job = new ProdJob(currentTick, maxProduction, productionTime);
 				//System.out.println("ProdJob: " + job.getSize());
 				productionPipeLine.add(job);
-				biz.getInventoryAgent().processStartProduction(job);
 				//TODO Fehlmenge behandeln
 			}
 		}
 	}
+	
 	
 	/**
 	 * 
@@ -123,9 +126,9 @@ public class ProductionAgent {
 	public double calcMaxProduction(){
 		ArrayList<Double> quotients = new ArrayList<Double>();
 		
-		for(Link link : biz.getUpstrLinks()){
+		for(Material material : billOfMaterial.keySet()){
 			//System.out.println("debug: Biz: " + biz.getId() + "Link: " + link.getId());
-			double quotient = biz.getInventoryAgent().getInInventoryLevel(link)/link.getMaterialFactor();
+			double quotient = biz.getInventoryAgent().getInInventoryLevel(material)/billOfMaterial.get(material);
 			quotients.add(quotient);
 		}
 		double max = 0;
@@ -135,9 +138,9 @@ public class ProductionAgent {
 		return Math.min(productionCapacity, max);
 	}
 	
-	public double getResourceDemand(int date, Link link){
+	public double getResourceDemand(int date, Material material){
 		if(productionDueList.containsKey(date))
-			return productionDueList.get(date)*materialFactor.get(link);		
+			return productionDueList.get(date)*billOfMaterial.get(material);		
 		else
 			return 0.0;
 	}
@@ -147,12 +150,12 @@ public class ProductionAgent {
 	 * @param output gewünschter Produktionsoutput
 	 * @return ArrayList mit den Ressourcenbedarfen
 	 */
-	public HashMap<Link, Double> calcRessourceDemand(double output){
-		HashMap<Link, Double> demand = new HashMap<Link, Double>();
+	public HashMap<Material, Double> calcRessourceDemand(double output){
+		HashMap<Material, Double> demand = new HashMap<Material, Double>();
 		
-		for(Link link : biz.getUpstrLinks()){
-			double d = link.getMaterialFactor()*output;
-			demand.put(link, d);
+		for(Material material : billOfMaterial.keySet()){
+			double d = billOfMaterial.get(material)*output;
+			demand.put(material, d);
 		}
 		return demand;
 	}
@@ -167,6 +170,10 @@ public class ProductionAgent {
 	
 	public int getProductionTime(){
 		return this.productionTime;
+	}
+	
+	public HashMap<Material, Double> getBillOfMaterial(){
+		return this.billOfMaterial;
 	}
 
 }

@@ -7,6 +7,7 @@ public class Shipment {
 	private int Id;
 	private Link link;
 	private int date;
+	private Material material;
 	private double size;
 	private int duration;
 	private Order order;
@@ -15,6 +16,7 @@ public class Shipment {
 	public Shipment(Link link, int d, double s, int dur, Order order){
 		this.Id = count++;
 		this.link = link;
+		this.material = link.getMaterial();
 		this.date = d;
 		this.size = s;
 		this.duration = dur;
@@ -24,6 +26,10 @@ public class Shipment {
 	
 	public int getDate(){
 		return this.date;
+	}
+	
+	public Material getMaterial(){
+		return this.material;
 	}
 	
 	public double getSize(){
@@ -40,6 +46,10 @@ public class Shipment {
 	
 	public int getArriving(){
 		return this.arriving;
+	}
+	
+	public Link getLink(){
+		return this.link;
 	}
 	
 	public String toString(){
