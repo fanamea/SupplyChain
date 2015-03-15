@@ -13,30 +13,44 @@ import repast.simphony.essentials.RepastEssentials;
 public class InventoryAgent {
 	
 	private Business biz;
+	private PlanningTechniques planningTechniques;
 	private HashMap<Material, Inventory> inInventories;
 	private Inventory outInventory;
 	private int fcTimeSpanfuture;
 	
 	private HashMap<Integer, Double> demandForecast;
 	
-	private double serviceLevel;
-	private boolean orderUpToLevel;
-	private int periodic;
 	private boolean continuous;
+	private boolean periodic;
+	private boolean fixedQuantity;
+	private boolean orderUpTo;
+	
+	private double serviceLevel;
+	private double fixedOrderCost;
+	private double holdingCost;
+	
 	private boolean infiniteSupplier;
 	
 	
 	public InventoryAgent(Business biz){
 		this.biz = biz;
+		this.planningTechniques = new PlanningTechniques();
 		this.inInventories = new HashMap<Material, Inventory>();
 		for(Material material : biz.getProductionAgent().getBillOfMaterial().keySet()){
 			inInventories.put(material, new Inventory());
+			inInventories.get(material).setOrderQuantity(planningTechniques.getEOQ);
 		}
 		this.outInventory = new Inventory();
-		this.orderUpToLevel = false;
+		this.continuous = false;
+		this.periodic = false;
+		this.fixedQuantity = false;
+		this.orderUpTo = false;
+		this.serviceLevel = 0.98;
+		this.fixedOrderCost = 100;
+		this.holdingCost = 0.5;
 	}
 	
-	public double calcAimLevel(double avgOrder, double avgLeadTime, double sdOrder, double sdLeadTime, double serviceLevel){
+	public double calcReorderLevel(double avgOrder, double avgLeadTime, double sdOrder, double sdLeadTime, double serviceLevel){
 		//System.out.println("calcAimLevel: avgOrder: " + avgOrder + ", avgLeadTime: " + avgLeadTime + ", sdOrder: " + sdOrder + ", sdLeadTime " + sdLeadTime);
 		return avgLeadTime*avgOrder + this.calcSafetyStock(sdOrder, avgLeadTime, serviceLevel);
 	}
@@ -45,12 +59,12 @@ public class InventoryAgent {
 	 * Setzt für alle Inventories den reorderPoint neu.
 	 * Basis sind die am Anfang deklarierten Variablen. Wegen AVG also nur für normalverteilt überhaupt ansatzweise vernünftig!!
 	 */
-	public void recalcAimLevels(){
+	public void recalcReorderLevels(){
 		double avgOrder;
 		double avgLeadTime;
 		double sdOrder;
 		double sdLeadTime;
-		double aimLevel;
+		double reorderLevel;
 		
 		//InInventories
 		for(Material material : inInventories.keySet()){
@@ -59,17 +73,17 @@ public class InventoryAgent {
 			avgLeadTime = biz.getOrderAgent().calcMeanLeadTime(material);
 			sdOrder = biz.getDeliveryAgent().calcOrdersSD()*biz.getProductionAgent().getBillOfMaterial().get(material);
 			sdLeadTime = biz.getOrderAgent().calcSDLeadTime(material);
-			aimLevel = calcAimLevel(avgOrder, avgLeadTime, sdOrder, sdLeadTime, inventory.getServiceLevel());
+			reorderLevel = calcReorderLevel(avgOrder, avgLeadTime, sdOrder, sdLeadTime, inventory.getServiceLevel());
 			//System.out.println("Neuer ReorderPoint: " + inventory.getAimLevel() + " -> " +  aimLevel);
-			inventory.setAimLevel(aimLevel);
+			inventory.setReorderLevel(reorderLevel);
 		}
 		//OutInventory
 		avgOrder = biz.getForecastAgent().getAvgOrderFC();
 		avgLeadTime = biz.getProductionAgent().getProductionTime();
 		sdOrder = biz.getDeliveryAgent().calcOrdersSD();
 		sdLeadTime = 0;
-		aimLevel = calcAimLevel(avgOrder, avgLeadTime, sdOrder, sdLeadTime, outInventory.getServiceLevel());
-		outInventory.setAimLevel(aimLevel);
+		reorderLevel = calcReorderLevel(avgOrder, avgLeadTime, sdOrder, sdLeadTime, outInventory.getServiceLevel());
+		outInventory.setReorderLevel(reorderLevel);
 	}
 	
 	
@@ -245,6 +259,8 @@ public class InventoryAgent {
 	public double getOutInventory(){
 		return outInventory.getInventoryLevel();
 	}
+	
+	public PlanningTechniques
 	
 	public String getInformationString(){
 		String string = "";

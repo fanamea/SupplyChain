@@ -11,22 +11,30 @@ public class Inventory {
 	
 	private ArrayList<Double> inventoryLevel;
 	private double serviceLevel;
+	private double orderUpToLevel;
 	private double reorderLevel;
+	private double orderQuantity;
 	private int reorderInterval;
 	private int lastOrderDate;
-	private double orderUpToLevel;
-	private double aimLevel;
+	
+	private double fixOrderCost;
+	private double holdingCost;
+
 	private boolean infinite;				//Unendliches Lager (Ressource supplier)
 	
 	public Inventory(){
 		this.dueList = new HashMap<Integer, Double>();
 		this.inventoryLevel = new ArrayList<Double>();
-		this.serviceLevel = 0.95;
+		
 		inventoryLevel.add(30.0);
+		serviceLevel = 0.95;
+		orderUpToLevel = -1;
 		reorderLevel = -1;
 		reorderInterval = -1;
-		orderUpToLevel = -1;
-		aimLevel = 30;
+		
+		fixOrderCost = 100;
+		holdingCost = 0.5;
+		
 		infinite = false;
 	}
 	
@@ -121,12 +129,8 @@ public class Inventory {
 		this.reorderLevel = level;
 	}
 	
-	public double getAimLevel(){
-		return this.aimLevel;
-	}
-	
-	public void setAimLevel(double level){
-		this.aimLevel = level;
+	public void setOrderQuantity(double q){
+		this.orderQuantity = q;
 	}
 	
 	public String getInformationString(){

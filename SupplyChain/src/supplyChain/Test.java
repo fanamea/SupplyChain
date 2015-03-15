@@ -2,6 +2,7 @@ package supplyChain;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.apache.commons.math3.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -9,9 +10,22 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 public class Test {
 	
 	public static void main(String[] args){
-		String string = "blabla \nblabla";
-		System.out.println(string);
+		HashMap<Integer, Double> map = new HashMap<Integer, Double>();
+		
+		PlanningTechniques techs = new PlanningTechniques();
+		map.put(1, 200.0);
+		map.put(2, 60.0);
+		map.put(3, 105.0);
+		map.put(4, 195.0);
+		map.put(5, 50.0);
+		map.put(6, 90.0);
+		HashMap<Integer, Double> lots = techs.silverMeal(map, 475, 2);
+		for(Integer i : lots.keySet()){
+			System.out.println(i + ": " + lots.get(i));
+		}
 	}
+	
+	
 	
 	public static void exampleSetUp(Setup setup){
 		
