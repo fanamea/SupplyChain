@@ -13,6 +13,7 @@ public class Business extends Node{
 	private InventoryAgent inventoryAgent;
 	private ProductionAgent productionAgent;
 	private OrderAgent orderAgent;
+	private PlanningTechniques planningTechniques;
 	
 		
 	public Business(int tier){
@@ -25,6 +26,7 @@ public class Business extends Node{
 		this.inventoryAgent = new InventoryAgent(this);
 		this.productionAgent = new ProductionAgent(this);
 		this.orderAgent = new OrderAgent(this);
+		this.planningTechniques = new PlanningTechniques();
 	}
 	
 	@ScheduledMethod(start = 1, interval = 1, priority = 10)
@@ -102,6 +104,10 @@ public class Business extends Node{
 	
 	public OrderAgent getOrderAgent(){
 		return this.orderAgent;
+	}
+	
+	public PlanningTechniques getPlanningTechniques(){
+		return this.planningTechniques;
 	}
 	
 	public String getInformationString(){

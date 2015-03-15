@@ -14,6 +14,7 @@ public class InventoryAgent {
 	
 	private Business biz;
 	private PlanningTechniques planningTechniques;
+	private ForecastAgent fcAgent;
 	private HashMap<Material, Inventory> inInventories;
 	private Inventory outInventory;
 	private int fcTimeSpanfuture;
@@ -34,13 +35,8 @@ public class InventoryAgent {
 	
 	public InventoryAgent(Business biz){
 		this.biz = biz;
-		this.planningTechniques = new PlanningTechniques();
-		this.inInventories = new HashMap<Material, Inventory>();
-		for(Material material : biz.getProductionAgent().getBillOfMaterial().keySet()){
-			inInventories.put(material, new Inventory());
-			inInventories.get(material).setOrderQuantity(planningTechniques.getEOQ);
-		}
-		this.outInventory = new Inventory();
+		this.planningTechniques = biz.getPlanningTechniques();
+		this.fcAgent = biz.getForecastAgent();
 		this.continuous = false;
 		this.periodic = false;
 		this.fixedQuantity = false;
@@ -48,6 +44,55 @@ public class InventoryAgent {
 		this.serviceLevel = 0.98;
 		this.fixedOrderCost = 100;
 		this.holdingCost = 0.5;
+		
+		this.inInventories = new HashMap<Material, Inventory>();
+		for(Material material : biz.getProductionAgent().getBillOfMaterial().keySet()){
+			inInventories.put(material, new Inventory(this, material));
+		}
+		this.outInventory = new Inventory(this, biz.getProductionAgent().getEndProduct());
+		
+	}
+	
+	public void setInventoryPolicy()
+	
+	public void calcAllPeriods(){
+		for(Inventory inventory : inInventories.values()){
+			inventory.setPeriod(calcPeriod(inventory));
+		}
+		outInventory.setPeriod(calcPeriod(outInventory));
+	}
+	
+	public int calcPeriod(Inventory inventory){
+		double meanDemand = fcAgent.getAvgOrderFC();
+		double eoq = calcOrderQuantity(inventory);
+		return (int)Math.ceil(eoq/meanDemand);
+	}
+	
+	public void calcAllOUTLcontinuous(){
+		for(Inventory inventory : inInventories.values()){
+			inventory.setOrderUpToLevel(calcOUTcontinuous(inventory));
+		}
+		outInventory.setOrderUpToLevel(calcOUTcontinuous(outInventory));
+	}
+	
+	public double calcOUTcontinuous(Inventory inventory){
+		double orderUpToLevel = inventory.getReorderLevel() + calcOrderQuantity(inventory);
+		return orderUpToLevel;
+	}
+	
+	public void calcOrderQuantities(){
+		for(Inventory inventory : inInventories.values()){
+			inventory.setOrderQuantity(calcOrderQuantity(inventory));
+		}
+		outInventory.setOrderQuantity(calcOrderQuantity(outInventory));
+	}
+	
+	public double calcOrderQuantity(Inventory inventory){
+		double meanOrder = fcAgent.getAvgOrderFC();
+		double fixOrderCost = inventory.getFixOrderCost();
+		double holdingCost = inventory.getHoldingCost();
+		double quantity = planningTechniques.getEOQ(meanOrder, fixOrderCost, holdingCost);
+		return quantity;
 	}
 	
 	public double calcReorderLevel(double avgOrder, double avgLeadTime, double sdOrder, double sdLeadTime, double serviceLevel){
@@ -221,21 +266,7 @@ public class InventoryAgent {
 		outInventory.prepareTick();
 	}
 	
-	/**
-	 * Zusätzlichen SafetyStock!!
-	 * @param sd
-	 * @param serviceLevel
-	 * @return
-	 */
-	public double calcSafetyStock(double sd, double avgLeadTime, double serviceLevel){
-		//TODO: krasser Workaround!!!
-		//System.out.println("calcSafetyStock: sd: " + sd + ", avgLeadTime: " + avgLeadTime + ", serviceLevel: " + serviceLevel);
-		if(sd==0) sd=0.001;
-		NormalDistribution normal = new NormalDistribution(0, sd);
-		double safetyStock = Math.sqrt(avgLeadTime)*normal.inverseCumulativeProbability(serviceLevel);
-		//System.out.println("SafetyStock: " + safetyStock);
-		return safetyStock;
-	}
+	
 	
 	public double calcSD(ArrayList<Double> history){
 		DescriptiveStatistics stats = new DescriptiveStatistics();
@@ -260,7 +291,13 @@ public class InventoryAgent {
 		return outInventory.getInventoryLevel();
 	}
 	
-	public PlanningTechniques
+	public PlanningTechniques getPlanningTechniques(){
+		return this.planningTechniques;
+	}
+	
+	public ForecastAgent getForecastAgent(){
+		return this.fcAgent;
+	}
 	
 	public String getInformationString(){
 		String string = "";

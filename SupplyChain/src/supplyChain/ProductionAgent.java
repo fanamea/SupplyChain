@@ -13,6 +13,7 @@ public class ProductionAgent {
 	private double productionCapacity;
 	private double setUpCost;
 	
+	private Material endProduct;
 	private HashMap<Material, Double> billOfMaterial;
 	private HashMap<Integer, Double> productionStartPlan;
 	private HashMap<Integer, Double> productionDueList;
@@ -24,6 +25,7 @@ public class ProductionAgent {
 		this.productionTime = 2;
 		this.productionCapacity = 10;
 		this.setUpCost = 1;
+		this.endProduct = new Material("");
 		this.billOfMaterial = new HashMap<Material, Double>();
 		for(Link link : biz.getUpstrLinks()){
 			billOfMaterial.put(link.getMaterial(), 1.0);   //TODO: BillOfMaterial bei Setup einlesen
@@ -174,6 +176,10 @@ public class ProductionAgent {
 	
 	public HashMap<Material, Double> getBillOfMaterial(){
 		return this.billOfMaterial;
+	}
+	
+	public Material getEndProduct(){
+		return this.endProduct;
 	}
 
 }

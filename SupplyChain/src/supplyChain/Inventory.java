@@ -7,6 +7,8 @@ import repast.simphony.essentials.RepastEssentials;
 
 public class Inventory {
 	
+	public InventoryAgent inventoryAgent;
+	public Material material;
 	private HashMap<Integer, Double> dueList;
 	
 	private ArrayList<Double> inventoryLevel;
@@ -14,7 +16,7 @@ public class Inventory {
 	private double orderUpToLevel;
 	private double reorderLevel;
 	private double orderQuantity;
-	private int reorderInterval;
+	private int period;
 	private int lastOrderDate;
 	
 	private double fixOrderCost;
@@ -22,22 +24,28 @@ public class Inventory {
 
 	private boolean infinite;				//Unendliches Lager (Ressource supplier)
 	
-	public Inventory(){
+	public Inventory(InventoryAgent inventoryAgent, Material material){
+		this.inventoryAgent = inventoryAgent;
+		this.material = material;
 		this.dueList = new HashMap<Integer, Double>();
 		this.inventoryLevel = new ArrayList<Double>();
+		fixOrderCost = 100;
+		holdingCost = 0.5;
 		
 		inventoryLevel.add(30.0);
 		serviceLevel = 0.95;
 		orderUpToLevel = -1;
 		reorderLevel = -1;
-		reorderInterval = -1;
-		
-		fixOrderCost = 100;
-		holdingCost = 0.5;
+		period = -1;
+		orderQuantity = -1;
 		
 		infinite = false;
 	}
 	
+	public void calcOrderQuantity(){
+		double meanOrder = inventoryAgent.getForecastAgent().getAvgOrderFC();
+		this.orderQuantity = inventoryAgent.getPlanningTechniques().getEOQ(meanOrder, fixOrderCost, holdingCost);
+	}
 	
 	public void prepareTick(){
 		int date = (int)RepastEssentials.GetTickCount();
@@ -62,21 +70,28 @@ public class Inventory {
 	public double getOrder(){
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		double curInvLevel = inventoryLevel.get(currentTick);
+		//(s,S) oder (s,Q)
 		if(reorderLevel != -1){
-			//System.out.println("reorderLevel");
-			if(curInvLevel <= reorderLevel)
-				return orderUpToLevel-curInvLevel;
-			
+			if(curInvLevel <= reorderLevel){
+				//(s,S)
+				if(orderUpToLevel != -1)
+					return orderUpToLevel-curInvLevel;
+				//(s,Q)
+				else
+					return orderQuantity;
+			}			
 		}
-		else if(reorderInterval != -1){
-			//System.out.println("reorderInterval");
-			if(currentTick-lastOrderDate == reorderInterval)
-				return orderUpToLevel-curInvLevel;
-		}
-		else if(aimLevel != -1){
-			//System.out.println("AimLevel: " + aimLevel + ", curInvLevel: " + curInvLevel);
-			if(curInvLevel <= aimLevel)
-				return aimLevel-curInvLevel;
+		//(P,S) oder (P,Q)
+		else if(period != -1){
+			if(currentTick-lastOrderDate == period){
+				setLastOrderDate(currentTick);
+				//(P,S)
+				if(orderUpToLevel != -1)
+					return orderUpToLevel-curInvLevel;
+				//(P,Q)
+				else
+					return orderQuantity;
+			}
 		}
 		return 0.0;
 	}
@@ -131,6 +146,29 @@ public class Inventory {
 	
 	public void setOrderQuantity(double q){
 		this.orderQuantity = q;
+	}
+	
+	public double getFixOrderCost(){
+		return this.fixOrderCost;
+	}
+	
+	public double getHoldingCost(){
+		return this.holdingCost;
+	}
+	
+	public double getReorderLevel(){
+		return this.reorderLevel;
+	}
+	public void setOrderUpToLevel(double l){
+		this.orderUpToLevel = l;
+	}
+	
+	public void setPeriod(int p){
+		this.period = p;
+	}
+	
+	public Material getMaterial(){
+		return this.material;
 	}
 	
 	public String getInformationString(){
