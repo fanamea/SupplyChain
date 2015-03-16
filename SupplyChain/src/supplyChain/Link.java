@@ -1,7 +1,7 @@
 package supplyChain;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -14,7 +14,7 @@ public class Link {
 	private static int count;
 	
 	private int Id;
-	private Node upstrNode;
+	private Business upstrNode;
 	private Node downstrNode;
 	private Material material;
 	private double transportationCost;
@@ -24,23 +24,23 @@ public class Link {
 	private CopyOnWriteArrayList<Order> orderPipeLine;
 	private ArrayList<Shipment> shipmentHistory;
 	private CopyOnWriteArrayList<Shipment> shipmentPipeLine;
-	private HashMap<Integer, Double> orderDueList;
+	private TreeMap<Integer, Double> orderDueList;
 	private DescriptiveStatistics leadTimeData;
 	
 	
-	public Link(Node up, Node down){
+	public Link(Business up, Node down){
 		this.Id = count++;
 		this.upstrNode = up;
 		this.downstrNode = down;
 		upstrNode.addDownstrLink(this);
 		downstrNode.addUpstrLink(this);
-		this.material = new Material("");   //TODO: BillOfMaterial beim Setup einlesen
+		this.material = upstrNode.getEndProduct();   //TODO: BillOfMaterial beim Setup einlesen
 		orderHistory = new ArrayList<Order>();
 		orderAmountHistory = new ArrayList<Double>();
 		orderPipeLine = new CopyOnWriteArrayList<Order>();
 		shipmentHistory = new ArrayList<Shipment>();
 		shipmentPipeLine = new CopyOnWriteArrayList<Shipment>();
-		orderDueList = new HashMap<Integer, Double>();
+		orderDueList = new TreeMap<Integer, Double>();
 	}
 	
 	/**
@@ -128,7 +128,7 @@ public class Link {
 		return this.Id;
 	}
 	
-	public HashMap<Integer, Double> getOrderDueList(){
+	public TreeMap<Integer, Double> getOrderDueList(){
 		return this.orderDueList;
 	}
 	

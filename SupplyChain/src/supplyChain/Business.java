@@ -1,7 +1,8 @@
 package supplyChain;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.TreeMap;
+import InventoryPolicies.InvPolicies;
 
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
@@ -10,10 +11,14 @@ public class Business extends Node{
 	
 	private DeliveryAgent deliveryAgent;
 	private ForecastAgent forecastAgent;
-	private InventoryAgent inventoryAgent;
+	private InventoryOpsAgent inventoryOpsAgent;
+	private InventoryPlanAgent inventoryPlanAgent;
 	private ProductionAgent productionAgent;
+	private ProductionPlanningAgent productionPlanAgent;
 	private OrderAgent orderAgent;
 	private PlanningTechniques planningTechniques;
+	
+	private Material endProduct;
 	
 		
 	public Business(int tier){
@@ -23,15 +28,19 @@ public class Business extends Node{
 	public void initNode(){
 		this.deliveryAgent = new DeliveryAgent(this);
 		this.forecastAgent = new ForecastAgent(this);
-		this.inventoryAgent = new InventoryAgent(this);
+		this.inventoryOpsAgent = new InventoryOpsAgent(this);
+		this.inventoryPlanAgent = new InventoryPlanAgent(this, InvPolicies.ContOUT);
 		this.productionAgent = new ProductionAgent(this);
+		this.productionPlanAgent = new ProductionPlanningAgent(this);
 		this.orderAgent = new OrderAgent(this);
 		this.planningTechniques = new PlanningTechniques();
+		
+		this.endProduct = new Material("");
 	}
 	
 	@ScheduledMethod(start = 1, interval = 1, priority = 10)
 	public void prepareTick(){
-		inventoryAgent.prepareTick();
+		inventoryOpsAgent.prepareTick();
 	}
 	
 	@ScheduledMethod(start = 1, interval = 1, priority = 9)
@@ -46,7 +55,7 @@ public class Business extends Node{
 	@ScheduledMethod(start=1, interval=1, priority = 8)
 	public void produce(){
 		productionAgent.produce();
-		inventoryAgent.processEndProduction(productionAgent.getArrivingProduction());
+		inventoryOpsAgent.processEndProduction(productionAgent.getArrivingProduction());
 	}
 	
 	@ScheduledMethod(start = 1, interval = 1, priority = 6)
@@ -73,8 +82,8 @@ public class Business extends Node{
 	@ScheduledMethod(start=11, interval = 10, priority = 3)
 	public void plan(){
 		forecastAgent.calcForecastTotal(10);
-		inventoryAgent.handDemandForecast(forecastAgent.getOrderForecast());
-		inventoryAgent.recalcAimLevels();
+		inventoryOpsAgent.handDemandForecast(forecastAgent.getOrderForecast());
+		inventoryOpsAgent.recalcAimLevels();
 	}
 	
 	public void addDownstrPartner(Link b){
@@ -82,7 +91,7 @@ public class Business extends Node{
 	}
 	
 	public void addUpstrPartner(Link b){
-		this.inventoryAgent.setInfiniteInInventories(false);
+		this.inventoryOpsAgent.setInfiniteInInventories(false);
 		upstrLinks.add(b);
 	}
 	
@@ -94,8 +103,12 @@ public class Business extends Node{
 		return this.forecastAgent;
 	}
 	
-	public InventoryAgent getInventoryAgent(){
-		return this.inventoryAgent;
+	public InventoryOpsAgent getInventoryOpsAgent(){
+		return this.inventoryOpsAgent;
+	}
+	
+	public InventoryPlanAgent getInventoryPlanAgent(){
+		return this.inventoryPlanAgent;
 	}
 	
 	public ProductionAgent getProductionAgent(){
@@ -110,11 +123,19 @@ public class Business extends Node{
 		return this.planningTechniques;
 	}
 	
+	public ProductionPlanningAgent getProductionPlanAgent(){
+		return this.productionPlanAgent;
+	}
+	
+	public Material getEndProduct(){
+		return this.endProduct;
+	}
+	
 	public String getInformationString(){
 		String string = "";
 		string += "Node: " + this.Id + ", Tier: " + this.tier + "\n";
 		string += "   InventoryAgent: \n" 
-				+ inventoryAgent.getInformationString();
+				+ inventoryOpsAgent.getInformationString();
 		return string;
 	}
 

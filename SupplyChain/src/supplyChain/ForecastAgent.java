@@ -1,7 +1,7 @@
 package supplyChain;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.TreeMap;
 
 import repast.simphony.essentials.RepastEssentials;
 
@@ -9,7 +9,7 @@ public class ForecastAgent{
 	
 	private Business biz;
 	private ArrayList<Link> linkList;
-	private HashMap<Integer, Double> orderForecast; 
+	private TreeMap<Integer, Double> orderForecast; 
 	private double avgOrderFC;
 	
 	
@@ -31,7 +31,7 @@ public class ForecastAgent{
 	 * Berechnet auf Grundlage der Parameter (Objektvariablen) und den OrderAmountHistories in den Links den forecastTotal (Objektvariable)
 	 */
 	public void calcForecastTotal(int timeSpanFuture){
-		HashMap<Integer, Double> totalForecast = new HashMap<Integer, Double>();
+		TreeMap<Integer, Double> totalForecast = new TreeMap<Integer, Double>();
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		for(Link link : linkList){
 			ArrayList<Double> amountHistory = link.getOrderAmountHistory();
@@ -39,7 +39,7 @@ public class ForecastAgent{
 			for(int i = amountHistory.size(); i<=currentTick; i++){
 				amountHistory.add(i, 0.0);
 			}
-			HashMap<Integer, Double> linkForecast = getMovingAverageFC(amountHistory, this.movAvgTimeSpanPast, timeSpanFuture);
+			TreeMap<Integer, Double> linkForecast = getMovingAverageFC(amountHistory, this.movAvgTimeSpanPast, timeSpanFuture);
 			//Für den ersten Schleifendurchlauf
 			if(totalForecast.isEmpty()) totalForecast = linkForecast;
 			//Linkforecast zum totalForecast addieren
@@ -63,7 +63,7 @@ public class ForecastAgent{
 		return this.avgOrderFC;
 	}
 	
-	public HashMap<Integer, Double> getOrderForecast(){
+	public TreeMap<Integer, Double> getOrderForecast(){
 		return this.orderForecast;
 	}
 	
@@ -75,7 +75,7 @@ public class ForecastAgent{
 	 * <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< FORECASTING ALGORITHMEN >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 	 */
 	
-	public HashMap<Integer, Double> getMovingAverageFC(ArrayList<Double> history, int timeSpanPast, int timeSpanFuture){
+	public TreeMap<Integer, Double> getMovingAverageFC(ArrayList<Double> history, int timeSpanPast, int timeSpanFuture){
 		ArrayList<Double> historyCopy = (ArrayList<Double>)history.clone();
 		for(int i = 0; i<timeSpanFuture; i++){
 			double sum = 0;
@@ -85,7 +85,7 @@ public class ForecastAgent{
 			double avg = sum/timeSpanPast;
 			historyCopy.add(avg);
 		}
-		HashMap<Integer, Double> forecast = new HashMap<Integer, Double>();
+		TreeMap<Integer, Double> forecast = new TreeMap<Integer, Double>();
 		for(int i = history.size(); i<history.size() + timeSpanFuture; i++){
 			forecast.put(i, historyCopy.get(i));
 		}

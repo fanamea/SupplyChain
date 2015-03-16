@@ -1,0 +1,129 @@
+package supplyChain;
+
+import java.util.ArrayList;
+import java.util.TreeMap;
+
+import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.stat.*;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
+import InventoryPolicies.InventoryPolicy;
+import repast.simphony.engine.schedule.ScheduledMethod;
+import repast.simphony.essentials.RepastEssentials;
+
+public class InventoryOpsAgent {
+	
+	private Business biz;
+	private Material endProduct;
+	private TreeMap<Material, Inventory> inventories;	
+	
+	private boolean infiniteSupplier;	
+	
+	public InventoryOpsAgent(Business biz){
+		this.biz = biz;
+		this.endProduct = biz.getEndProduct();
+		
+		this.inventories = new TreeMap<Material, Inventory>();
+		for(Material material : biz.getProductionAgent().getBillOfMaterial().keySet()){
+			inventories.put(material, new Inventory(biz, material));
+		}
+		Material endProduct = biz.getProductionAgent().getEndProduct();
+		inventories.put(endProduct, new Inventory(biz, endProduct));		
+	}	
+	
+	public void storeMaterials(TreeMap<Material, Double> materials){
+		for(Material material : materials.keySet()){
+			inventories.get(material).incrInventory(materials.get(material));
+		}
+	}
+	
+	public void storeProducts(double products){
+		inventories.get(biz.getProductionAgent().getEndProduct()).incrInventory(products);
+	}
+	
+	
+	/**
+	 * TODO: Backlogging speichern
+	 * Gibt auf ein Material Request eine MaterialLieferung zurück.
+	 * Material schon im Inentory abgezogen, frei zur Verwendung in production.
+	 * @param request
+	 * @return
+	 */
+	public TreeMap<Material, Double> requestMaterials(TreeMap<Material, Double> request){
+		TreeMap<Material, Double> delivery = new TreeMap<Material, Double>();
+		for(Material material : request.keySet()){
+			Inventory inventory = inventories.get(material);
+			double req = request.get(material);
+			double inventoryLevel = inventory.getInventoryLevel();
+			double del = Math.min(inventoryLevel, req);
+			//infinite supplier
+			Material endProduct = biz.getProductionAgent().getEndProduct();
+			if(material==endProduct && infiniteSupplier){
+				del = req;
+			}
+			delivery.put(material, del);
+			inventory.lowerInventory(del);			
+		}
+		return delivery;
+	}
+	
+	public TreeMap<Material, Double> getOrders(){
+		TreeMap<Material, Double> orders = new TreeMap<Material, Double>();
+		for(Material material : inventories.keySet()){
+			double amount = inventories.get(material).getOrder();
+			if(amount!=0.0)
+				orders.put(material, amount);
+		}
+		return orders;
+	}
+	
+	/**
+	 *
+	 * @param link
+	 * @return Inventory Level des entsprechenden Links
+	 */
+	public double getInventoryLevel(Material material){
+		return inventories.get(material).getInventoryLevel();
+	}
+	
+	/**
+	 * Für die obersten Lieferanten kann das Inventory als unendlich eingestellt werden
+	 * @param b
+	 */
+	public void setInfiniteInInventories(boolean b){
+		for(Inventory inventory : inventories.values()){
+			
+			inventory.setInfinite(b);
+		}
+	}	
+	
+	//Pull policy
+	public double getProductionSize(){
+			return outInventory.getOrder();
+	}
+	
+	public void prepareTick(){
+		for(Inventory inventory : inventories.values()){
+			inventory.prepareTick();
+		}
+	}
+	
+	public TreeMap<Material, Inventory> getInventories(){
+		return this.inventories;
+	}
+	
+	
+	public String getInformationString(){
+		String string = "";
+		string += "      InInventories: \n";
+		for(Material material :inventories.keySet()){
+			string += "         Material: " + material.getId() + "\n" 
+					+ "            " + inventories.get(material).getInformationString() + "\n";
+		}
+		string += "      OutInventory: " + "\n"
+				+ "            " + outInventory.getInformationString() + "\n";
+		
+		return string;
+	}
+
+}

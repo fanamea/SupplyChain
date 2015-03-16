@@ -1,31 +1,72 @@
 package supplyChain;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.Iterator;
+import java.util.TreeMap;
 
 import org.apache.commons.math3.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 public class Test {
 	
 	public static void main(String[] args){
-		HashMap<Integer, Double> map = new HashMap<Integer, Double>();
-		
+		TreeMap<Integer, Double> forecast = new TreeMap<Integer, Double>();
+		for(int i = 10; i<20; i++){
+			forecast.put(i, (double)i);
+		}
 		PlanningTechniques techs = new PlanningTechniques();
-		map.put(1, 200.0);
-		map.put(2, 60.0);
-		map.put(3, 105.0);
-		map.put(4, 195.0);
-		map.put(5, 50.0);
-		map.put(6, 90.0);
-		HashMap<Integer, Double> lots = techs.silverMeal(map, 475, 2);
-		for(Integer i : lots.keySet()){
-			System.out.println(i + ": " + lots.get(i));
+		TreeMap<Integer, Double> lotPlan = techs.silverMeal(forecast, 400, 2);
+		for(Integer i : lotPlan.keySet()){
+			System.out.println(i + ": " + lotPlan.get(i));
 		}
 	}
 	
 	
+	/*
+	 * TODO: Substract forecasted inventory for first period
+	 */
+	public static TreeMap<Integer, Double> getPlannedStocks(TreeMap<Integer, Double> forecast){
+		
+		TreeMap<Integer, Double> subMap = new TreeMap<Integer, Double>();
+		TreeMap<Integer, Double> cumulatedStocks = new TreeMap<Integer, Double>();
+		TreeMap<Integer, Double> plannedStocks = new TreeMap<Integer, Double>();
+		
+		for(Integer i : forecast.keySet()){
+			subMap.put(i, forecast.get(i));
+			cumulatedStocks.put(i, getCumulatedStock(subMap));
+			System.out.println(i + ": " + cumulatedStocks.get(i));
+		}
+		System.out.println("----------");
+		
+		boolean first = true;
+		for(Integer i : cumulatedStocks.keySet()){
+			double ante = 0;
+			if(!first){
+				ante = cumulatedStocks.get(i-1);
+			}
+			plannedStocks.put(i, cumulatedStocks.get(i)-ante);
+			first = false;
+		}
+		
+		return plannedStocks;
+	}
+	
+	//Kein Rückgriff auf history, nur forecast (sd)
+	public static double getCumulatedStock(TreeMap<Integer, Double> forecast){
+		DescriptiveStatistics stats = new DescriptiveStatistics();
+		for(Integer i : forecast.keySet()){
+			stats.addValue(forecast.get(i));
+		}
+		double sd = stats.getStandardDeviation();
+		if(sd==0) sd=0.001;
+		
+		NormalDistribution normal = new NormalDistribution(stats.getSum(), sd*stats.getN());
+		double totalStock = normal.inverseCumulativeProbability(0.8);
+		
+		return totalStock;
+	}
 	
 	public static void exampleSetUp(Setup setup){
 		
