@@ -27,7 +27,7 @@ public class InventoryOpsAgent {
 		for(Material material : biz.getProductionAgent().getBillOfMaterial().keySet()){
 			inventories.put(material, new Inventory(biz, material));
 		}
-		Material endProduct = biz.getProductionAgent().getEndProduct();
+		Material endProduct = biz.getEndProduct();
 		inventories.put(endProduct, new Inventory(biz, endProduct));		
 	}	
 	
@@ -38,7 +38,7 @@ public class InventoryOpsAgent {
 	}
 	
 	public void storeProducts(double products){
-		inventories.get(biz.getProductionAgent().getEndProduct()).incrInventory(products);
+		inventories.get(biz.getEndProduct()).incrInventory(products);
 	}
 	
 	

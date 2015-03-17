@@ -24,7 +24,7 @@ public class Order {
 		this.shipments = new ArrayList<Shipment>();
 	}
 	
-	public int getDate(){
+	public Integer getDate(){
 		return this.date;
 	}
 	

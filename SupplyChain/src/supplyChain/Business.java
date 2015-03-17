@@ -20,6 +20,8 @@ public class Business extends Node{
 	
 	private Material endProduct;
 	
+	private int planningPeriod;
+	
 		
 	public Business(int tier){
 		super(tier);		
@@ -54,8 +56,8 @@ public class Business extends Node{
 	
 	@ScheduledMethod(start=1, interval=1, priority = 8)
 	public void produce(){
-		productionAgent.produce();
-		inventoryOpsAgent.processEndProduction(productionAgent.getArrivingProduction());
+		productionAgent.startProdJobs();
+		inventoryOpsAgent.storeProducts(productionAgent.getArrivingProduction());
 	}
 	
 	@ScheduledMethod(start = 1, interval = 1, priority = 6)
@@ -79,11 +81,14 @@ public class Business extends Node{
 		this.deliveryAgent.dispatchShipments();
 	}
 	
-	@ScheduledMethod(start=11, interval = 10, priority = 3)
+	@ScheduledMethod(start=11, interval = 1, priority = 3)
 	public void plan(){
-		forecastAgent.calcForecastTotal(10);
-		inventoryOpsAgent.handDemandForecast(forecastAgent.getOrderForecast());
-		inventoryOpsAgent.recalcAimLevels();
+		int currentTick = (int)RepastEssentials.GetTickCount();
+		if(currentTick % planningPeriod == 0){
+			forecastAgent.calcForecastTotal(planningPeriod);
+			inventoryPlanAgent.handDemandForecast(forecastAgent.getOrderForecast());
+			inventoryOpsAgent.recalcAimLevels();
+		}
 	}
 	
 	public void addDownstrPartner(Link b){

@@ -1,6 +1,7 @@
 package supplyChain;
 
 import java.util.ArrayList;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Iterator;
 import java.util.TreeMap;
@@ -12,14 +13,18 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 public class Test {
 	
 	public static void main(String[] args){
-		TreeMap<Integer, Double> forecast = new TreeMap<Integer, Double>();
+		SortedMap<Integer, Double> forecast = new TreeMap<Integer, Double>();
+		for(int i = 1; i<10; i++){
+			forecast.put(i, (double)i);
+		}
+		TreeMap<Integer, Double> forecast2 = new TreeMap<Integer, Double>();
 		for(int i = 10; i<20; i++){
 			forecast.put(i, (double)i);
 		}
-		PlanningTechniques techs = new PlanningTechniques();
-		TreeMap<Integer, Double> lotPlan = techs.silverMeal(forecast, 400, 2);
-		for(Integer i : lotPlan.keySet()){
-			System.out.println(i + ": " + lotPlan.get(i));
+		forecast.putAll(forecast2);
+		forecast = forecast.tailMap(10);
+		for(Integer i : forecast.keySet()){
+			System.out.println(i + ": " + forecast.get(i));
 		}
 	}
 	

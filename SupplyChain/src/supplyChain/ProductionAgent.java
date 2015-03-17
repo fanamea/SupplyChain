@@ -1,6 +1,7 @@
 package supplyChain;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -13,11 +14,11 @@ public class ProductionAgent {
 	private double productionCapacity;
 	private double setUpCost;
 	
-	private Material endProduct;
 	private TreeMap<Material, Double> billOfMaterial;
 	private TreeMap<Integer, Double> productionStartPlan;
 	private TreeMap<Integer, Double> productionDueList;
 	private CopyOnWriteArrayList<ProdJob> productionPipeLine;
+	private CopyOnWriteArrayList<ProdRequest> prodRequestPipeLine;
 	private ArrayList<ProdJob> productionHistory;
 	
 	public ProductionAgent(Business biz){
@@ -25,7 +26,6 @@ public class ProductionAgent {
 		this.productionTime = 2;
 		this.productionCapacity = 10;
 		this.setUpCost = 1;
-		this.endProduct = new Material("");
 		this.billOfMaterial = new TreeMap<Material, Double>();
 		for(Link link : biz.getUpstrLinks()){
 			billOfMaterial.put(link.getMaterial(), 1.0);   //TODO: BillOfMaterial bei Setup einlesen
@@ -36,49 +36,70 @@ public class ProductionAgent {
 		productionHistory = new ArrayList<ProdJob>();
 	}
 	
-	public void calcProductionStartPlan(){
-		for(Integer i : productionDueList.keySet()){
-			int productionStart = i - productionTime;
-			if(productionStartPlan.containsKey(productionStart)){
-				double sum = productionStartPlan.get(productionStart) + productionDueList.get(i);
-				if(sum<productionCapacity){
-					productionStartPlan.put(productionStart, sum);
-				}
-				else{
-					productionStartPlan.put(productionStart, productionCapacity);
-					//TODO Restliche Menge verteilen
-				}
-			}
-			else{
-				productionStartPlan.put(productionStart, productionDueList.get(i));
-			}
+	public void produce(){
+		startProdJobs();
+		ArrayList<ProdJob> finished = getArrivingProduction();
+		for(ProdJob job : finished){
+			biz.getInventoryOpsAgent().storeProducts(job.getSize());
 		}
 	}
 	
 	public void startProdJobs(){
 		int currentTick = (int)RepastEssentials.GetTickCount();
-		if(productionStartPlan.containsKey(currentTick)){
-			double PlannedBatchSize = productionStartPlan.get(currentTick);
-			double maxProduction = calcMaxProduction();
-			if(PlannedBatchSize <= maxProduction){
-				ProdJob job = new ProdJob(currentTick, PlannedBatchSize, productionTime);
-				productionPipeLine.add(job);
-				biz.getInventoryAgent().processStartProduction(job);
+		double productionCounter = 0;		
+		double capacityLeft = productionCapacity;
+		boolean isProdRequest = false;
+		double batchSize = 0;
+		boolean condition;
+		Collections.sort(prodRequestPipeLine, new ProdRequestComparator());
+		do{
+			if(!prodRequestPipeLine.isEmpty()){
+				ProdRequest pReq = prodRequestPipeLine.get(0);
+				isProdRequest = pReq.getDate()<=currentTick;
+				if(isProdRequest){
+					capacityLeft = productionCapacity-productionCounter;				
+					batchSize = calcMaxProduction(pReq.getShortage());
+					if(batchSize>0){
+						batchSize = Math.max(capacityLeft, batchSize);
+						TreeMap<Material, Double> request = calcRessourceDemand(batchSize);
+						biz.getInventoryOpsAgent().requestMaterials(request);
+						ProdJob job = new ProdJob(currentTick, batchSize, productionTime);
+						pReq.addProdJob(job);
+						pReq.incrCompleted(batchSize);
+						capacityLeft -= batchSize;
+						productionPipeLine.add(job);
+						if(pReq.isCompleted()){
+							prodRequestPipeLine.remove(pReq);
+						}
+					}
+				}
 			}
-			else{
-				ProdJob job = new ProdJob(currentTick, maxProduction, productionTime);
-				productionPipeLine.add(job);
-				biz.getInventoryAgent().processStartProduction(job);
-				//TODO Fehlmenge behandeln
+			condition = !prodRequestPipeLine.isEmpty() && isProdRequest && capacityLeft>0 && batchSize>0;
+		}while(condition);
+	}
+		
+	/**
+	 * 
+	 * @return Liste von ProductionJobs, die im aktuellen Tick fertig werden.
+	 */
+	public double getArrivingProduction(){
+		double output = 0;
+		int currentTick = (int)RepastEssentials.GetTickCount();
+		for(ProdJob job : productionPipeLine){			
+			if(job.getDate() + job.getLeadTime() == currentTick){
+				output +=job.getSize();
+				productionPipeLine.remove(job);
 			}
-			
 		}
+		return output;
 	}
 	
-	/**
+	
+	/*
+	 **
 	 * Übergangsweise vereinfachte production ohne Planung.
 	 * Anstelle von startProdJobs
-	 */
+	 *
 	public void produce(){
 		double amount = biz.getInventoryAgent().getProductionSize();
 		int currentTick = (int)RepastEssentials.GetTickCount();
@@ -103,41 +124,28 @@ public class ProductionAgent {
 			}
 		}
 	}
+	*/
 	
 	
-	/**
-	 * 
-	 * @return Liste von ProductionJobs, die im aktuellen Tick fertig werden.
-	 */
-	public ArrayList<ProdJob> getArrivingProduction(){
-		ArrayList<ProdJob> ret = new ArrayList<ProdJob>();
-		int currentTick = (int)RepastEssentials.GetTickCount();
-		for(ProdJob job : productionPipeLine){			
-			if(job.getDate() + job.getLeadTime() == currentTick){
-				ret.add(job);
-				productionPipeLine.remove(job);
-			}
-		}
-		return ret;
-	}
+	
 	
 	/**
 	 * Berechnet die auf Grund von: Input Lagerbeständen und productionCapacity maximal mögliche Produktionsmenge.
 	 * @return maximal mögliche Produktionsmenge
 	 */
-	public double calcMaxProduction(){
+	public double calcMaxProduction(double plannedBatchSize){
 		ArrayList<Double> quotients = new ArrayList<Double>();
 		
 		for(Material material : billOfMaterial.keySet()){
 			//System.out.println("debug: Biz: " + biz.getId() + "Link: " + link.getId());
-			double quotient = biz.getInventoryAgent().getInInventoryLevel(material)/billOfMaterial.get(material);
+			double quotient = biz.getInventoryOpsAgent().getInventoryLevel(material)/billOfMaterial.get(material);
 			quotients.add(quotient);
 		}
 		double max = 0;
 		for(Double i : quotients){
 			if(i > max) max = i;
 		}
-		return Math.min(productionCapacity, max);
+		return Math.min(plannedBatchSize, max);
 	}
 	
 	public double getResourceDemand(int date, Material material){
@@ -176,10 +184,6 @@ public class ProductionAgent {
 	
 	public TreeMap<Material, Double> getBillOfMaterial(){
 		return this.billOfMaterial;
-	}
-	
-	public Material getEndProduct(){
-		return this.endProduct;
 	}
 
 }
