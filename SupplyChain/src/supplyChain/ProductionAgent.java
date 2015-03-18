@@ -36,13 +36,6 @@ public class ProductionAgent {
 		productionHistory = new ArrayList<ProdJob>();
 	}
 	
-	public void produce(){
-		startProdJobs();
-		ArrayList<ProdJob> finished = getArrivingProduction();
-		for(ProdJob job : finished){
-			biz.getInventoryOpsAgent().storeProducts(job.getSize());
-		}
-	}
 	
 	public void startProdJobs(){
 		int currentTick = (int)RepastEssentials.GetTickCount();
@@ -58,17 +51,17 @@ public class ProductionAgent {
 				isProdRequest = pReq.getDate()<=currentTick;
 				if(isProdRequest){
 					capacityLeft = productionCapacity-productionCounter;				
-					batchSize = calcMaxProduction(pReq.getShortage());
+					batchSize = calcMaxProduction(pReq.getShortageSent());
 					if(batchSize>0){
 						batchSize = Math.max(capacityLeft, batchSize);
 						TreeMap<Material, Double> request = calcRessourceDemand(batchSize);
 						biz.getInventoryOpsAgent().requestMaterials(request);
 						ProdJob job = new ProdJob(currentTick, batchSize, productionTime);
 						pReq.addProdJob(job);
-						pReq.incrCompleted(batchSize);
+						pReq.incrSent(batchSize);
 						capacityLeft -= batchSize;
 						productionPipeLine.add(job);
-						if(pReq.isCompleted()){
+						if(pReq.isSent()){
 							prodRequestPipeLine.remove(pReq);
 						}
 					}
@@ -92,6 +85,32 @@ public class ProductionAgent {
 			}
 		}
 		return output;
+	}
+	
+	public double getBacklog(Material material){
+		int currentTick = (int)RepastEssentials.GetTickCount();
+		double sum = 0;
+		for(ProdRequest pReq : prodRequestPipeLine){
+			if(pReq.getDate()<=currentTick){
+				sum += pReq.getShortageSent();
+			}
+		}
+		return sum;
+	}
+	
+	/**
+	 * Nur wenn Endproduktlager Inventory Policy hat (Pull production)
+	 * @return
+	 */
+	public double getProcessingProduction(){
+		double currentTick = (int)RepastEssentials.GetTickCount();
+		double sum = 0;
+		for(ProdRequest pReq : prodRequestPipeLine){
+			if(pReq.getDate()<=currentTick){
+				sum += pReq.getShortageArrived();
+			}
+		}
+		return sum;
 	}
 	
 	

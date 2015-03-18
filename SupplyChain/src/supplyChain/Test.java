@@ -23,7 +23,8 @@ public class Test {
 		}
 		forecast.putAll(forecast2);
 		forecast = forecast.tailMap(10);
-		for(Integer i : forecast.keySet()){
+		forecast2 = new TreeMap<Integer, Double>(forecast);
+		for(Integer i : forecast2.keySet()){
 			System.out.println(i + ": " + forecast.get(i));
 		}
 	}

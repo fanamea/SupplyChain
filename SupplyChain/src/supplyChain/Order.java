@@ -12,7 +12,8 @@ public class Order {
 	private Link link;
 	private int date;
 	private double size;
-	private double shipped;
+	private double sent;
+	private double arrived;
 	ArrayList<Shipment> shipments;
 	
 	public Order(Link link, int d, double s){
@@ -20,7 +21,8 @@ public class Order {
 		this.link = link;
 		this.date = d;
 		this.size = s;
-		this.shipped = 0;
+		this.sent = 0;
+		this.arrived = 0;
 		this.shipments = new ArrayList<Shipment>();
 	}
 	
@@ -36,16 +38,28 @@ public class Order {
 		return this.size;
 	}
 	
-	public void incrShipped(double i){
-		shipped += i;
+	public void incrSent(double i){
+		sent += i;
 	}
 	
-	public boolean isShipped(){
-		return size==shipped;
+	public void incrArrived(double i){
+		arrived += i;
 	}
 	
-	public double getShortage(){
-		return size-shipped;
+	public boolean isSent(){
+		return size==sent;
+	}
+	
+	public boolean hasArrived(){
+		return size==arrived;
+	}
+	
+	public double getShortageSent(){
+		return size-sent;
+	}
+	
+	public double getShortageArrived(){
+		return size-arrived;
 	}
 	
 	public void addShipment(Shipment shipment){

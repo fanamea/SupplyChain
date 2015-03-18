@@ -84,10 +84,11 @@ public class Business extends Node{
 	@ScheduledMethod(start=11, interval = 1, priority = 3)
 	public void plan(){
 		int currentTick = (int)RepastEssentials.GetTickCount();
+		int productionTime = this.productionAgent.getProductionTime();
 		if(currentTick % planningPeriod == 0){
-			forecastAgent.calcForecastTotal(planningPeriod);
-			inventoryPlanAgent.handDemandForecast(forecastAgent.getOrderForecast());
-			inventoryOpsAgent.recalcAimLevels();
+			forecastAgent.calcForecastTotal(planningPeriod+productionTime);
+			productionPlanAgent.handForecast(forecastAgent.getOrderForecast(currentTick+productionTime));
+			productionPlanAgent.planProduction();
 		}
 	}
 	

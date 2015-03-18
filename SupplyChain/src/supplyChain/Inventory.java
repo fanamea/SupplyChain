@@ -47,6 +47,7 @@ public class Inventory {
 		//System.out.println("Inventory: date: " + date + ", inventory: " + inventoryLevel);
 	}
 	
+	
 	public void setInventoryPolicy(InvPolicies policy){
 		switch(policy){
 		case ContOUT:

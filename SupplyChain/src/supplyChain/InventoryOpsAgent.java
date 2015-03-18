@@ -77,6 +77,15 @@ public class InventoryOpsAgent {
 		return orders;
 	}
 	
+	public double getInventoryPosition(Material material){
+		double inventoryLevel = getInventoryLevel(material);
+		if(material!=biz.getEndProduct()){
+			double ordered = biz.getOrderAgent().getProcessingOrders(material);
+			double backlog = 
+		}
+		
+	}
+	
 	/**
 	 *
 	 * @param link

@@ -1,6 +1,7 @@
 package supplyChain;
 
 import java.util.ArrayList;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import repast.simphony.essentials.RepastEssentials;
@@ -63,8 +64,8 @@ public class ForecastAgent{
 		return this.avgOrderFC;
 	}
 	
-	public TreeMap<Integer, Double> getOrderForecast(){
-		return this.orderForecast;
+	public TreeMap<Integer, Double> getOrderForecast(int start){
+		return new TreeMap<Integer, Double>(orderForecast.tailMap(start));
 	}
 	
 	
