@@ -17,16 +17,11 @@ public class Link {
 	private Business upstrNode;
 	private Node downstrNode;
 	private Material material;
-	private double transportationCost;
-	private double shortageCost;
+	private double fixCost;
 	private ArrayList<Order> orderHistory;
-	private ArrayList<Double> orderAmountHistory;
 	private CopyOnWriteArrayList<Order> orderPipeLine;
 	private ArrayList<Shipment> shipmentHistory;
 	private CopyOnWriteArrayList<Shipment> shipmentPipeLine;
-	private TreeMap<Integer, Double> orderDueList;
-	private DescriptiveStatistics leadTimeData;
-	
 	
 	public Link(Business up, Node down){
 		this.Id = count++;
@@ -36,11 +31,9 @@ public class Link {
 		downstrNode.addUpstrLink(this);
 		this.material = upstrNode.getEndProduct();   //TODO: BillOfMaterial beim Setup einlesen
 		orderHistory = new ArrayList<Order>();
-		orderAmountHistory = new ArrayList<Double>();
 		orderPipeLine = new CopyOnWriteArrayList<Order>();
 		shipmentHistory = new ArrayList<Shipment>();
 		shipmentPipeLine = new CopyOnWriteArrayList<Shipment>();
-		orderDueList = new TreeMap<Integer, Double>();
 	}
 	
 	/**
@@ -70,21 +63,20 @@ public class Link {
 	}
 	
 	/**
-	 * TODO: Histories werden momentan nur für einelementige orderList gepflegt.
 	 * Downstream Business kann hiermit Orders in den Link geben, das Upstream Business fetcht diese dann später.
 	 * Außerdem werden die histories gepflegt.
 	 * @param orderList
 	 */
 	public void putOrders(ArrayList<Order> orderList){
-		int currentTick = (int)RepastEssentials.GetTickCount();
-		this.orderPipeLine.addAll(orderList);
-		//Histories pflegen TODO: Wird nur für eine Order in der orderList gepflegt
-		this.orderHistory.addAll(orderList);
-		for(int i = orderAmountHistory.size(); i<currentTick; i++){
-			orderAmountHistory.add(i, 0.0);
+		for(Order order : orderList){
+			putOrder(order);
 		}
-		orderAmountHistory.add(orderList.get(0).getSize());
 		
+	}
+	
+	public void putOrder(Order order){
+		this.orderPipeLine.add(order);
+		this.orderHistory.add(order);
 	}
 	
 	public ArrayList<Order> fetchOrders(){
@@ -95,21 +87,8 @@ public class Link {
 	}
 	
 	
-	public double getAvgLeadTime(){
-		//System.out.println("getAvgLeadTime: " + leadTimeData.getMean() + "Link ID: " + getId() + ", Data: " +  this.leadTimeData);
-		return this.leadTimeData.getMean();
-	}
-	
-	public double getSDLeadTime(){
-		return this.leadTimeData.getStandardDeviation();
-	}
-	
 	public ArrayList<Order> getOrderHistory(){
 		return this.orderHistory;
-	}
-	
-	public ArrayList<Double> getOrderAmountHistory(){
-		return this.orderAmountHistory;
 	}
 	
 	public ArrayList<Shipment> getShipmentHistory(){
@@ -128,26 +107,17 @@ public class Link {
 		return this.Id;
 	}
 	
-	public TreeMap<Integer, Double> getOrderDueList(){
-		return this.orderDueList;
-	}
-	
-	public double getOrderDueListEntry(int index){
-		return this.orderDueList.get(index);
-	}
-	
-	public void setOrderDueListEntry(int index, double amount){
-		this.orderDueList.put(index, amount);
-	}
-	
 	public Material getMaterial(){
 		return this.material;
+	}
+	
+	public double getFixCost(){
+		return this.fixCost;
 	}
 
 	public String getAmountInformation(){
 		String string = "";
 		string += "Link: " + getId() + ", Up " + this.upstrNode.getId() + ", Down " + this.downstrNode.getId() + "\n"
-				+ "   OrderAmount History: " + orderAmountHistory + "\n"
 				+ "   Shipments:";
 		for(Shipment shipment : shipmentHistory){
 			string += "   " + shipment.getSize() + ", ";

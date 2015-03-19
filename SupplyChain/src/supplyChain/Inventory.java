@@ -20,6 +20,7 @@ public class Inventory {
 	
 	private ArrayList<Double> inventoryLevel;
 	private TreeMap<Integer, Double> dueList;
+	private TreeMap<Integer, Double> orderList;
 		
 	private double fixOrderCost;
 	private double holdingCost;
@@ -32,6 +33,7 @@ public class Inventory {
 		this.opsAgent = biz.getInventoryOpsAgent();
 		this.material = material;
 		this.dueList = new TreeMap<Integer, Double>();
+		this.orderList = new TreeMap<Integer, Double>();
 		this.inventoryLevel = new ArrayList<Double>();
 		fixOrderCost = 100;
 		holdingCost = 0.5;	
@@ -78,11 +80,23 @@ public class Inventory {
 		this.inventoryLevel.set((int)RepastEssentials.GetTickCount(), currentLevel + size);
 	}
 	
+	
+	/**
+	 * Unterscheidet: Wenn Policy -> frag Policy, sonst orderList
+	 * @return
+	 */
 	public double getOrder(){
 		int currentTick = (int)RepastEssentials.GetTickCount();
-		double curInvLevel = inventoryLevel.get(currentTick);
 		
-		return this.policy.getOrder(currentTick, curInvLevel);
+		if(this.policy!=null){
+			double curInvPos = opsAgent.getInventoryPosition(this.material);
+			return this.policy.getOrder(currentTick, curInvPos);
+		}
+		else{
+			return this.orderList.get(currentTick);
+		}
+		
+		
 	}
 	
 	public double getServiceLevel(){
@@ -135,6 +149,10 @@ public class Inventory {
 	
 	public InventoryPolicy getPolicy(){
 		return this.policy;
+	}
+	
+	public TreeMap<Integer, Double> getOrderList(){
+		return this.orderList;
 	}
 	
 	public String getInformationString(){

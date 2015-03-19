@@ -57,7 +57,7 @@ public class InventoryOpsAgent {
 			double inventoryLevel = inventory.getInventoryLevel();
 			double del = Math.min(inventoryLevel, req);
 			//infinite supplier
-			Material endProduct = biz.getProductionAgent().getEndProduct();
+			Material endProduct = biz.getEndProduct();
 			if(material==endProduct && infiniteSupplier){
 				del = req;
 			}
@@ -79,11 +79,17 @@ public class InventoryOpsAgent {
 	
 	public double getInventoryPosition(Material material){
 		double inventoryLevel = getInventoryLevel(material);
+		double ordered;
+		double backlog;
 		if(material!=biz.getEndProduct()){
-			double ordered = biz.getOrderAgent().getProcessingOrders(material);
-			double backlog = 
+			ordered = biz.getOrderAgent().getProcessingOrders(material);
+			backlog = biz.getProductionAgent().getBacklog(material);			
 		}
-		
+		else{
+			ordered = biz.getProductionAgent().getProcessingProduction();
+			backlog = biz.getDeliveryAgent().getBacklog();
+		}
+		return inventoryLevel + ordered - backlog;		
 	}
 	
 	/**
