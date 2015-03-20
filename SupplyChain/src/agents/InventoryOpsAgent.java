@@ -1,4 +1,4 @@
-package supplyChain;
+package agents;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
@@ -7,9 +7,11 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.stat.*;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
+import artefacts.Material;
 import InventoryPolicies.InventoryPolicy;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
+import supplyChain.Inventory;
 
 public class InventoryOpsAgent {
 	
@@ -111,11 +113,6 @@ public class InventoryOpsAgent {
 			inventory.setInfinite(b);
 		}
 	}	
-	
-	//Pull policy
-	public double getProductionSize(){
-			return outInventory.getOrder();
-	}
 	
 	public void prepareTick(){
 		for(Inventory inventory : inventories.values()){

@@ -1,4 +1,4 @@
-package supplyChain;
+package artefacts;
 
 public class ProdJob {
 	

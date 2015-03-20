@@ -1,6 +1,8 @@
-package supplyChain;
+package agents;
 
 import java.util.ArrayList;
+
+import supplyChain.Link;
 
 public abstract class Node {
 	

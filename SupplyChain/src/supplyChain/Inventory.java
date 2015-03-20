@@ -3,6 +3,9 @@ package supplyChain;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
+import agents.Business;
+import agents.InventoryOpsAgent;
+import artefacts.Material;
 import InventoryPolicies.ContinuousOUT;
 import InventoryPolicies.ContinuousQ;
 import InventoryPolicies.InvPolicies;

@@ -1,7 +1,9 @@
-package supplyChain;
+package agents;
 
 import java.util.ArrayList;
 
+import artefacts.Order;
+import artefacts.Shipment;
 import distribution.Distribution;
 import distribution.DistributionNormal;
 import repast.simphony.engine.schedule.ScheduledMethod;

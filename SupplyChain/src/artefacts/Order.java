@@ -1,6 +1,8 @@
-package supplyChain;
+package artefacts;
 
 import java.util.ArrayList;
+
+import supplyChain.Link;
 
 public class Order {
 	

@@ -1,4 +1,6 @@
-package supplyChain;
+package artefacts;
+
+import supplyChain.Link;
 
 public class Shipment {
 	

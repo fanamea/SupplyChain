@@ -6,6 +6,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
+import agents.Business;
+import agents.Node;
+import artefacts.Material;
+import artefacts.Order;
+import artefacts.Shipment;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
 

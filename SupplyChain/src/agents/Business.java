@@ -1,11 +1,15 @@
-package supplyChain;
+package agents;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
-import InventoryPolicies.InvPolicies;
 
+import artefacts.Material;
+import artefacts.Order;
+import artefacts.Shipment;
+import InventoryPolicies.InvPolicies;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
+import supplyChain.Link;
 
 public class Business extends Node{
 	
@@ -16,6 +20,7 @@ public class Business extends Node{
 	private ProductionAgent productionAgent;
 	private ProductionPlanningAgent productionPlanAgent;
 	private OrderAgent orderAgent;
+	private OrderPlanAgent orderPlanAgent;
 	private PlanningTechniques planningTechniques;
 	
 	private Material endProduct;
@@ -35,6 +40,7 @@ public class Business extends Node{
 		this.productionAgent = new ProductionAgent(this);
 		this.productionPlanAgent = new ProductionPlanningAgent(this);
 		this.orderAgent = new OrderAgent(this);
+		this.orderPlanAgent = new OrderPlanAgent(this);
 		this.planningTechniques = new PlanningTechniques();
 		
 		this.endProduct = new Material("");
@@ -85,9 +91,8 @@ public class Business extends Node{
 	public void plan(){
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		int productionTime = this.productionAgent.getProductionTime();
-		if(currentTick % planningPeriod == 0){
-			forecastAgent.calcForecastTotal(planningPeriod+productionTime);
-			productionPlanAgent.handForecast(forecastAgent.getOrderForecast(currentTick+productionTime));
+		if(currentTick % planningPeriod == 0){			
+			productionPlanAgent.handForecast(forecastAgent.getForecast(currentTick+productionTime, planningPeriod+productionTime));
 			productionPlanAgent.planProduction();
 		}
 	}
@@ -123,6 +128,10 @@ public class Business extends Node{
 	
 	public OrderAgent getOrderAgent(){
 		return this.orderAgent;
+	}
+	
+	public OrderPlanAgent getOrderPlanAgent(){
+		return this.orderPlanAgent;
 	}
 	
 	public PlanningTechniques getPlanningTechniques(){

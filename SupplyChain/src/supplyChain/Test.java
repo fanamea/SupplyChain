@@ -6,6 +6,12 @@ import java.util.TreeMap;
 import java.util.Iterator;
 import java.util.TreeMap;
 
+import net.sourceforge.openforecast.DataPoint;
+import net.sourceforge.openforecast.DataSet;
+import net.sourceforge.openforecast.ForecastingModel;
+import net.sourceforge.openforecast.Observation;
+import net.sourceforge.openforecast.models.MovingAverageModel;
+
 import org.apache.commons.math3.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -13,20 +19,31 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 public class Test {
 	
 	public static void main(String[] args){
-		SortedMap<Integer, Double> forecast = new TreeMap<Integer, Double>();
-		for(int i = 1; i<10; i++){
-			forecast.put(i, (double)i);
+		DataSet dataSet = new DataSet();
+		for(int i = 0; i<100; i=i+2){
+			Observation ob1 = new Observation(5.0);
+			ob1.setIndependentValue("Tick", i);
+			dataSet.add(ob1);
+		}	
+		
+		ForecastingModel model = new MovingAverageModel(10);
+		model.init(dataSet);
+		
+		DataSet fcDataSet = new DataSet();
+		DataPoint fc1 = new Observation(0.0);
+		fc1.setIndependentValue("Tick", 102);
+		DataPoint fc2 = new Observation(0.);
+		fc2.setIndependentValue("Tick", 104);
+		fcDataSet.add(fc1);
+		fcDataSet.add(fc2);
+		
+		model.forecast(fcDataSet);
+		Iterator it = fcDataSet.iterator();
+		while(it.hasNext()){
+			DataPoint dp = (DataPoint)it.next();
+			System.out.println(dp.getDependentValue());
 		}
-		TreeMap<Integer, Double> forecast2 = new TreeMap<Integer, Double>();
-		for(int i = 10; i<20; i++){
-			forecast.put(i, (double)i);
-		}
-		forecast.putAll(forecast2);
-		forecast = forecast.tailMap(10);
-		forecast2 = new TreeMap<Integer, Double>(forecast);
-		for(Integer i : forecast2.keySet()){
-			System.out.println(i + ": " + forecast.get(i));
-		}
+		
 	}
 	
 	

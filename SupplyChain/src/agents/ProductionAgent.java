@@ -1,11 +1,16 @@
-package supplyChain;
+package agents;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import artefacts.Material;
+import artefacts.ProdJob;
+import artefacts.ProdRequest;
+import artefacts.ProdRequestComparator;
 import repast.simphony.essentials.RepastEssentials;
+import supplyChain.Link;
 
 public class ProductionAgent {
 	
