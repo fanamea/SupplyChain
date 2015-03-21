@@ -16,33 +16,22 @@ import org.apache.commons.math3.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
+import cern.jet.random.AbstractDistribution;
+import cern.jet.random.Uniform;
+import repast.simphony.random.RandomHelper;
+
 public class Test {
 	
 	public static void main(String[] args){
-		DataSet dataSet = new DataSet();
-		for(int i = 0; i<100; i=i+2){
-			Observation ob1 = new Observation(5.0);
-			ob1.setIndependentValue("Tick", i);
-			dataSet.add(ob1);
-		}	
+		RandomHelper.createUniform(0,1);
+		AbstractDistribution uniform1 = RandomHelper.getUniform();
+		RandomHelper.createUniform(1,2);
+		Uniform uniform2 = RandomHelper.getUniform();
 		
-		ForecastingModel model = new MovingAverageModel(10);
-		model.init(dataSet);
+		double i = uniform1.nextDouble();
+		double j= uniform2.nextDouble();
 		
-		DataSet fcDataSet = new DataSet();
-		DataPoint fc1 = new Observation(0.0);
-		fc1.setIndependentValue("Tick", 102);
-		DataPoint fc2 = new Observation(0.);
-		fc2.setIndependentValue("Tick", 104);
-		fcDataSet.add(fc1);
-		fcDataSet.add(fc2);
-		
-		model.forecast(fcDataSet);
-		Iterator it = fcDataSet.iterator();
-		while(it.hasNext()){
-			DataPoint dp = (DataPoint)it.next();
-			System.out.println(dp.getDependentValue());
-		}
+		System.out.println(i + " " + j);
 		
 	}
 	
