@@ -2,6 +2,7 @@ package agents;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -15,30 +16,22 @@ import supplyChain.Link;
 public class ProductionAgent {
 	
 	private Business biz;
+	private ProductionPlanningAgent planAgent;
 	private int productionTime;
 	private double productionCapacity;
-	private double setUpCost;
 	
-	private TreeMap<Material, Double> billOfMaterial;
-	private TreeMap<Integer, Double> productionStartPlan;
 	private TreeMap<Integer, Double> productionDueList;
 	private CopyOnWriteArrayList<ProdJob> productionPipeLine;
 	private CopyOnWriteArrayList<ProdRequest> prodRequestPipeLine;
-	private ArrayList<ProdJob> productionHistory;
 	
 	public ProductionAgent(Business biz){
 		this.biz = biz;
+		this.planAgent = biz.getProductionPlanAgent();
 		this.productionTime = 2;
-		this.productionCapacity = 10;
-		this.setUpCost = 1;
-		this.billOfMaterial = new TreeMap<Material, Double>();
-		for(Link link : biz.getUpstrLinks()){
-			billOfMaterial.put(link.getMaterial(), 1.0);   //TODO: BillOfMaterial bei Setup einlesen
-		}
-		productionStartPlan = new TreeMap<Integer, Double>();
+		
 		productionDueList = new TreeMap<Integer, Double>();
 		productionPipeLine = new CopyOnWriteArrayList<ProdJob>();
-		productionHistory = new ArrayList<ProdJob>();
+		prodRequestPipeLine = new CopyOnWriteArrayList<ProdRequest>();
 	}
 	
 	
@@ -59,7 +52,7 @@ public class ProductionAgent {
 					batchSize = calcMaxProduction(pReq.getShortageSent());
 					if(batchSize>0){
 						batchSize = Math.max(capacityLeft, batchSize);
-						TreeMap<Material, Double> request = calcRessourceDemand(batchSize);
+						HashMap<Material, Double> request = calcRessourceDemand(batchSize);
 						biz.getInventoryOpsAgent().requestMaterials(request);
 						ProdJob job = new ProdJob(currentTick, batchSize, productionTime);
 						pReq.addProdJob(job);
@@ -131,8 +124,8 @@ public class ProductionAgent {
 		if(amount!=0.0){
 			double plannedBatchSize = amount;
 			double maxProduction = calcMaxProduction();
-			TreeMap<Material, Double> request = calcRessourceDemand(maxProduction);
-			TreeMap<Material, Double> delivery = biz.getInventoryAgent().requestMaterials(request);
+			HashMap<Material, Double> request = calcRessourceDemand(maxProduction);
+			HashMap<Material, Double> delivery = biz.getInventoryAgent().requestMaterials(request);
 			//System.out.println("plannedBatchSize: " + plannedBatchSize + ", maxProduction: " + maxProduction);
 			if(plannedBatchSize <= maxProduction){
 				
@@ -159,10 +152,11 @@ public class ProductionAgent {
 	 */
 	public double calcMaxProduction(double plannedBatchSize){
 		ArrayList<Double> quotients = new ArrayList<Double>();
+		HashMap<Material, Double> bom = planAgent.getBoM();
 		
-		for(Material material : billOfMaterial.keySet()){
+		for(Material material : bom.keySet()){
 			//System.out.println("debug: Biz: " + biz.getId() + "Link: " + link.getId());
-			double quotient = biz.getInventoryOpsAgent().getInventoryLevel(material)/billOfMaterial.get(material);
+			double quotient = biz.getInventoryOpsAgent().getInventoryLevel(material)/bom.get(material);
 			quotients.add(quotient);
 		}
 		double max = 0;
@@ -172,23 +166,19 @@ public class ProductionAgent {
 		return Math.min(plannedBatchSize, max);
 	}
 	
-	public double getResourceDemand(int date, Material material){
-		if(productionDueList.containsKey(date))
-			return productionDueList.get(date)*billOfMaterial.get(material);		
-		else
-			return 0.0;
-	}
+	
 	
 	/**
 	 * Berechnet zu einem bestimmten Produktionsoutput den Ressourcenbedarf
 	 * @param output gewünschter Produktionsoutput
 	 * @return ArrayList mit den Ressourcenbedarfen
 	 */
-	public TreeMap<Material, Double> calcRessourceDemand(double output){
-		TreeMap<Material, Double> demand = new TreeMap<Material, Double>();
+	public HashMap<Material, Double> calcRessourceDemand(double output){
+		HashMap<Material, Double> demand = new HashMap<Material, Double>();
+		HashMap<Material, Double> bom = planAgent.getBoM();
 		
-		for(Material material : billOfMaterial.keySet()){
-			double d = billOfMaterial.get(material)*output;
+		for(Material material : bom.keySet()){
+			double d = bom.get(material)*output;
 			demand.put(material, d);
 		}
 		return demand;
@@ -206,7 +196,7 @@ public class ProductionAgent {
 		return this.productionTime;
 	}
 	
-	public TreeMap<Material, Double> getBillOfMaterial(){
+	public HashMap<Material, Double> getBillOfMaterial(){
 		return this.billOfMaterial;
 	}
 

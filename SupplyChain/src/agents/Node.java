@@ -8,8 +8,8 @@ public abstract class Node {
 	
 	static int idCount;
 	
-	protected int Id;
-	protected int tier;		//1=Customer
+	private int Id;
+	private int tier;		//1=Customer
 	protected ArrayList<Link> downstrLinks;
 	protected ArrayList<Link> upstrLinks;
 	
@@ -24,19 +24,19 @@ public abstract class Node {
 		this.upstrLinks = new ArrayList<Link>();
 	};
 	
-	protected void addUpstrLink(Link link){
+	public void addUpstrLink(Link link){
 		this.upstrLinks.add(link);
 	}
 	
-	protected void addDownstrLink(Link link){
+	public void addDownstrLink(Link link){
 		this.downstrLinks.add(link);
 	}
 	
-	protected int getId(){
+	public int getId(){
 		return this.Id;
 	}
 	
-	protected int getTier(){
+	public int getTier(){
 		return this.tier;
 	}
 	

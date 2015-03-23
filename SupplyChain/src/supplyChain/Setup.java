@@ -2,20 +2,26 @@ package supplyChain;
 
 import java.util.ArrayList;
 
+import demandPattern.NormalDistribution;
+import agents.Business;
+import agents.Customer;
+import agents.Node;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
 
 public class Setup {
 	
 	
-	ArrayList<Node> nodes;
+	ArrayList<Business> businesses;
+	ArrayList<Customer> customers;
 	ArrayList<Link> links;
 	ArrayList<ArrayList<Integer>> tiers;
 	ArrayList<ArrayList<Integer>> structure;
 	
 	public Setup(){
 		structure = new ArrayList<ArrayList<Integer>>();
-		nodes = new ArrayList<Node>();
+		businesses = new ArrayList<Business>();
+		customers = new ArrayList<Customer>();
 		links = new ArrayList<Link>();
 		
 	}
@@ -29,60 +35,36 @@ public class Setup {
 			else if(i>2) tier = 2;
 			else tier = 1;
 			
-			if(tier==1) nodes.add(new Customer());
-			else nodes.add(new Business(tier));
+			if(tier==1) customers.add(new Customer(new NormalDistribution(10.0, 1.0)));
+			else businesses.add(new Business(tier));
 		}
 		
-		links.add(new Link(nodes.get(3), nodes.get(0)));
-		links.add(new Link(nodes.get(4), nodes.get(1)));
-		links.add(new Link(nodes.get(5), nodes.get(2)));
-		links.add(new Link(nodes.get(6), nodes.get(3)));
-		links.add(new Link(nodes.get(6), nodes.get(4)));
-		links.add(new Link(nodes.get(7), nodes.get(5)));
-		links.add(new Link(nodes.get(8), nodes.get(6)));
-		links.add(new Link(nodes.get(9), nodes.get(6)));
-		links.add(new Link(nodes.get(9), nodes.get(7)));
-		links.add(new Link(nodes.get(10), nodes.get(7)));
+		links.add(new Link(businesses.get(0), customers.get(0)));
+		links.add(new Link(businesses.get(1), customers.get(1)));
+		links.add(new Link(businesses.get(2), customers.get(2)));
+		links.add(new Link(businesses.get(3), businesses.get(0)));
+		links.add(new Link(businesses.get(3), businesses.get(1)));
+		links.add(new Link(businesses.get(4), businesses.get(2)));
+		links.add(new Link(businesses.get(5), businesses.get(3)));
+		links.add(new Link(businesses.get(6), businesses.get(3)));
+		links.add(new Link(businesses.get(6), businesses.get(4)));
+		links.add(new Link(businesses.get(7), businesses.get(4)));
 		
-		for(Node node : nodes){
-			node.initNode();
+		for(Node business : businesses){
+			business.initNode();
+		}
+		for(Customer customer : customers){
+			customer.initNode();
 		}
 		
 	}
 	
-	public void setUpAgents(){
-		
-		//Businesses erstellen
-		for(int i=0; i<structure.size(); i++){
-			for(int j=0; j<structure.size(); j++){
-				int tier = structure.get(i).get(j);
-				if(tier>1){
-					nodes.add(new Business(tier));
-					break;
-				}
-				else if(i==1){
-					nodes.add(new Customer());
-					break;
-				}
-			}
-		}
-		//Links erstellen
-		for(int i=0; i<structure.size(); i++){
-			for(int j=0; j<structure.size(); j++){
-				if(structure.get(i).get(j)>0 && !checkLink(i,j)){
-					Link newLink = new Link(nodes.get(i), nodes.get(j));
-					links.add(newLink);
-					if(i<j){
-						nodes.get(i).addDownstrLink(newLink);
-						nodes.get(j).addUpstrLink(newLink);
-					}
-					else{
-						nodes.get(i).addUpstrLink(newLink);
-						nodes.get(j).addDownstrLink(newLink);
-					}
-				}
-			}
-		}
+	public ArrayList<Business> getBusinesses(){
+		return this.businesses;
+	}
+	
+	public ArrayList<Customer> getCustomers(){
+		return this.customers;
 	}
 	
 	public boolean checkLink(int a, int b){
@@ -125,21 +107,15 @@ public class Setup {
 		return (structure.get(a).get(b) != 0);
 	}
 	
-	public ArrayList<Node> getNodes(){
-		return this.nodes;
-	}
-	
 	public ArrayList<Link> getLinks(){
 		return this.links;
 	}
 	
 	public void print(){
-		for(Node node : nodes){
-			node.print();
-		}
+		
 	}
 	
-	@ScheduledMethod(start = 1, interval = 1, priority = 1)
+	//@ScheduledMethod(start = 1, interval = 1, priority = 1)
 	public void printInformation(){
 		String string = "Date: " + (int)RepastEssentials.GetTickCount() + "\n";
 		for(Node node : nodes){

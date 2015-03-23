@@ -22,15 +22,10 @@ public class ForecastAgent{
 	
 	private Business biz;
 	private ArrayList<Link> linkList;
-	private TreeMap<Integer, Double> orderForecast; 
-	private double avgOrderFC;
 	
 	private AbstractForecastingModel fcModel;
 	private DataSet demandData;
 	private DescriptiveStatistics demandStats;
-	
-	private int movAvgTimeSpanPast;
-	private int movAvgTimeSpanFuture;
 	
 	public ForecastAgent(){
 		
@@ -39,7 +34,6 @@ public class ForecastAgent{
 	public ForecastAgent(Business biz){
 		this.biz = biz;
 		this.linkList = biz.getDownstrLinks();
-		this.movAvgTimeSpanPast = 9;
 		this.fcModel = new MovingAverageModel();
 	}
 	

@@ -3,6 +3,8 @@ package agents;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
+import demandPattern.DemandPattern;
+import demandPattern.NormalDistribution;
 import artefacts.Material;
 import artefacts.Order;
 import artefacts.Shipment;
@@ -33,17 +35,26 @@ public class Business extends Node{
 	}
 	
 	public void initNode(){
+		this.productionPlanAgent = new ProductionPlanningAgent(this);
 		this.deliveryAgent = new DeliveryAgent(this);
 		this.forecastAgent = new ForecastAgent(this);
 		this.inventoryOpsAgent = new InventoryOpsAgent(this);
 		this.inventoryPlanAgent = new InventoryPlanAgent(this, InvPolicies.ContOUT);
 		this.productionAgent = new ProductionAgent(this);
-		this.productionPlanAgent = new ProductionPlanningAgent(this);
+		
 		this.orderAgent = new OrderAgent(this);
 		this.orderPlanAgent = new OrderPlanAgent(this);
 		this.planningTechniques = new PlanningTechniques();
 		
 		this.endProduct = new Material("");
+		
+		this.planningPeriod = 10;
+		
+		DemandPattern pattern = new NormalDistribution(10.0, 1.0);
+		for(int i=-100; i<0; i++){
+			this.forecastAgent.handDemandData(i, pattern.getNextDouble());
+		}
+		
 	}
 	
 	@ScheduledMethod(start = 1, interval = 1, priority = 10)
@@ -51,10 +62,23 @@ public class Business extends Node{
 		inventoryOpsAgent.prepareTick();
 	}
 	
+	@ScheduledMethod(start=11, interval = 1, priority = 9.5)
+	public void plan(){
+		int currentTick = (int)RepastEssentials.GetTickCount();
+		int productionTime = this.productionAgent.getProductionTime();
+		if(currentTick % planningPeriod == 0){
+			inventoryPlanAgent.handForecast(forecastAgent.getForecast(currentTick+productionTime, planningPeriod+productionTime+2));
+			inventoryPlanAgent.planEndProduct();
+			productionPlanAgent.planProduction();
+			inventoryPlanAgent.planMRP();			
+			orderPlanAgent.plan();
+		}
+	}
+	
 	@ScheduledMethod(start = 1, interval = 1, priority = 9)
 	public void receiveShipments(){
 		ArrayList<Shipment> shipments = new ArrayList<Shipment>();
-		for(Link link : upstrLinks){
+		for(Link link : this.upstrLinks){
 			shipments = link.getArrivingShipments();
 			orderAgent.processInShipments(shipments);
 		}
@@ -87,15 +111,7 @@ public class Business extends Node{
 		this.deliveryAgent.dispatchShipments();
 	}
 	
-	@ScheduledMethod(start=11, interval = 1, priority = 3)
-	public void plan(){
-		int currentTick = (int)RepastEssentials.GetTickCount();
-		int productionTime = this.productionAgent.getProductionTime();
-		if(currentTick % planningPeriod == 0){			
-			productionPlanAgent.handForecast(forecastAgent.getForecast(currentTick+productionTime, planningPeriod+productionTime));
-			productionPlanAgent.planProduction();
-		}
-	}
+	
 	
 	public void addDownstrPartner(Link b){
 		downstrLinks.add(b);

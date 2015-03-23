@@ -1,6 +1,7 @@
 package agents;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.TreeMap;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -17,7 +18,7 @@ public class InventoryOpsAgent {
 	
 	private Business biz;
 	private Material endProduct;
-	private TreeMap<Material, Inventory> inventories;	
+	private HashMap<Material, Inventory> inventories;	
 	
 	private boolean infiniteSupplier;	
 	
@@ -25,7 +26,7 @@ public class InventoryOpsAgent {
 		this.biz = biz;
 		this.endProduct = biz.getEndProduct();
 		
-		this.inventories = new TreeMap<Material, Inventory>();
+		this.inventories = new HashMap<Material, Inventory>();
 		for(Material material : biz.getProductionAgent().getBillOfMaterial().keySet()){
 			inventories.put(material, new Inventory(biz, material));
 		}
@@ -33,7 +34,7 @@ public class InventoryOpsAgent {
 		inventories.put(endProduct, new Inventory(biz, endProduct));		
 	}	
 	
-	public void storeMaterials(TreeMap<Material, Double> materials){
+	public void storeMaterials(HashMap<Material, Double> materials){
 		for(Material material : materials.keySet()){
 			inventories.get(material).incrInventory(materials.get(material));
 		}
@@ -51,8 +52,8 @@ public class InventoryOpsAgent {
 	 * @param request
 	 * @return
 	 */
-	public TreeMap<Material, Double> requestMaterials(TreeMap<Material, Double> request){
-		TreeMap<Material, Double> delivery = new TreeMap<Material, Double>();
+	public HashMap<Material, Double> requestMaterials(HashMap<Material, Double> request){
+		HashMap<Material, Double> delivery = new HashMap<Material, Double>();
 		for(Material material : request.keySet()){
 			Inventory inventory = inventories.get(material);
 			double req = request.get(material);
@@ -69,8 +70,8 @@ public class InventoryOpsAgent {
 		return delivery;
 	}
 	
-	public TreeMap<Material, Double> getOrders(){
-		TreeMap<Material, Double> orders = new TreeMap<Material, Double>();
+	public HashMap<Material, Double> getOrders(){
+		HashMap<Material, Double> orders = new HashMap<Material, Double>();
 		for(Material material : inventories.keySet()){
 			double amount = inventories.get(material).getOrder();
 			if(amount!=0.0)
@@ -120,7 +121,7 @@ public class InventoryOpsAgent {
 		}
 	}
 	
-	public TreeMap<Material, Inventory> getInventories(){
+	public HashMap<Material, Inventory> getInventories(){
 		return this.inventories;
 	}
 	
