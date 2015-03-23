@@ -26,15 +26,18 @@ public class Business extends Node{
 	private PlanningTechniques planningTechniques;
 	
 	private Material endProduct;
+	private boolean infinite;
 	
 	private int planningPeriod;
 	
 		
 	public Business(int tier){
-		super(tier);		
+		super(tier);
+		this.endProduct = new Material("");
 	}
 	
-	public void initNode(){
+	public void initNode(){		
+		
 		this.productionPlanAgent = new ProductionPlanningAgent(this);
 		this.deliveryAgent = new DeliveryAgent(this);
 		this.forecastAgent = new ForecastAgent(this);
@@ -46,12 +49,15 @@ public class Business extends Node{
 		this.orderPlanAgent = new OrderPlanAgent(this);
 		this.planningTechniques = new PlanningTechniques();
 		
-		this.endProduct = new Material("");
+		if(this.tier==4){
+			this.infinite=true;
+			inventoryOpsAgent.setInfinite(true);
+		};
 		
 		this.planningPeriod = 10;
 		
 		DemandPattern pattern = new NormalDistribution(10.0, 1.0);
-		for(int i=-100; i<0; i++){
+		for(int i=-100; i<1; i++){
 			this.forecastAgent.handDemandData(i, pattern.getNextDouble());
 		}
 		
@@ -62,12 +68,12 @@ public class Business extends Node{
 		inventoryOpsAgent.prepareTick();
 	}
 	
-	@ScheduledMethod(start=11, interval = 1, priority = 9.5)
+	@ScheduledMethod(start=1, interval = 1, priority = 9.5)
 	public void plan(){
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		int productionTime = this.productionAgent.getProductionTime();
-		if(currentTick % planningPeriod == 0){
-			inventoryPlanAgent.handForecast(forecastAgent.getForecast(currentTick+productionTime, planningPeriod+productionTime+2));
+		if(currentTick % planningPeriod == 0 && !infinite){
+			inventoryPlanAgent.handForecast(forecastAgent.getForecast(currentTick+productionTime, currentTick+planningPeriod+productionTime+2));
 			inventoryPlanAgent.planEndProduct();
 			productionPlanAgent.planProduction();
 			inventoryPlanAgent.planMRP();			

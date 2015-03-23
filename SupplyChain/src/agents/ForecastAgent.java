@@ -27,14 +27,12 @@ public class ForecastAgent{
 	private DataSet demandData;
 	private DescriptiveStatistics demandStats;
 	
-	public ForecastAgent(){
-		
-	}
-	
 	public ForecastAgent(Business biz){
 		this.biz = biz;
 		this.linkList = biz.getDownstrLinks();
-		this.fcModel = new MovingAverageModel();
+		this.fcModel = new MovingAverageModel(5);
+		this.demandData = new DataSet();
+		this.demandStats = new DescriptiveStatistics();
 	}
 	
 	public TreeMap<Integer, Double> getForecast(int start, int end){

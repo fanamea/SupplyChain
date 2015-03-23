@@ -9,7 +9,7 @@ public abstract class Node {
 	static int idCount;
 	
 	private int Id;
-	private int tier;		//1=Customer
+	protected int tier;		//1=Customer
 	protected ArrayList<Link> downstrLinks;
 	protected ArrayList<Link> upstrLinks;
 	

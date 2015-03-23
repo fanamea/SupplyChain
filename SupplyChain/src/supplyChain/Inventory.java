@@ -28,8 +28,6 @@ public class Inventory {
 	private double fixOrderCost;
 	private double holdingCost;
 	private double serviceLevel;
-
-	private boolean infinite;				//Unendliches Lager (Ressource supplier)
 	
 	public Inventory(Business biz, Material material){
 		this.biz = biz;
@@ -41,7 +39,6 @@ public class Inventory {
 		fixOrderCost = 100;
 		holdingCost = 0.5;	
 		serviceLevel = 0.95;		
-		infinite = false;
 		
 		inventoryLevel.add(30.0);
 	}
@@ -108,14 +105,6 @@ public class Inventory {
 	
 	public void setServiceLevel(double d){
 		this.serviceLevel = d;
-	}
-	
-	public boolean getInfinite(){
-		return this.infinite;
-	}
-	
-	public void setInfinite(boolean b){
-		this.infinite = b;
 	}
 	
 	public double getInventoryLevel(){

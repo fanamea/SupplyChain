@@ -20,18 +20,20 @@ public class InventoryOpsAgent {
 	private Material endProduct;
 	private HashMap<Material, Inventory> inventories;	
 	
-	private boolean infiniteSupplier;	
+	private boolean infinite;	
 	
 	public InventoryOpsAgent(Business biz){
 		this.biz = biz;
 		this.endProduct = biz.getEndProduct();
 		
 		this.inventories = new HashMap<Material, Inventory>();
-		for(Material material : biz.getProductionAgent().getBillOfMaterial().keySet()){
+		for(Material material : biz.getProductionPlanAgent().getBoM().keySet()){
+			System.out.println("inventoresAdd");
 			inventories.put(material, new Inventory(biz, material));
 		}
 		Material endProduct = biz.getEndProduct();
-		inventories.put(endProduct, new Inventory(biz, endProduct));		
+		inventories.put(endProduct, new Inventory(biz, endProduct));
+		System.out.println("Biz: " + biz.getId() + ", inventories.size: " + inventories.size());
 	}	
 	
 	public void storeMaterials(HashMap<Material, Double> materials){
@@ -61,7 +63,7 @@ public class InventoryOpsAgent {
 			double del = Math.min(inventoryLevel, req);
 			//infinite supplier
 			Material endProduct = biz.getEndProduct();
-			if(material==endProduct && infiniteSupplier){
+			if(material==endProduct && infinite){
 				del = req;
 			}
 			delivery.put(material, del);
@@ -108,11 +110,8 @@ public class InventoryOpsAgent {
 	 * Für die obersten Lieferanten kann das Inventory als unendlich eingestellt werden
 	 * @param b
 	 */
-	public void setInfiniteInInventories(boolean b){
-		for(Inventory inventory : inventories.values()){
-			
-			inventory.setInfinite(b);
-		}
+	public void setInfinite(boolean b){
+		this.infinite = b;
 	}	
 	
 	public void prepareTick(){
