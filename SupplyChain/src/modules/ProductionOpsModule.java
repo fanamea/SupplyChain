@@ -1,4 +1,4 @@
-package agents;
+package modules;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,17 +6,19 @@ import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import agents.Business;
+import agents.Manufacturer;
 import artefacts.Material;
 import artefacts.ProdJob;
 import artefacts.ProdRequest;
 import artefacts.ProdRequestComparator;
 import repast.simphony.essentials.RepastEssentials;
-import supplyChain.Link;
+import modules.Link;
 
-public class ProductionAgent {
+public class ProductionOpsModule {
 	
-	private Business biz;
-	private ProductionPlanningAgent planAgent;
+	private Manufacturer biz;
+	private ProductionPlanModule planAgent;
 	private int productionTime;
 	private double productionCapacity;
 	
@@ -24,9 +26,9 @@ public class ProductionAgent {
 	private CopyOnWriteArrayList<ProdJob> productionPipeLine;
 	private CopyOnWriteArrayList<ProdRequest> prodRequestPipeLine;
 	
-	public ProductionAgent(Business biz){
+	public ProductionOpsModule(Manufacturer biz){
 		this.biz = biz;
-		this.planAgent = biz.getProductionPlanAgent();
+		this.planAgent = biz.getProductionPlanModule();
 		this.productionTime = 2;
 		
 		productionDueList = new TreeMap<Integer, Double>();
@@ -53,7 +55,7 @@ public class ProductionAgent {
 					if(batchSize>0){
 						batchSize = Math.max(capacityLeft, batchSize);
 						HashMap<Material, Double> request = calcRessourceDemand(batchSize);
-						biz.getInventoryOpsAgent().requestMaterials(request);
+						biz.getinventoryOpsModule().requestMaterials(request);
 						ProdJob job = new ProdJob(currentTick, batchSize, productionTime);
 						pReq.addProdJob(job);
 						pReq.incrSent(batchSize);
@@ -156,7 +158,7 @@ public class ProductionAgent {
 		
 		for(Material material : bom.keySet()){
 			//System.out.println("debug: Biz: " + biz.getId() + "Link: " + link.getId());
-			double quotient = biz.getInventoryOpsAgent().getInventoryLevel(material)/bom.get(material);
+			double quotient = biz.getinventoryOpsModule().getInventoryLevel(material)/bom.get(material);
 			quotients.add(quotient);
 		}
 		double max = 0;

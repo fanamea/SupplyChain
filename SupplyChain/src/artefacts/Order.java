@@ -2,7 +2,7 @@ package artefacts;
 
 import java.util.ArrayList;
 
-import supplyChain.Link;
+import modules.Link;
 
 public class Order {
 	

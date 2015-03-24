@@ -2,7 +2,8 @@ package agents;
 
 import java.util.ArrayList;
 
-import supplyChain.Link;
+import artefacts.Material;
+import modules.Link;
 
 public abstract class Node {
 	
@@ -12,6 +13,7 @@ public abstract class Node {
 	protected int tier;		//1=Customer
 	protected ArrayList<Link> downstrLinks;
 	protected ArrayList<Link> upstrLinks;
+	protected Material endProduct;
 	
 	public abstract void initNode();
 	public abstract String getInformationString();
@@ -22,6 +24,7 @@ public abstract class Node {
 		this.tier = tier;
 		this.downstrLinks = new ArrayList<Link>();
 		this.upstrLinks = new ArrayList<Link>();
+		this.endProduct = new Material("");
 	};
 	
 	public void addUpstrLink(Link link){
@@ -46,6 +49,10 @@ public abstract class Node {
 	
 	public ArrayList<Link> getDownstrLinks(){
 		return this.downstrLinks;
+	}
+	
+	public Material getEndProduct(){
+		return this.endProduct;
 	}
 	
 	public void print(){

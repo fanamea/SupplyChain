@@ -1,17 +1,20 @@
-package supplyChain;
+package simulation;
 
 import java.util.ArrayList;
 
+import modules.Link;
 import demandPattern.NormalDistribution;
 import agents.Business;
 import agents.Customer;
+import agents.MaterialSource;
 import agents.Node;
+import agents.Retailer;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
 
 public class Setup {
 	
-	
+	ArrayList<MaterialSource> sources;
 	ArrayList<Business> businesses;
 	ArrayList<Customer> customers;
 	ArrayList<Link> links;
@@ -19,11 +22,33 @@ public class Setup {
 	ArrayList<ArrayList<Integer>> structure;
 	
 	public Setup(){
+		sources = new ArrayList<MaterialSource>();
 		structure = new ArrayList<ArrayList<Integer>>();
 		businesses = new ArrayList<Business>();
 		customers = new ArrayList<Customer>();
 		links = new ArrayList<Link>();
 		
+	}
+	
+	public void retailerSetUp(){
+		sources.add(new MaterialSource(4));
+		businesses.add(new Retailer(3));
+		businesses.add(new Retailer(2));
+		customers.add(new Customer(new NormalDistribution(10.0, 5.0)));
+		
+		links.add(new Link(sources.get(0), businesses.get(0)));
+		links.add(new Link(businesses.get(0), businesses.get(1)));
+		links.add(new Link(businesses.get(1), customers.get(0)));
+		
+		for(MaterialSource source : sources){
+			source.initNode();
+		}
+		for(Node business : businesses){
+			business.initNode();
+		}
+		for(Customer customer : customers){
+			customer.initNode();
+		}
 	}
 	
 	public void exampleSetUp(){
@@ -65,6 +90,10 @@ public class Setup {
 	
 	public ArrayList<Customer> getCustomers(){
 		return this.customers;
+	}
+	
+	public ArrayList<MaterialSource> getMaterialSources(){
+		return this.sources;
 	}
 	
 	public boolean checkLink(int a, int b){

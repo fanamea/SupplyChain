@@ -1,7 +1,9 @@
-package supplyChain;
+package simulation;
 
+import modules.Link;
 import agents.Business;
 import agents.Customer;
+import agents.MaterialSource;
 import repast.simphony.context.Context;
 import repast.simphony.context.DefaultContext;
 import repast.simphony.context.space.continuous.ContinuousSpaceFactory;
@@ -53,8 +55,12 @@ public class SimBuilder implements ContextBuilder<Object> {
 		Parameters params = RunEnvironment.getInstance().getParameters();
 		
 		Setup setup = new Setup();
-		setup.exampleSetUp();
+		setup.retailerSetUp();
 		setup.print();
+		
+		for(MaterialSource source : setup.getMaterialSources()){
+			context.add(source);
+		}
 		
 		for(Business biz : setup.getBusinesses()) {
 			context.add(biz);

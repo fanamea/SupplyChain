@@ -1,4 +1,4 @@
-package agents;
+package modules;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,13 +8,14 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.stat.*;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
+import agents.Business;
 import artefacts.Material;
 import InventoryPolicies.InventoryPolicy;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
-import supplyChain.Inventory;
+import modules.Inventory;
 
-public class InventoryOpsAgent {
+public class InventoryOpsModule {
 	
 	private Business biz;
 	private Material endProduct;
@@ -22,13 +23,12 @@ public class InventoryOpsAgent {
 	
 	private boolean infinite;	
 	
-	public InventoryOpsAgent(Business biz){
+	public InventoryOpsModule(Business biz){
 		this.biz = biz;
 		this.endProduct = biz.getEndProduct();
 		
 		this.inventories = new HashMap<Material, Inventory>();
-		for(Material material : biz.getProductionPlanAgent().getBoM().keySet()){
-			System.out.println("inventoresAdd");
+		for(Material material : biz.getOrderOpsModule().getSuppliers().keySet()){
 			inventories.put(material, new Inventory(biz, material));
 		}
 		Material endProduct = biz.getEndProduct();
@@ -86,14 +86,8 @@ public class InventoryOpsAgent {
 		double inventoryLevel = getInventoryLevel(material);
 		double ordered;
 		double backlog;
-		if(material!=biz.getEndProduct()){
-			ordered = biz.getOrderAgent().getProcessingOrders(material);
-			backlog = biz.getProductionAgent().getBacklog(material);			
-		}
-		else{
-			ordered = biz.getProductionAgent().getProcessingProduction();
-			backlog = biz.getDeliveryAgent().getBacklog();
-		}
+		ordered = biz.getOrderOpsModule().getProcessingOrders(material);
+		backlog = biz.getDeliveryModule().getBacklog();
 		return inventoryLevel + ordered - backlog;		
 	}
 	

@@ -1,4 +1,4 @@
-package supplyChain;
+package modules;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
@@ -19,7 +19,7 @@ public class Link {
 	private static int count;
 	
 	private int Id;
-	private Business upstrNode;
+	private Node upstrNode;
 	private Node downstrNode;
 	private Material material;
 	private double fixCost;
@@ -28,7 +28,7 @@ public class Link {
 	private ArrayList<Shipment> shipmentHistory;
 	private CopyOnWriteArrayList<Shipment> shipmentPipeLine;
 	
-	public Link(Business up, Node down){
+	public Link(Node up, Node down){
 		this.Id = count++;
 		this.upstrNode = up;
 		this.downstrNode = down;

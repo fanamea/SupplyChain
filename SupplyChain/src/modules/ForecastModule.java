@@ -1,4 +1,4 @@
-package agents;
+package modules;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,6 +9,7 @@ import java.util.TreeMap;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.jfree.data.time.TimeSeries;
 
+import agents.Business;
 import net.sourceforge.openforecast.DataPoint;
 import net.sourceforge.openforecast.DataSet;
 import net.sourceforge.openforecast.Observation;
@@ -16,9 +17,9 @@ import net.sourceforge.openforecast.models.AbstractForecastingModel;
 import net.sourceforge.openforecast.models.AbstractTimeBasedModel;
 import net.sourceforge.openforecast.models.MovingAverageModel;
 import repast.simphony.essentials.RepastEssentials;
-import supplyChain.Link;
+import modules.Link;
 
-public class ForecastAgent{
+public class ForecastModule{
 	
 	private Business biz;
 	private ArrayList<Link> linkList;
@@ -27,7 +28,7 @@ public class ForecastAgent{
 	private DataSet demandData;
 	private DescriptiveStatistics demandStats;
 	
-	public ForecastAgent(Business biz){
+	public ForecastModule(Business biz){
 		this.biz = biz;
 		this.linkList = biz.getDownstrLinks();
 		this.fcModel = new MovingAverageModel(5);

@@ -1,10 +1,10 @@
-package supplyChain;
+package modules;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
 
 import agents.Business;
-import agents.InventoryOpsAgent;
+import modules.InventoryOpsModule;
 import artefacts.Material;
 import InventoryPolicies.ContinuousOUT;
 import InventoryPolicies.ContinuousQ;
@@ -17,7 +17,7 @@ import repast.simphony.essentials.RepastEssentials;
 public class Inventory {
 	
 	private Business biz;
-	private InventoryOpsAgent opsAgent;
+	private InventoryOpsModule opsAgent;
 	private Material material;
 	private InventoryPolicy policy;
 	
@@ -31,7 +31,7 @@ public class Inventory {
 	
 	public Inventory(Business biz, Material material){
 		this.biz = biz;
-		this.opsAgent = biz.getInventoryOpsAgent();
+		this.opsAgent = biz.getinventoryOpsModule();
 		this.material = material;
 		this.dueList = new TreeMap<Integer, Double>();
 		this.orderList = new TreeMap<Integer, Double>();

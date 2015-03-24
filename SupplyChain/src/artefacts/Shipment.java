@@ -1,6 +1,6 @@
 package artefacts;
 
-import supplyChain.Link;
+import modules.Link;
 
 public class Shipment {
 	
