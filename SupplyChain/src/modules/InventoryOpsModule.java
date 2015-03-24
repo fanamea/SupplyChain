@@ -25,25 +25,23 @@ public class InventoryOpsModule {
 	
 	public InventoryOpsModule(Business biz){
 		this.biz = biz;
-		this.endProduct = biz.getEndProduct();
+		this.endProduct = biz.getProduct();
 		
-		this.inventories = new HashMap<Material, Inventory>();
+		this.inventories = new HashMap<Material, Inventory>();		
+		Material endProduct = biz.getProduct();
+		inventories.put(endProduct, new Inventory(biz, endProduct));
+	}
+	
+	public void setUpResourceInventories(){
 		for(Material material : biz.getOrderOpsModule().getSuppliers().keySet()){
 			inventories.put(material, new Inventory(biz, material));
 		}
-		Material endProduct = biz.getEndProduct();
-		inventories.put(endProduct, new Inventory(biz, endProduct));
-		System.out.println("Biz: " + biz.getId() + ", inventories.size: " + inventories.size());
-	}	
+	}
 	
 	public void storeMaterials(HashMap<Material, Double> materials){
 		for(Material material : materials.keySet()){
 			inventories.get(material).incrInventory(materials.get(material));
 		}
-	}
-	
-	public void storeProducts(double products){
-		inventories.get(biz.getEndProduct()).incrInventory(products);
 	}
 	
 	
@@ -62,7 +60,7 @@ public class InventoryOpsModule {
 			double inventoryLevel = inventory.getInventoryLevel();
 			double del = Math.min(inventoryLevel, req);
 			//infinite supplier
-			Material endProduct = biz.getEndProduct();
+			Material endProduct = biz.getProduct();
 			if(material==endProduct && infinite){
 				del = req;
 			}

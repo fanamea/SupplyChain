@@ -13,7 +13,7 @@ public abstract class Node {
 	protected int tier;		//1=Customer
 	protected ArrayList<Link> downstrLinks;
 	protected ArrayList<Link> upstrLinks;
-	protected Material endProduct;
+	protected Material product;
 	
 	public abstract void initNode();
 	public abstract String getInformationString();
@@ -24,7 +24,6 @@ public abstract class Node {
 		this.tier = tier;
 		this.downstrLinks = new ArrayList<Link>();
 		this.upstrLinks = new ArrayList<Link>();
-		this.endProduct = new Material("");
 	};
 	
 	public void addUpstrLink(Link link){
@@ -51,8 +50,8 @@ public abstract class Node {
 		return this.downstrLinks;
 	}
 	
-	public Material getEndProduct(){
-		return this.endProduct;
+	public Material getProduct(){
+		return this.product;
 	}
 	
 	public void print(){

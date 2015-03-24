@@ -31,7 +31,7 @@ public class Inventory {
 	
 	public Inventory(Business biz, Material material){
 		this.biz = biz;
-		this.opsAgent = biz.getinventoryOpsModule();
+		this.opsAgent = biz.getInventoryOpsModule();
 		this.material = material;
 		this.dueList = new TreeMap<Integer, Double>();
 		this.orderList = new TreeMap<Integer, Double>();

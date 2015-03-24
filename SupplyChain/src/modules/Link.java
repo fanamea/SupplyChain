@@ -34,7 +34,7 @@ public class Link {
 		this.downstrNode = down;
 		upstrNode.addDownstrLink(this);
 		downstrNode.addUpstrLink(this);
-		this.material = upstrNode.getEndProduct();   //TODO: BillOfMaterial beim Setup einlesen
+		this.material = upstrNode.getProduct();   //TODO: BillOfMaterial beim Setup einlesen
 		orderHistory = new ArrayList<Order>();
 		orderPipeLine = new CopyOnWriteArrayList<Order>();
 		shipmentHistory = new ArrayList<Shipment>();

@@ -55,7 +55,7 @@ public class ProductionOpsModule {
 					if(batchSize>0){
 						batchSize = Math.max(capacityLeft, batchSize);
 						HashMap<Material, Double> request = calcRessourceDemand(batchSize);
-						biz.getinventoryOpsModule().requestMaterials(request);
+						biz.getInventoryOpsModule().requestMaterials(request);
 						ProdJob job = new ProdJob(currentTick, batchSize, productionTime);
 						pReq.addProdJob(job);
 						pReq.incrSent(batchSize);
@@ -75,12 +75,13 @@ public class ProductionOpsModule {
 	 * 
 	 * @return Liste von ProductionJobs, die im aktuellen Tick fertig werden.
 	 */
-	public double getArrivingProduction(){
-		double output = 0;
+	public HashMap<Material, Double> getArrivingProduction(){
+		HashMap<Material, Double> output = new HashMap<Material, Double>();
+		output.put(biz.getProduct(), 0.0);
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		for(ProdJob job : productionPipeLine){			
 			if(job.getDate() + job.getLeadTime() == currentTick){
-				output +=job.getSize();
+				output.put(biz.getProduct(), output.get(biz.getProduct())+job.getSize());
 				productionPipeLine.remove(job);
 			}
 		}
@@ -158,7 +159,7 @@ public class ProductionOpsModule {
 		
 		for(Material material : bom.keySet()){
 			//System.out.println("debug: Biz: " + biz.getId() + "Link: " + link.getId());
-			double quotient = biz.getinventoryOpsModule().getInventoryLevel(material)/bom.get(material);
+			double quotient = biz.getInventoryOpsModule().getInventoryLevel(material)/bom.get(material);
 			quotients.add(quotient);
 		}
 		double max = 0;
