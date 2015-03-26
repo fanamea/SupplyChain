@@ -78,7 +78,7 @@ public class Inventory {
 	public void incrInventory(double size){
 		double currentLevel = this.inventoryLevel.get((int)RepastEssentials.GetTickCount());
 		this.inventoryLevel.set((int)RepastEssentials.GetTickCount(), currentLevel + size);
-		System.out.println("INVENTORY INCREASED: " + size);
+		//System.out.println("INVENTORY INCREASED: " + size);
 	}
 	
 	
@@ -90,8 +90,6 @@ public class Inventory {
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		
 		if(this.policy!=null){
-			if(opsModule==null) System.out.println("opsAgent null");
-			System.out.println("this.material " + this.material);
 			double curInvPos = opsModule.getInventoryPosition(this.material);
 			return this.policy.getOrder(currentTick, curInvPos);
 		}

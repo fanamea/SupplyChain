@@ -88,6 +88,7 @@ public class Link {
 		ArrayList<Order> copy = new ArrayList<Order>();
 		copy.addAll(this.orderPipeLine);
 		orderPipeLine.clear();
+		//System.out.println("Link PipeLine size: " + orderPipeLine.size());
 		return copy;
 	}
 	

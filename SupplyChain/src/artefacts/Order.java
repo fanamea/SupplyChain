@@ -49,11 +49,11 @@ public class Order {
 	}
 	
 	public boolean isSent(){
-		return size==sent;
+		return size<=sent;
 	}
 	
 	public boolean hasArrived(){
-		return size==arrived;
+		return size<=arrived;
 	}
 	
 	public double getShortageSent(){
