@@ -28,13 +28,13 @@ public class InventoryOpsModule {
 		this.endProduct = biz.getProduct();
 		
 		this.inventories = new HashMap<Material, Inventory>();		
-		Material endProduct = biz.getProduct();
-		inventories.put(endProduct, new Inventory(biz, endProduct));
+		Material product = biz.getProduct();
+		inventories.put(endProduct, new Inventory(biz, this, product));
 	}
 	
 	public void setUpResourceInventories(){
 		for(Material material : biz.getOrderOpsModule().getSuppliers().keySet()){
-			inventories.put(material, new Inventory(biz, material));
+			inventories.put(material, new Inventory(biz, this, material));
 		}
 	}
 	
@@ -119,14 +119,11 @@ public class InventoryOpsModule {
 	
 	public String getInformationString(){
 		String string = "";
-		string += "      InInventories: \n";
+		string += "      Inventories: \n";
 		for(Material material :inventories.keySet()){
 			string += "         Material: " + material.getId() + "\n" 
 					+ "            " + inventories.get(material).getInformationString() + "\n";
-		}
-		string += "      OutInventory: " + "\n"
-				+ "            " + outInventory.getInformationString() + "\n";
-		
+		}		
 		return string;
 	}
 

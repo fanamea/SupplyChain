@@ -9,7 +9,7 @@ public abstract class Node {
 	
 	static int idCount;
 	
-	private int Id;
+	protected int Id;
 	protected int tier;		//1=Customer
 	protected ArrayList<Link> downstrLinks;
 	protected ArrayList<Link> upstrLinks;
@@ -51,6 +51,9 @@ public abstract class Node {
 	}
 	
 	public Material getProduct(){
+		if(this.product==null){
+			this.product = this.upstrLinks.get(0).getMaterial();
+		}
 		return this.product;
 	}
 	

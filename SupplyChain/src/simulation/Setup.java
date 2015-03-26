@@ -144,15 +144,11 @@ public class Setup {
 		
 	}
 	
-	//@ScheduledMethod(start = 1, interval = 1, priority = 1)
+	@ScheduledMethod(start = 1, interval = 1, priority = 1)
 	public void printInformation(){
 		String string = "Date: " + (int)RepastEssentials.GetTickCount() + "\n";
-		for(Node node : nodes){
-			string += node.getInformationString();
-		}
-		string += "\n";
-		for(Link link : links){
-			string += link.getAmountInformation() + "\n";
+		for(Business biz : businesses){
+			string += biz.getInformationString();
 		}
 		string += "\n \n";
 		System.out.print(string);

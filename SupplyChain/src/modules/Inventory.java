@@ -17,7 +17,7 @@ import repast.simphony.essentials.RepastEssentials;
 public class Inventory {
 	
 	private Business biz;
-	private InventoryOpsModule opsAgent;
+	private InventoryOpsModule opsModule;
 	private Material material;
 	private InventoryPolicy policy;
 	
@@ -29,9 +29,9 @@ public class Inventory {
 	private double holdingCost;
 	private double serviceLevel;
 	
-	public Inventory(Business biz, Material material){
+	public Inventory(Business biz, InventoryOpsModule opsModule, Material material){
 		this.biz = biz;
-		this.opsAgent = biz.getInventoryOpsModule();
+		this.opsModule = opsModule;
 		this.material = material;
 		this.dueList = new TreeMap<Integer, Double>();
 		this.orderList = new TreeMap<Integer, Double>();
@@ -78,6 +78,7 @@ public class Inventory {
 	public void incrInventory(double size){
 		double currentLevel = this.inventoryLevel.get((int)RepastEssentials.GetTickCount());
 		this.inventoryLevel.set((int)RepastEssentials.GetTickCount(), currentLevel + size);
+		System.out.println("INVENTORY INCREASED: " + size);
 	}
 	
 	
@@ -89,13 +90,14 @@ public class Inventory {
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		
 		if(this.policy!=null){
-			double curInvPos = opsAgent.getInventoryPosition(this.material);
+			if(opsModule==null) System.out.println("opsAgent null");
+			System.out.println("this.material " + this.material);
+			double curInvPos = opsModule.getInventoryPosition(this.material);
 			return this.policy.getOrder(currentTick, curInvPos);
 		}
 		else{
 			return this.orderList.get(currentTick);
-		}
-		
+		}	
 		
 	}
 	
@@ -145,6 +147,10 @@ public class Inventory {
 	
 	public TreeMap<Integer, Double> getOrderList(){
 		return this.orderList;
+	}
+	
+	public String getParameterString(){		
+		return this.policy.getParameterString();
 	}
 	
 	public String getInformationString(){
