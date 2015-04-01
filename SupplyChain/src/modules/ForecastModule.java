@@ -25,21 +25,20 @@ public class ForecastModule{
 	private ArrayList<Link> linkList;
 	
 	private AbstractForecastingModel fcModel;
-	private TreeMap<Integer, Double> demandData;
+	private DataSet demandData;
 	private DescriptiveStatistics demandStats;
 	
 	public ForecastModule(Business biz){
 		this.biz = biz;
 		this.linkList = biz.getDownstrLinks();
-		this.fcModel = new MovingAverageModel(30);
-		this.demandData = new TreeMap<Integer, Double>();
+		this.fcModel = new MovingAverageModel(20);
+		this.demandData = new DataSet();
 		this.demandStats = new DescriptiveStatistics();
 	}
 	
 	public TreeMap<Integer, Double> getForecast(int start, int end){
 		TreeMap<Integer, Double> forecast = new TreeMap<Integer, Double>();
-		
-		fcModel.init(mapToDataSet(demandData));
+		fcModel.init(this.demandData);
 		DataSet fcSet = new DataSet();
 		for(int i=start; i<=end; i++){
 			DataPoint dp = new Observation(0.0);
@@ -63,24 +62,11 @@ public class ForecastModule{
 		return demandStats.getMean();
 	}
 	
-	public void handDemandData(int tick, double demand){		
-		if(this.demandData.containsKey(tick)){
-			demandData.put(tick, demandData.get(tick)+demand);
-		}
-		else{
-			demandData.put(tick, demand);
-		}
+	public void handDemandData(int tick, double demand){
+		System.out.println("handDemandData: " + tick + ", demand: " + demand);
+		DataPoint dp = new Observation(demand);
+		dp.setIndependentValue("Tick", tick);
+		this.demandData.add(dp);
 		this.demandStats.addValue(demand);
-	}
-	
-	private DataSet mapToDataSet(TreeMap<Integer, Double> map){
-		DataSet dataSet = new DataSet();
-		for(Integer i : map.keySet()){
-			DataPoint dp = new Observation(map.get(i));
-			dp.setIndependentValue("Tick", i);
-			
-			dataSet.add(dp);			
-		}
-		return dataSet;
 	}
 }
