@@ -39,6 +39,7 @@ public class InventoryOpsModule {
 	}
 	
 	public void storeMaterials(HashMap<Material, Double> materials){
+		System.out.println("storeMaterials" + materials);
 		for(Material material : materials.keySet()){
 			inventories.get(material).incrInventory(materials.get(material));
 		}

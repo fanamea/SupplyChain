@@ -23,15 +23,11 @@ import repast.simphony.random.RandomHelper;
 public class Test {
 	
 	public static void main(String[] args){
-		RandomHelper.createUniform(0,1);
-		AbstractDistribution uniform1 = RandomHelper.getUniform();
-		RandomHelper.createUniform(1,2);
-		Uniform uniform2 = RandomHelper.getUniform();
-		
-		double i = uniform1.nextDouble();
-		double j= uniform2.nextDouble();
-		
-		System.out.println(i + " " + j);
+		TreeMap<Integer, Double> forecast = new TreeMap<Integer, Double>();
+		for(int i=0; i<10; i++){
+			forecast.put(i, 10.0);
+		}
+		System.out.println(getPlannedStocks(forecast));
 		
 	}
 	

@@ -55,7 +55,7 @@ public class SimBuilder implements ContextBuilder<Object> {
 		Parameters params = RunEnvironment.getInstance().getParameters();
 		
 		Setup setup = new Setup();
-		setup.retailerSetUp();
+		setup.productionSetUp();
 		setup.print();
 		
 		for(MaterialSource source : setup.getMaterialSources()){

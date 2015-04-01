@@ -3,9 +3,11 @@ package simulation;
 import java.util.ArrayList;
 
 import modules.Link;
+import demandPattern.Constant;
 import demandPattern.NormalDistribution;
 import agents.Business;
 import agents.Customer;
+import agents.Manufacturer;
 import agents.MaterialSource;
 import agents.Node;
 import agents.Retailer;
@@ -30,11 +32,14 @@ public class Setup {
 		
 	}
 	
+	public void mixedSetUp(){
+	}
+	
 	public void retailerSetUp(){
 		sources.add(new MaterialSource(4));
 		businesses.add(new Retailer(3));
 		businesses.add(new Retailer(2));
-		customers.add(new Customer(new NormalDistribution(10.0, 5.0)));
+		customers.add(new Customer(new Constant(10.0)));
 		
 		links.add(new Link(sources.get(0), businesses.get(0)));
 		links.add(new Link(businesses.get(0), businesses.get(1)));
@@ -51,30 +56,20 @@ public class Setup {
 		}
 	}
 	
-	public void exampleSetUp(){
+	public void productionSetUp(){
 		
-		for(int i=0; i<11; i++){
-			int tier;
-			if(i>7) tier = 4;
-			else if(i>5) tier = 3;
-			else if(i>2) tier = 2;
-			else tier = 1;
-			
-			if(tier==1) customers.add(new Customer(new NormalDistribution(10.0, 1.0)));
-			else businesses.add(new Business(tier));
+		sources.add(new MaterialSource(4));
+		businesses.add(new Manufacturer(3));
+		businesses.add(new Manufacturer(2));
+		customers.add(new Customer(new NormalDistribution(10.0, 5.0)));
+		
+		links.add(new Link(sources.get(0), businesses.get(0)));
+		links.add(new Link(businesses.get(0), businesses.get(1)));
+		links.add(new Link(businesses.get(1), customers.get(0)));
+		
+		for(MaterialSource source : sources){
+			source.initNode();
 		}
-		
-		links.add(new Link(businesses.get(0), customers.get(0)));
-		links.add(new Link(businesses.get(1), customers.get(1)));
-		links.add(new Link(businesses.get(2), customers.get(2)));
-		links.add(new Link(businesses.get(3), businesses.get(0)));
-		links.add(new Link(businesses.get(3), businesses.get(1)));
-		links.add(new Link(businesses.get(4), businesses.get(2)));
-		links.add(new Link(businesses.get(5), businesses.get(3)));
-		links.add(new Link(businesses.get(6), businesses.get(3)));
-		links.add(new Link(businesses.get(6), businesses.get(4)));
-		links.add(new Link(businesses.get(7), businesses.get(4)));
-		
 		for(Node business : businesses){
 			business.initNode();
 		}

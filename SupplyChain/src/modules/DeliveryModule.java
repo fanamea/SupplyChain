@@ -55,6 +55,7 @@ public class DeliveryModule {
 		for(Order order : orderList){
 			sum += order.getSize();
 		}
+		System.out.println("handDemandData: " + currentTick + ", sum: " + sum);
 		fcAgent.handDemandData(currentTick, sum);
 	}
 	

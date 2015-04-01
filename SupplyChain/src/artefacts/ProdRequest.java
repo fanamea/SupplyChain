@@ -1,6 +1,7 @@
 package artefacts;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import modules.Link;
 
@@ -12,16 +13,19 @@ public class ProdRequest {
 	private Link link;
 	private int date;
 	private double size;
+	private HashMap<Material, Double> boM;
 	private double sent;
 	private double arrived;
 	ArrayList<ProdJob> jobs;
 	
-	public ProdRequest(int d, double s){
+	public ProdRequest(int d, double s, HashMap<Material, Double> boM){
 		this.Id = count++;
 		this.date = d;
 		this.size = s;
 		this.sent = 0;
 		this.jobs = new ArrayList<ProdJob>();
+		this.boM = boM;
+		
 	}
 	
 	public Integer getDate(){
@@ -45,11 +49,11 @@ public class ProdRequest {
 	}
 	
 	public boolean isSent(){
-		return size==sent;
+		return size<=sent;
 	}
 	
 	public boolean hasArrived(){
-		return size==arrived;
+		return size<=arrived;
 	}
 	
 	public double getShortageSent(){
@@ -66,6 +70,10 @@ public class ProdRequest {
 	
 	public ArrayList<ProdJob> getJobs(){
 		return this.jobs;
+	}
+	
+	public HashMap<Material, Double> getBoM(){
+		return this.boM;
 	}
 	
 	public String toString(){

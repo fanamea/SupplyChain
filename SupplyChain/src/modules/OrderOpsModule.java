@@ -55,7 +55,7 @@ public class OrderOpsModule {
 	public void placeOrders(){
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		for(Material material : orderReqPipeLine.keySet()){
-			System.out.println("placeOrders, orderReqPipeLine.size: " + orderReqPipeLine.get(material).size());
+			System.out.println("Biz: " + biz.getId() + ", placeOrders, orderReqPipeLine.size: " + orderReqPipeLine.get(material).size());
 			CopyOnWriteArrayList<OrderReq> pipeline = orderReqPipeLine.get(material);
 			for(OrderReq orderReq : orderReqPipeLine.get(material)){
 				if(orderReq.getDate()<=currentTick){
@@ -65,8 +65,10 @@ public class OrderOpsModule {
 					orderPipeLine.get(material).add(newOrder);
 					supplier.putOrder(newOrder);
 				}
-			}			
-		}
+			}
+			System.out.println("OrderReqPipeLine: " + orderReqPipeLine.get(material));
+			System.out.println("OrderPipeLine: " + orderPipeLine.get(material));
+		}	
 	}
 	
 	

@@ -31,7 +31,7 @@ public class ForecastModule{
 	public ForecastModule(Business biz){
 		this.biz = biz;
 		this.linkList = biz.getDownstrLinks();
-		this.fcModel = new MovingAverageModel(5);
+		this.fcModel = new MovingAverageModel(30);
 		this.demandData = new DataSet();
 		this.demandStats = new DescriptiveStatistics();
 	}

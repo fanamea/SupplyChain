@@ -35,6 +35,7 @@ public abstract class Business extends Node{
 	public abstract PlanningMethods getPlanningMethods();
 	public abstract ForecastModule getForecastModule();
 	public abstract OrderPlanModule getOrderPlanModule();
+	public abstract ProductionOpsModule getProductionOpsModule();
 	
 	public void addDownstrPartner(Link b){
 		downstrLinks.add(b);

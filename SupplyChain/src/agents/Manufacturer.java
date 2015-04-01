@@ -63,6 +63,7 @@ public class Manufacturer extends Business{
 	
 	@ScheduledMethod(start=1, interval = 1, priority = 9)
 	public void plan(){
+		System.out.println("Biz: " + this.Id + ", plan");
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		int productionTime = this.productionOpsModule.getProductionTime();
 		if(currentTick % planningPeriod == 0){
@@ -86,6 +87,7 @@ public class Manufacturer extends Business{
 	
 	@ScheduledMethod(start=1, interval=1, priority = 7)
 	public void produce(){
+		System.out.println("Biz: " + this.Id + ", produce");
 		productionOpsModule.startProdJobs();
 		inventoryOpsModule.storeMaterials(productionOpsModule.getArrivingProduction());		
 	}
@@ -97,6 +99,7 @@ public class Manufacturer extends Business{
 	
 	@ScheduledMethod(start=1, interval = 1, priority = 4)
 	public void fetchOrders(){
+		System.out.println("Biz: " + this.Id + ", fetchOrders");
 		ArrayList<Order> newOrders = new ArrayList<Order>();
 		for(Link link : this.downstrLinks){
 			newOrders.addAll(link.fetchOrders());
@@ -104,7 +107,7 @@ public class Manufacturer extends Business{
 		deliveryModule.processOrders(newOrders);
 	}
 	
-	@ScheduledMethod(start=1, interval = 1, priority = 2)
+	@ScheduledMethod(start=1, interval = 1, priority = 9.5)
 	public void dispatchShipments(){
 		this.deliveryModule.dispatchShipments();
 	}	
@@ -161,7 +164,11 @@ public class Manufacturer extends Business{
 	
 	public OrderPlanModule getOrderPlanModule() {
 		return this.orderPlanModule;
-	}	
+	}
+	
+	public ProductionOpsModule getProductionOpsModule(){
+		return this.productionOpsModule;
+	}
 	
 	public String getInformationString(){
 		String string = "";

@@ -18,57 +18,68 @@ import modules.Link;
 public class ProductionOpsModule {
 	
 	private Manufacturer biz;
-	private ProductionPlanModule planAgent;
 	private int productionTime;
 	private double productionCapacity;
 	
-	private TreeMap<Integer, Double> productionDueList;
 	private CopyOnWriteArrayList<ProdJob> productionPipeLine;
 	private CopyOnWriteArrayList<ProdRequest> prodRequestPipeLine;
 	
 	public ProductionOpsModule(Manufacturer biz){
 		this.biz = biz;
-		this.planAgent = biz.getProductionPlanModule();
 		this.productionTime = 2;
+		this.productionCapacity = 30;
 		
-		productionDueList = new TreeMap<Integer, Double>();
 		productionPipeLine = new CopyOnWriteArrayList<ProdJob>();
 		prodRequestPipeLine = new CopyOnWriteArrayList<ProdRequest>();
 	}
 	
 	
 	public void startProdJobs(){
+		System.out.println("startProdJobs");
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		double productionCounter = 0;		
 		double capacityLeft = productionCapacity;
 		boolean isProdRequest = false;
+		double maxProduction = 0;
 		double batchSize = 0;
 		boolean condition;
-		Collections.sort(prodRequestPipeLine, new ProdRequestComparator());
+		ArrayList<ProdRequest> temp = new ArrayList<ProdRequest>(prodRequestPipeLine);
+		Collections.sort(temp, new ProdRequestComparator());
+		this.prodRequestPipeLine.clear();
+		this.prodRequestPipeLine.addAll(temp);
 		do{
 			if(!prodRequestPipeLine.isEmpty()){
 				ProdRequest pReq = prodRequestPipeLine.get(0);
 				isProdRequest = pReq.getDate()<=currentTick;
 				if(isProdRequest){
-					capacityLeft = productionCapacity-productionCounter;				
-					batchSize = calcMaxProduction(pReq.getShortageSent());
+					capacityLeft = productionCapacity-productionCounter;
+					System.out.println("capacityLeft: " + capacityLeft);
+					maxProduction = calcMaxProduction(pReq.getBoM());
+					System.out.println("maxProduction: " + maxProduction);
+					batchSize = Math.min(maxProduction, pReq.getShortageSent());
+					System.out.println("batchSize: " + batchSize);
 					if(batchSize>0){
-						batchSize = Math.max(capacityLeft, batchSize);
-						HashMap<Material, Double> request = calcRessourceDemand(batchSize);
+						batchSize = Math.min(capacityLeft, batchSize);
+						System.out.println("batchSize: " + batchSize);
+						HashMap<Material, Double> request = calcRessourceDemand(batchSize, pReq.getBoM());
 						biz.getInventoryOpsModule().requestMaterials(request);
 						ProdJob job = new ProdJob(currentTick, batchSize, productionTime);
 						pReq.addProdJob(job);
 						pReq.incrSent(batchSize);
 						capacityLeft -= batchSize;
 						productionPipeLine.add(job);
-						if(pReq.isSent()){
-							prodRequestPipeLine.remove(pReq);
-						}
+					}
+					if(pReq.isSent()){
+						prodRequestPipeLine.remove(pReq);
 					}
 				}
 			}
 			condition = !prodRequestPipeLine.isEmpty() && isProdRequest && capacityLeft>0 && batchSize>0;
 		}while(condition);
+		
+		
+		System.out.println("ProdRequestPipeLine: " + prodRequestPipeLine);
+		System.out.println("ProductionPipeLine: " + productionPipeLine);
 	}
 		
 	/**
@@ -85,7 +96,12 @@ public class ProductionOpsModule {
 				productionPipeLine.remove(job);
 			}
 		}
-		return output;
+		
+		System.out.println("getArrivingProduction");
+		System.out.println("ProdRequestPipeLine: " + prodRequestPipeLine);
+		System.out.println("ProductionPipeLine: " + productionPipeLine);
+		
+		return output;		
 	}
 	
 	public double getBacklog(Material material){
@@ -150,23 +166,22 @@ public class ProductionOpsModule {
 	
 	
 	/**
-	 * Berechnet die auf Grund von: Input Lagerbeständen und productionCapacity maximal mögliche Produktionsmenge.
+	 * Berechnet die auf Grund von: Input Lagerbeständen die maximal mögliche Produktionsmenge.
 	 * @return maximal mögliche Produktionsmenge
 	 */
-	public double calcMaxProduction(double plannedBatchSize){
-		ArrayList<Double> quotients = new ArrayList<Double>();
-		HashMap<Material, Double> bom = planAgent.getBoM();
+	public double calcMaxProduction(HashMap<Material, Double> boM){
+		ArrayList<Double> quotients = new ArrayList<Double>();		
 		
-		for(Material material : bom.keySet()){
+		for(Material material : boM.keySet()){
 			//System.out.println("debug: Biz: " + biz.getId() + "Link: " + link.getId());
-			double quotient = biz.getInventoryOpsModule().getInventoryLevel(material)/bom.get(material);
+			double quotient = biz.getInventoryOpsModule().getInventoryLevel(material)/boM.get(material);
 			quotients.add(quotient);
 		}
 		double max = 0;
 		for(Double i : quotients){
 			if(i > max) max = i;
 		}
-		return Math.min(plannedBatchSize, max);
+		return max;
 	}
 	
 	
@@ -176,31 +191,26 @@ public class ProductionOpsModule {
 	 * @param output gewünschter Produktionsoutput
 	 * @return ArrayList mit den Ressourcenbedarfen
 	 */
-	public HashMap<Material, Double> calcRessourceDemand(double output){
+	public HashMap<Material, Double> calcRessourceDemand(double output, HashMap<Material, Double> boM){
 		HashMap<Material, Double> demand = new HashMap<Material, Double>();
-		HashMap<Material, Double> bom = planAgent.getBoM();
 		
-		for(Material material : bom.keySet()){
-			double d = bom.get(material)*output;
+		for(Material material : boM.keySet()){
+			double d = boM.get(material)*output;
 			demand.put(material, d);
 		}
 		return demand;
 	}
 	
-	public void handProductionDueList(TreeMap<Integer, Double> dueList){
-		this.productionDueList = dueList;
-	}
-	
-	public  TreeMap<Integer, Double> getProductionDueList(){
-		return this.productionDueList;
+	public double getCapacity(){
+		return this.productionCapacity;
 	}
 	
 	public int getProductionTime(){
 		return this.productionTime;
 	}
 	
-	public HashMap<Material, Double> getBillOfMaterial(){
-		return this.billOfMaterial;
+	public CopyOnWriteArrayList<ProdRequest> getProdReqPipeLine(){
+		return this.prodRequestPipeLine;
 	}
 
 }

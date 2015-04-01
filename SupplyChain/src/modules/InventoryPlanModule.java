@@ -99,6 +99,7 @@ public class InventoryPlanModule{
 					dueList.put(date, amount);
 				}
 				inventory.setDueList(dueList);
+				System.out.println("inInventoryDueList: " + dueList);
 			}
 		}
 	}		
@@ -118,8 +119,10 @@ public class InventoryPlanModule{
 	}
 
 	public void calcOutInventoryDueList(){
+		System.out.println("Biz: " + this.biz.getId() + ", Forecast: " + this.demandForecast);
 		Inventory outInventory = inventories.get(biz.getProduct());
 		TreeMap<Integer, Double> plannedStocks = getPlannedStocks(this.demandForecast);
+		System.out.println("plannedStocks: " + plannedStocks);
 		outInventory.setDueList(plannedStocks);
 	}
 
@@ -144,7 +147,8 @@ public class InventoryPlanModule{
 			if(!first){
 				ante = cumulatedStocks.get(i-1);
 			}
-			plannedStocks.put(i, cumulatedStocks.get(i)-ante);				
+			plannedStocks.put(i, cumulatedStocks.get(i)-ante);
+			first = false;
 		}
 		
 		return plannedStocks;

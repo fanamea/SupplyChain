@@ -26,7 +26,7 @@ public class ProductionPlanModule {
 	private double serviceLevel;
 	
 	private HashMap<Material, Double> billOfMaterial;
-	private ArrayList<ProdRequest> prodRequestPipeLine;
+	private CopyOnWriteArrayList<ProdRequest> prodRequestPipeLine;
 	TreeMap<Integer, Double> lotPlan;
 	private TreeMap<Integer, Double> forecast;
 	
@@ -34,9 +34,9 @@ public class ProductionPlanModule {
 	public ProductionPlanModule(Business biz){
 		this.biz = biz;
 		this.lotSizingAlgo = new SilverMeal();
-		this.prodRequestPipeLine = new ArrayList<ProdRequest>();
+		this.prodRequestPipeLine = biz.getProductionOpsModule().getProdReqPipeLine();
 		this.productionTime = 2;
-		this.productionCapacity = 10;
+		this.productionCapacity = biz.getProductionOpsModule().getCapacity();
 		this.setUpCost = 1;
 		this.billOfMaterial = new HashMap<Material, Double>();
 		for(Link link : biz.getUpstrLinks()){
@@ -51,6 +51,7 @@ public class ProductionPlanModule {
 	public void planProduction(){
 		TreeMap<Integer, Double> dueList = biz.getInventoryPlanModule().getInventoryDueList(biz.getProduct());
 		TreeMap<Integer, Double> capacitatedDueList = capacitatePlannedStocks(dueList);
+		System.out.println("Capacitated DueList: " + capacitatedDueList);
 		double holdingCost = biz.getInventoryPlanModule().getInventory(biz.getProduct()).getHoldingCost();
 		lotPlan = this.lotSizingAlgo.calcLotPlan(capacitatedDueList, setUpCost, holdingCost);
 		System.out.println("lotPlan:" + lotPlan);
@@ -59,7 +60,7 @@ public class ProductionPlanModule {
 	
 	private void fillProdRequestPipeLine(TreeMap<Integer, Double> lotPlan){
 		for(Integer i : lotPlan.keySet()){
-			this.prodRequestPipeLine.add(new ProdRequest(i-productionTime, lotPlan.get(i)));
+			this.prodRequestPipeLine.add(new ProdRequest(i-productionTime, lotPlan.get(i), this.billOfMaterial));
 		}
 	}
 	
