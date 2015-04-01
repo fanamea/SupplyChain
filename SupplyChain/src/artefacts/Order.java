@@ -16,7 +16,19 @@ public class Order {
 	private double size;
 	private double sent;
 	private double arrived;
+	private OrderReq orderReq;
 	ArrayList<Shipment> shipments;
+	
+	public Order(Link link, int d, double s, OrderReq orderReq){
+		this.Id = count++;
+		this.link = link;
+		this.date = d;
+		this.size = s;
+		this.sent = 0;
+		this.arrived = 0;
+		this.orderReq = orderReq;
+		this.shipments = new ArrayList<Shipment>();
+	}
 	
 	public Order(Link link, int d, double s){
 		this.Id = count++;
@@ -72,8 +84,12 @@ public class Order {
 		return this.shipments;
 	}
 	
+	public OrderReq getOrderReq(){
+		return this.orderReq;
+	}
+	
 	public String toString(){
-		return "Order: " + this.Id + ", Date: " + this.date + ", Size: " + this.size;
+		return "Order: ID-" + this.Id + ", Date-" + this.date + ", Size-" + this.size + ", OrderReq-" + orderReq;
 	}
 
 }

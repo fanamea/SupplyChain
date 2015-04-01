@@ -77,7 +77,7 @@ public class ProdRequest {
 	}
 	
 	public String toString(){
-		return "ProdRequest: " + this.Id + ", Date: " + this.date + ", Size: " + this.size;
+		return "ProdRequest: ID-" + this.Id + ", Date-" + this.date + ", Size-" + this.size;
 	}
 
 }

@@ -55,19 +55,19 @@ public class OrderOpsModule {
 	public void placeOrders(){
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		for(Material material : orderReqPipeLine.keySet()){
-			System.out.println("Biz: " + biz.getId() + ", placeOrders, orderReqPipeLine.size: " + orderReqPipeLine.get(material).size());
+			//System.out.println("Biz: " + biz.getId() + ", placeOrders, orderReqPipeLine.size: " + orderReqPipeLine.get(material).size());
 			CopyOnWriteArrayList<OrderReq> pipeline = orderReqPipeLine.get(material);
 			for(OrderReq orderReq : orderReqPipeLine.get(material)){
 				if(orderReq.getDate()<=currentTick){
 					Link supplier = suppliers.get(material).get(0);
-					Order newOrder = new Order(supplier, currentTick, orderReq.getSize());
+					Order newOrder = new Order(supplier, currentTick, orderReq.getSize(), orderReq);
 					pipeline.remove(orderReq);
 					orderPipeLine.get(material).add(newOrder);
 					supplier.putOrder(newOrder);
 				}
 			}
-			System.out.println("OrderReqPipeLine: " + orderReqPipeLine.get(material));
-			System.out.println("OrderPipeLine: " + orderPipeLine.get(material));
+			//System.out.println("OrderReqPipeLine: " + orderReqPipeLine.get(material));
+			//System.out.println("OrderPipeLine: " + orderPipeLine.get(material));
 		}	
 	}
 	
@@ -131,6 +131,14 @@ public class OrderOpsModule {
 	
 	public HashMap<Material, ArrayList<Link>> getSuppliers(){
 		return this.suppliers;
+	}
+	
+	public String getInformationString(){
+		String string = "";
+		string += "      OrderReqPipeLine: " + orderReqPipeLine + "\n";
+		string += "      OrderPipeLine: " + orderPipeLine + "\n";
+		string += "      Processing Orders: " + getProcessingOrders(linkList.get(0).getMaterial());
+		return string;
 	}
 	
 	

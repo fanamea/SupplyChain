@@ -78,7 +78,7 @@ public class Inventory {
 	public void incrInventory(double size){
 		double currentLevel = this.inventoryLevel.get((int)RepastEssentials.GetTickCount());
 		this.inventoryLevel.set((int)RepastEssentials.GetTickCount(), currentLevel + size);
-		System.out.println("BIZ: " + biz.getId() + ", MATERIAL: " + material + ", INVENTORY INCREASED: " + size);
+		//System.out.println("BIZ: " + biz.getId() + ", MATERIAL: " + material + ", INVENTORY INCREASED: " + size);
 	}
 	
 	

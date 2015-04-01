@@ -58,7 +58,7 @@ public abstract class Node {
 	}
 	
 	public void print(){
-		System.out.println("Node: " + this.Id + ", Tier: " + + this.tier + ", " + getLinksString());
+		//System.out.println("Node: " + this.Id + ", Tier: " + + this.tier + ", " + getLinksString());
 	}
 	
 	private String getLinksString(){

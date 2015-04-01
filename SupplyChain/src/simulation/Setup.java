@@ -61,7 +61,7 @@ public class Setup {
 		sources.add(new MaterialSource(4));
 		businesses.add(new Manufacturer(3));
 		businesses.add(new Manufacturer(2));
-		customers.add(new Customer(new NormalDistribution(10.0, 5.0)));
+		customers.add(new Customer(new Constant(10.0)));
 		
 		links.add(new Link(sources.get(0), businesses.get(0)));
 		links.add(new Link(businesses.get(0), businesses.get(1)));

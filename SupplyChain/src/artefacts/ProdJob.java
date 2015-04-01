@@ -8,13 +8,14 @@ private static int count;
 	private int date;
 	private double size;
 	private int leadTime;
-	private Order order;
+	private ProdRequest prodRequest;
 	
-	public ProdJob(int d, double s, int lt){
+	public ProdJob(int d, double s, int lt, ProdRequest pReq){
 		this.Id = count++;
 		this.date = d;
 		this.size = s;
 		this.leadTime = lt;
+		this.prodRequest = pReq;
 	}
 	
 	public int getDate(){
@@ -25,8 +26,8 @@ private static int count;
 		return this.size;
 	}
 	
-	public Order getOrder(){
-		return this.order;
+	public ProdRequest getProdRequest(){
+		return this.prodRequest;
 	}
 	
 	public int getLeadTime(){
@@ -34,7 +35,7 @@ private static int count;
 	}
 	
 	public String toString(){
-		return "Shipment: " + this.Id + ", Date: " + this.date + ", Size " + this.size + ", LeadTime: " + this.leadTime + ", Order: " + this.order;
+		return "ProdJob: ID-" + this.Id + ", Date-" + this.date + ", Size-" + this.size + ", LeadTime-" + this.leadTime + ", ProdRequest-" + this.prodRequest;
 	}
 
 }

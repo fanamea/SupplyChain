@@ -40,21 +40,21 @@ public class ProductionPlanModule {
 		this.setUpCost = 1;
 		this.billOfMaterial = new HashMap<Material, Double>();
 		for(Link link : biz.getUpstrLinks()){
-			System.out.println("bomAdd");
+			//System.out.println("bomAdd");
 			billOfMaterial.put(link.getMaterial(), 1.0);   //TODO: BillOfMaterial bei Setup einlesen
 		}
 		this.forecast = new TreeMap<Integer, Double>();
 		lotPlan = new TreeMap<Integer, Double>();
-		System.out.println("Biz: " + biz.getId() + ", bom.size: " + billOfMaterial.size());
+		//System.out.println("Biz: " + biz.getId() + ", bom.size: " + billOfMaterial.size());
 	}	
 	
 	public void planProduction(){
 		TreeMap<Integer, Double> dueList = biz.getInventoryPlanModule().getInventoryDueList(biz.getProduct());
 		TreeMap<Integer, Double> capacitatedDueList = capacitatePlannedStocks(dueList);
-		System.out.println("Capacitated DueList: " + capacitatedDueList);
+		//System.out.println("Capacitated DueList: " + capacitatedDueList);
 		double holdingCost = biz.getInventoryPlanModule().getInventory(biz.getProduct()).getHoldingCost();
 		lotPlan = this.lotSizingAlgo.calcLotPlan(capacitatedDueList, setUpCost, holdingCost);
-		System.out.println("lotPlan:" + lotPlan);
+		//System.out.println("lotPlan:" + lotPlan);
 		fillProdRequestPipeLine(lotPlan);
 	}
 	
@@ -82,7 +82,7 @@ public class ProductionPlanModule {
 	
 	public double getResourceDemand(int date, Material material){
 		if(lotPlan.containsKey(date)){
-			System.out.println("Material: " + material.getId());
+			//System.out.println("Material: " + material.getId());
 			return lotPlan.get(date)*billOfMaterial.get(material);	
 		}
 				

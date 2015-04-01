@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 import modules.*;
+import demandPattern.Constant;
 import demandPattern.DemandPattern;
 import demandPattern.NormalDistribution;
 import artefacts.Material;
@@ -49,10 +50,16 @@ public class Manufacturer extends Business{
 		
 		this.planningPeriod = 10;
 		
-		DemandPattern pattern = new NormalDistribution(10.0, 1.0);
+		DemandPattern pattern = new Constant(10.0);
 		for(int i=-100; i<1; i++){
 			this.forecastModule.handDemandData(i, pattern.getNextDouble());
 		}
+		
+		inventoryPlanModule.handForecast(forecastModule.getForecast(1, 10));
+		inventoryPlanModule.planEndProduct();
+		productionPlanModule.planProduction();
+		inventoryPlanModule.planMRP(productionPlanModule);			
+		orderPlanModule.plan();
 		
 	}	
 	
@@ -63,11 +70,11 @@ public class Manufacturer extends Business{
 	
 	@ScheduledMethod(start=1, interval = 1, priority = 9)
 	public void plan(){
-		System.out.println("Biz: " + this.Id + ", plan");
+		//System.out.println("Biz: " + this.Id + ", plan");
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		int productionTime = this.productionOpsModule.getProductionTime();
-		if(currentTick % planningPeriod == 0){
-			inventoryPlanModule.handForecast(forecastModule.getForecast(currentTick+productionTime+2, currentTick+planningPeriod+productionTime+2));
+		if(currentTick % planningPeriod == 1){
+			inventoryPlanModule.handForecast(forecastModule.getForecast(currentTick+planningPeriod, currentTick+2*planningPeriod-1));
 			inventoryPlanModule.planEndProduct();
 			productionPlanModule.planProduction();
 			inventoryPlanModule.planMRP(productionPlanModule);			
@@ -87,7 +94,7 @@ public class Manufacturer extends Business{
 	
 	@ScheduledMethod(start=1, interval=1, priority = 7)
 	public void produce(){
-		System.out.println("Biz: " + this.Id + ", produce");
+		//System.out.println("Biz: " + this.Id + ", produce");
 		productionOpsModule.startProdJobs();
 		inventoryOpsModule.storeMaterials(productionOpsModule.getArrivingProduction());		
 	}
@@ -99,7 +106,7 @@ public class Manufacturer extends Business{
 	
 	@ScheduledMethod(start=1, interval = 1, priority = 4)
 	public void fetchOrders(){
-		System.out.println("Biz: " + this.Id + ", fetchOrders");
+		//System.out.println("Biz: " + this.Id + ", fetchOrders");
 		ArrayList<Order> newOrders = new ArrayList<Order>();
 		for(Link link : this.downstrLinks){
 			newOrders.addAll(link.fetchOrders());
@@ -173,8 +180,15 @@ public class Manufacturer extends Business{
 	public String getInformationString(){
 		String string = "";
 		string += "Node: " + this.Id + ", Tier: " + this.tier + "\n";
+		string += "   OrderOpsModule: \n"
+				+ orderOpsModule.getInformationString() + "\n";
+		string += "   ProductionOpsMoule: \n" 
+				+ productionOpsModule.getInformationString() + "\n";
 		string += "   InventoryOpsModule: \n" 
-				+ inventoryOpsModule.getInformationString();
+				+ inventoryOpsModule.getInformationString() + "\n";
+		string += "    DeliveryModule: \n"
+				+ deliveryModule.getInformationString() + "\n";
+		
 		return string;
 	}
 

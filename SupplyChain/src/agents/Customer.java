@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import cern.jet.random.AbstractDistribution;
 import artefacts.Order;
+import artefacts.OrderReq;
 import artefacts.Shipment;
 import demandPattern.DemandPattern;
 import repast.simphony.engine.schedule.ScheduledMethod;
@@ -35,6 +36,7 @@ public class Customer extends Node{
 	public void placeOrder(){
 		//System.out.println("placeOrderCustomer");
 		double size = pattern.getNextDouble();
+		//System.out.println("Customer Order: " + size);
 		ArrayList<Order> orderList = new ArrayList<Order>();
 		orderList.add(new Order(upstrLinks.get(0),(int)RepastEssentials.GetTickCount(), size));
 		upstrLinks.get(0).putOrders(orderList);

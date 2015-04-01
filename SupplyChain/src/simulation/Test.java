@@ -10,6 +10,7 @@ import net.sourceforge.openforecast.DataPoint;
 import net.sourceforge.openforecast.DataSet;
 import net.sourceforge.openforecast.ForecastingModel;
 import net.sourceforge.openforecast.Observation;
+import net.sourceforge.openforecast.models.AbstractForecastingModel;
 import net.sourceforge.openforecast.models.MovingAverageModel;
 
 import org.apache.commons.math3.*;
@@ -23,11 +24,29 @@ import repast.simphony.random.RandomHelper;
 public class Test {
 	
 	public static void main(String[] args){
-		TreeMap<Integer, Double> forecast = new TreeMap<Integer, Double>();
-		for(int i=0; i<10; i++){
-			forecast.put(i, 10.0);
+		DataSet dataSet = new DataSet();
+		DataPoint dp; 
+		for(int i=1; i<=10; i++){
+			dp = new Observation(10.0);
+			dp.setIndependentValue("Tick", i);
+			dataSet.add(dp);
 		}
-		System.out.println(getPlannedStocks(forecast));
+		dp = new Observation(5.0);
+		dp.setIndependentValue("Tick", 5);
+		dataSet.add(dp);
+		AbstractForecastingModel fcModel = new MovingAverageModel(10);
+		fcModel.init(dataSet);
+		DataSet fcSet = new DataSet();
+		DataPoint fc = new Observation(0);
+		fc.setIndependentValue("Tick", 11);
+		fcSet.add(fc);
+		fcModel.forecast(fcSet);
+		Iterator it = fcSet.iterator();
+		while(it.hasNext()){
+			dp = (DataPoint)it.next();
+			System.out.println(dp);
+		}
+		
 		
 	}
 	
@@ -44,9 +63,9 @@ public class Test {
 		for(Integer i : forecast.keySet()){
 			subMap.put(i, forecast.get(i));
 			cumulatedStocks.put(i, getCumulatedStock(subMap));
-			System.out.println(i + ": " + cumulatedStocks.get(i));
+			//System.out.println(i + ": " + cumulatedStocks.get(i));
 		}
-		System.out.println("----------");
+		//System.out.println("----------");
 		
 		boolean first = true;
 		for(Integer i : cumulatedStocks.keySet()){

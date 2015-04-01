@@ -21,6 +21,10 @@ public class OrderReq {
 		placed = false;
 	}
 	
+	public int getId(){
+		return this.Id;
+	}
+	
 	public Integer getDate(){
 		return this.date;
 	}
@@ -46,7 +50,7 @@ public class OrderReq {
 	}
 	
 	public String toString(){
-		return "Order: " + this.Id + ", Date: " + this.date + ", Size: " + this.size;
+		return "OrderRequest: Order-" + this.Id + ", Date-" + this.date + ", Size-" + this.size;
 	}
 
 }

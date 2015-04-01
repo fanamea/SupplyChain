@@ -20,5 +20,9 @@ public class Material {
 		return this.id;
 	}
 	
+	public String toString(){
+		return "ID: " + this.id;
+	}
+	
 
 }

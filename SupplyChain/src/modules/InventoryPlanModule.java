@@ -99,7 +99,7 @@ public class InventoryPlanModule{
 					dueList.put(date, amount);
 				}
 				inventory.setDueList(dueList);
-				System.out.println("inInventoryDueList: " + dueList);
+				//System.out.println("inInventoryDueList: " + dueList);
 			}
 		}
 	}		
@@ -119,10 +119,10 @@ public class InventoryPlanModule{
 	}
 
 	public void calcOutInventoryDueList(){
-		System.out.println("Biz: " + this.biz.getId() + ", Forecast: " + this.demandForecast);
+		//System.out.println("Biz: " + this.biz.getId() + ", Forecast: " + this.demandForecast);
 		Inventory outInventory = inventories.get(biz.getProduct());
 		TreeMap<Integer, Double> plannedStocks = getPlannedStocks(this.demandForecast);
-		System.out.println("plannedStocks: " + plannedStocks);
+		//System.out.println("plannedStocks: " + plannedStocks);
 		outInventory.setDueList(plannedStocks);
 	}
 
@@ -171,6 +171,7 @@ public class InventoryPlanModule{
 	
 	public void handForecast(TreeMap<Integer, Double> forecast){
 		this.demandForecast = forecast;
+		System.out.println(forecast);
 	}
 	
 	public String getPlanString(){
@@ -190,8 +191,6 @@ public class InventoryPlanModule{
 			string += "         Material: " + material.getId() + "\n" 
 					+ "            " + inventories.get(material).getInformationString() + "\n";
 		}
-		string += "      OutInventory: " + "\n"
-				+ "            " + outInventory.getInformationString() + "\n";
 		
 		return string;
 	}
