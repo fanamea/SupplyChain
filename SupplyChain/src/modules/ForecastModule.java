@@ -54,6 +54,15 @@ public class ForecastModule{
 		return forecast;
 	}
 	
+	public double getFCSum(int start, int end){
+		TreeMap<Integer, Double> forecast = getForecast(start, end);
+		double sum = 0;
+		for(Double d : forecast.values()){
+			sum+=d;
+		}
+		return sum;
+	}
+	
 	public double getSDDemand(){
 		return demandStats.getStandardDeviation();
 	}

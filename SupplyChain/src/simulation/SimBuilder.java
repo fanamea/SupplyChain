@@ -34,7 +34,7 @@ public class SimBuilder implements ContextBuilder<Object> {
 	 */
 	@Override
 	public Context build(Context<Object> context) {
-		context.setId("context");
+		//context.setId("SupplyChain");
 
 		NetworkBuilder<Object> netBuilder = new NetworkBuilder<Object>(
 				"infection network", context, true);
@@ -55,7 +55,7 @@ public class SimBuilder implements ContextBuilder<Object> {
 		Parameters params = RunEnvironment.getInstance().getParameters();
 		
 		Setup setup = new Setup();
-		setup.productionSetUp();
+		setup.retailerSetUp();
 		setup.print();
 		
 		for(MaterialSource source : setup.getMaterialSources()){

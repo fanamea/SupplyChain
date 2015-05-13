@@ -141,6 +141,10 @@ public class Retailer extends Business{
 		return this.inventoryOpsModule;
 	}
 	
+	public double getOrderVariance(){
+		return this.forecastModule.getSDDemand();
+	}
+	
 	
 	public String getInformationString(){
 		String string = "";
@@ -148,6 +152,12 @@ public class Retailer extends Business{
 		string += "   InventoryAgent: \n" 
 				+ inventoryOpsModule.getInformationString();
 		return string;
+	}
+
+	@Override
+	public ProductionOpsModule getProductionOpsModule() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 

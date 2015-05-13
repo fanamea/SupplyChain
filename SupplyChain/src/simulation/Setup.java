@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import modules.Link;
 import demandPattern.Constant;
 import demandPattern.NormalDistribution;
+import demandPattern.RandomWalk;
 import agents.Business;
 import agents.Customer;
 import agents.Manufacturer;
@@ -39,7 +40,7 @@ public class Setup {
 		sources.add(new MaterialSource(4));
 		businesses.add(new Retailer(3));
 		businesses.add(new Retailer(2));
-		customers.add(new Customer(new Constant(10.0)));
+		customers.add(new Customer(new RandomWalk(10.0, 0.0, 2.0)));
 		
 		links.add(new Link(sources.get(0), businesses.get(0)));
 		links.add(new Link(businesses.get(0), businesses.get(1)));
@@ -58,14 +59,12 @@ public class Setup {
 	
 	public void productionSetUp(){
 		
-		sources.add(new MaterialSource(4));
-		businesses.add(new Manufacturer(3));
+		sources.add(new MaterialSource(3));
 		businesses.add(new Manufacturer(2));
 		customers.add(new Customer(new Constant(10.0)));
 		
 		links.add(new Link(sources.get(0), businesses.get(0)));
-		links.add(new Link(businesses.get(0), businesses.get(1)));
-		links.add(new Link(businesses.get(1), customers.get(0)));
+		links.add(new Link(businesses.get(0), customers.get(0)));
 		
 		for(MaterialSource source : sources){
 			source.initNode();
@@ -145,6 +144,8 @@ public class Setup {
 		for(Business biz : businesses){
 			string += biz.getInformationString();
 		}
+		string += "\n";
+		string += "MATERIAL SOURCE: " + sources.get(0).getInformationString();
 		string += "\n \n";
 		System.out.print(string);
 	}

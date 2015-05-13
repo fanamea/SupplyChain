@@ -26,7 +26,7 @@ public class MaterialSource extends Node{
 	
 	public MaterialSource(int tier){
 		super(tier);
-		this.capacity = 30;
+		this.capacity = 100;
 		this.product = new Material("");
 		this.orderPipeLine = new CopyOnWriteArrayList<Order>();
 	}
@@ -53,7 +53,7 @@ public class MaterialSource extends Node{
 			int duration = link.genDuration();
 			double amount = Math.min(capacity-shipped, order.getSize());
 			Shipment newShipment = new Shipment(link, currentTick, amount, duration, order);
-			//System.out.println("SHIPMENT FROM SOURCE: " + newShipment);
+			System.out.println("SHIPMENT FROM SOURCE: " + newShipment);
 			order.addShipment(newShipment);
 			order.incrSent(amount);
 			//System.out.println("Shortage sent: " + order.getShortageSent() + ", isSent(): " + order.isSent() + ", orderPipeLine.size: " + orderPipeLine.size());
@@ -78,8 +78,9 @@ public class MaterialSource extends Node{
 	}
 	@Override
 	public String getInformationString() {
-		// TODO Auto-generated method stub
-		return null;
+		String string = "";
+		string += "OrderPipeLine: " + this.orderPipeLine;
+		return string;
 	}	
 	
 	

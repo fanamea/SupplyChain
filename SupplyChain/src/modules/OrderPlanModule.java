@@ -66,7 +66,7 @@ public class OrderPlanModule {
 		
 		for(Integer i : lotPlan.keySet()){
 			if(lotPlan.get(i)>0){
-				OrderReq orderReq = new OrderReq(material, i-totalLeadTime, dueList.get(i));
+				OrderReq orderReq = new OrderReq(material, i-totalLeadTime-3, dueList.get(i));
 				System.out.println("NEW ORDERREQ: ID: " + orderReq.getId() + ", Material: " + material + "i: " + i + ", totalLeadTime: " + totalLeadTime + ", size: " + dueList.get(i));
 				orderReqs.add(orderReq);
 			}

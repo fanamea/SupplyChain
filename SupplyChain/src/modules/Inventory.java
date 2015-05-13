@@ -40,7 +40,7 @@ public class Inventory {
 		holdingCost = 0.5;	
 		serviceLevel = 0.95;		
 		
-		inventoryLevel.add(30.0);
+		inventoryLevel.add(0.0);
 	}
 	
 	public void prepareTick(){

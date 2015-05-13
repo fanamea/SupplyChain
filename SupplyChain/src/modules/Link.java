@@ -49,7 +49,7 @@ public class Link {
 		ArrayList<Shipment> ret = new ArrayList<Shipment>();
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		for(Shipment shipment : shipmentPipeLine){
-			if(shipment.getDate() + shipment.getDuration() == currentTick){
+			if(shipment.getDate() + shipment.getDuration() <= currentTick){
 				ret.add(shipment);
 				shipmentPipeLine.remove(shipment);	
 			}
@@ -64,7 +64,7 @@ public class Link {
 	
 	//TODO: Leadtime generieren
 	public int genDuration(){
-		return 2;
+		return 1;
 	}
 	
 	/**

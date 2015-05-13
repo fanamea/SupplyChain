@@ -91,7 +91,7 @@ public class ProductionOpsModule {
 		output.put(biz.getProduct(), 0.0);
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		for(ProdJob job : productionPipeLine){			
-			if(job.getDate() + job.getLeadTime() == currentTick){
+			if(job.getDate() + job.getLeadTime() <= currentTick){
 				output.put(biz.getProduct(), output.get(biz.getProduct())+job.getSize());
 				productionPipeLine.remove(job);
 			}
@@ -115,17 +115,20 @@ public class ProductionOpsModule {
 		return sum;
 	}
 	
-	/**
-	 * Nur wenn Endproduktlager Inventory Policy hat (Pull production)
-	 * @return
-	 */
+	
 	public double getProcessingProduction(){
 		double currentTick = (int)RepastEssentials.GetTickCount();
 		double sum = 0;
+		for(ProdJob job : productionPipeLine){
+			sum += job.getSize();
+		}
+		return sum;
+	}
+	
+	public double getScheduledProduction(){
+		double sum = 0;
 		for(ProdRequest pReq : prodRequestPipeLine){
-			if(pReq.getDate()<=currentTick){
-				sum += pReq.getShortageArrived();
-			}
+			sum+=pReq.getSize();
 		}
 		return sum;
 	}

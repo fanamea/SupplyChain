@@ -177,6 +177,10 @@ public class Manufacturer extends Business{
 		return this.productionOpsModule;
 	}
 	
+	public double getOrderVariance(){
+		return this.forecastModule.getSDDemand();
+	}
+	
 	public String getInformationString(){
 		String string = "";
 		string += "Node: " + this.Id + ", Tier: " + this.tier + "\n";

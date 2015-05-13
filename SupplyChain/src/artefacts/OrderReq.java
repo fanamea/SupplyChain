@@ -50,7 +50,7 @@ public class OrderReq {
 	}
 	
 	public String toString(){
-		return "OrderRequest: Order-" + this.Id + ", Date-" + this.date + ", Size-" + this.size;
+		return "OrderRequest: ID-" + this.Id + ", Date-" + this.date + ", Size-" + this.size;
 	}
 
 }

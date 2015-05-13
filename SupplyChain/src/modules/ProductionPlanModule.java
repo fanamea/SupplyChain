@@ -11,6 +11,7 @@ import lotSizingAlgorithms.SilverMeal;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
+import repast.simphony.essentials.RepastEssentials;
 import modules.Link;
 import agents.Business;
 import artefacts.Material;
@@ -55,7 +56,9 @@ public class ProductionPlanModule {
 		double holdingCost = biz.getInventoryPlanModule().getInventory(biz.getProduct()).getHoldingCost();
 		lotPlan = this.lotSizingAlgo.calcLotPlan(capacitatedDueList, setUpCost, holdingCost);
 		//System.out.println("lotPlan:" + lotPlan);
-		fillProdRequestPipeLine(lotPlan);
+		TreeMap<Integer, Double> adjustedLotPlan = adjustLotPlan(lotPlan);
+		System.out.println("ADJUSTED LOTPLAN: " + adjustedLotPlan);
+		fillProdRequestPipeLine(adjustedLotPlan);
 	}
 	
 	private void fillProdRequestPipeLine(TreeMap<Integer, Double> lotPlan){
@@ -78,6 +81,29 @@ public class ProductionPlanModule {
 			}
 		}
 		return capacitated;
+	}
+	
+	public TreeMap<Integer, Double> adjustLotPlan(TreeMap<Integer, Double> lotplan){
+		int currentTick = (int)RepastEssentials.GetTickCount();
+		if(currentTick==-1){
+			return lotplan;
+		}
+		int pivotDate = lotplan.firstKey();
+		ProductionOpsModule opsModule = biz.getProductionOpsModule();
+		double currentInventory = biz.getInventoryOpsModule().getInventoryLevel(biz.getProduct());
+		double forecast = biz.getForecastModule().getFCSum(currentTick, pivotDate-1);
+		double scheduled = opsModule.getProcessingProduction() + opsModule.getScheduledProduction();
+		double adjustment = currentInventory+scheduled-forecast;
+		System.out.println("currentTick: " + currentTick + ", currentInventory: " + currentInventory + "forecast: " + forecast + ", scheduled" + scheduled + ", ADJUSTMENT:" + adjustment);
+		
+		for(Integer i : lotplan.keySet()){
+			if(adjustment!=0){
+				double sub = Math.min(lotplan.get(i), adjustment);
+				lotplan.put(i, lotplan.get(i)-sub);
+				adjustment-=sub;
+			}
+		}
+		return lotplan;
 	}
 	
 	public double getResourceDemand(int date, Material material){

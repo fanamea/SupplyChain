@@ -45,9 +45,7 @@ public class Test {
 		while(it.hasNext()){
 			dp = (DataPoint)it.next();
 			System.out.println(dp);
-		}
-		
-		
+		}		
 	}
 	
 	

@@ -84,6 +84,7 @@ public class DeliveryModule {
 					order.incrSent(shipableAmount.get(endProduct));
 					link.induceShipment(shipment);
 				}
+				//System.out.println(order.isSent());
 				if(order.isSent()){
 					orderPipeLine.remove(order);
 				}
@@ -103,7 +104,7 @@ public class DeliveryModule {
 	
 	public String getInformationString(){
 		String string = "";
-		string += "      OrderPipeLine: " + orderPipeLine;
+		string += "      OrderPipeLine: " + orderPipeLine + "\n";
 		string += "Backlog: " + getBacklog();
 		return string;
 	}

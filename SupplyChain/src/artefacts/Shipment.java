@@ -55,7 +55,7 @@ public class Shipment {
 	}
 	
 	public String toString(){
-		return "Shipment: ID-" + this.Id + ", Date-" + this.date + ", Size-" + this.size + ", LeadTime-" + this.duration + ", Order-" + this.order;
+		return "Shipment: ID-" + this.Id + ", Date-" + this.date + ", Material-" + this.material + ", Size-" + this.size + ", LeadTime-" + this.duration + ", Order-" + this.order;
 	}
 
 }

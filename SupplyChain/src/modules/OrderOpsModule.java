@@ -93,18 +93,24 @@ public class OrderOpsModule {
 	public void processInShipments(ArrayList<Shipment> shipments){
 		HashMap<Material, Double> materials = new HashMap<Material, Double>();
 		for(Shipment shipment : shipments){
-			
-			materials.put(shipment.getMaterial(), shipment.getSize());
+			Material material = shipment.getMaterial();
+			if(materials.keySet().contains(material)){
+				materials.put(material, materials.get(material) + shipment.getSize());
+			}
+			else{
+				materials.put(material,  shipment.getSize());
+			}
 			Order order = shipment.getOrder();
 			order.incrArrived(shipment.getSize());
 			if(order.hasArrived()){
 				orderPipeLine.get(shipment.getMaterial()).remove(order);
-				//System.out.println("Shipment arrived: " + shipment);
+				System.out.println("Shipment arrived: " + shipment);
 			}
 			
 			maintainLeadTimeData(shipment);
 			//System.out.println("maintainLeadTimeData, Tier: " + biz.getTier() + ", " + shipment);
 		}
+		System.out.println("Store Materials: " + materials);
 		biz.getInventoryOpsModule().storeMaterials(materials);
 	}
 	
