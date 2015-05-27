@@ -18,16 +18,13 @@ import modules.Link;
 public class ProductionOpsModule {
 	
 	private Manufacturer biz;
-	private int productionTime;
-	private double productionCapacity;
+	
 	
 	private CopyOnWriteArrayList<ProdJob> productionPipeLine;
 	private CopyOnWriteArrayList<ProdRequest> prodRequestPipeLine;
 	
 	public ProductionOpsModule(Manufacturer biz){
 		this.biz = biz;
-		this.productionTime = 2;
-		this.productionCapacity = 30;
 		
 		productionPipeLine = new CopyOnWriteArrayList<ProdJob>();
 		prodRequestPipeLine = new CopyOnWriteArrayList<ProdRequest>();
@@ -38,7 +35,8 @@ public class ProductionOpsModule {
 		//System.out.println("startProdJobs");
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		double productionCounter = 0;		
-		double capacityLeft = productionCapacity;
+		double capacityLeft = biz.getProductionPlanModule().getProductionCapacity();
+		int productionTime = biz.getProductionPlanModule().getProductionTime();
 		boolean isProdRequest = false;
 		double maxProduction = 0;
 		double batchSize = 0;
@@ -52,7 +50,7 @@ public class ProductionOpsModule {
 				ProdRequest pReq = prodRequestPipeLine.get(0);
 				isProdRequest = pReq.getDate()<=currentTick;
 				if(isProdRequest){
-					capacityLeft = productionCapacity-productionCounter;
+					capacityLeft = capacityLeft-productionCounter;
 					//System.out.println("capacityLeft: " + capacityLeft);
 					maxProduction = calcMaxProduction(pReq.getBoM());
 					//System.out.println("maxProduction: " + maxProduction);
@@ -62,7 +60,7 @@ public class ProductionOpsModule {
 						batchSize = Math.min(capacityLeft, batchSize);
 						//System.out.println("batchSize: " + batchSize);
 						HashMap<Material, Double> request = calcRessourceDemand(batchSize, pReq.getBoM());
-						biz.getInventoryOpsModule().requestMaterials(request);
+						biz.getInventoryOpsModule().requestMaterials(request);						
 						ProdJob job = new ProdJob(currentTick, batchSize, productionTime, pReq);
 						pReq.addProdJob(job);
 						pReq.incrSent(batchSize);
@@ -134,40 +132,6 @@ public class ProductionOpsModule {
 	}
 	
 	
-	/*
-	 **
-	 * Übergangsweise vereinfachte production ohne Planung.
-	 * Anstelle von startProdJobs
-	 *
-	public void produce(){
-		double amount = biz.getInventoryAgent().getProductionSize();
-		int currentTick = (int)RepastEssentials.GetTickCount();
-		
-		if(amount!=0.0){
-			double plannedBatchSize = amount;
-			double maxProduction = calcMaxProduction();
-			HashMap<Material, Double> request = calcRessourceDemand(maxProduction);
-			HashMap<Material, Double> delivery = biz.getInventoryAgent().requestMaterials(request);
-			//System.out.println("plannedBatchSize: " + plannedBatchSize + ", maxProduction: " + maxProduction);
-			if(plannedBatchSize <= maxProduction){
-				
-				ProdJob job = new ProdJob(currentTick, plannedBatchSize, productionTime);
-				//System.out.println("ProdJob: " + job.getSize());
-				productionPipeLine.add(job);
-			}
-			else{
-				ProdJob job = new ProdJob(currentTick, maxProduction, productionTime);
-				//System.out.println("ProdJob: " + job.getSize());
-				productionPipeLine.add(job);
-				//TODO Fehlmenge behandeln
-			}
-		}
-	}
-	*/
-	
-	
-	
-	
 	/**
 	 * Berechnet die auf Grund von: Input Lagerbeständen die maximal mögliche Produktionsmenge.
 	 * @return maximal mögliche Produktionsmenge
@@ -202,14 +166,6 @@ public class ProductionOpsModule {
 			demand.put(material, d);
 		}
 		return demand;
-	}
-	
-	public double getCapacity(){
-		return this.productionCapacity;
-	}
-	
-	public int getProductionTime(){
-		return this.productionTime;
 	}
 	
 	public CopyOnWriteArrayList<ProdRequest> getProdReqPipeLine(){

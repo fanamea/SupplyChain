@@ -33,7 +33,7 @@ public class ContinuousQ extends InventoryPolicy{
 		Material material = inventory.getMaterial();
 		double meanOrder = biz.getForecastModule().getMeanDemand();
 		double meanLeadTime = biz.getOrderPlanModule().calcMeanLeadTime(material);
-		double sdOrder = biz.getForecastModule().getSDDemand()*biz.getProductionAgent().getBillOfMaterial().get(material);
+		double sdOrder = biz.getForecastModule().getSDDemand();
 		double sdLeadTime = biz.getOrderPlanModule().calcSDLeadTime(material);
 		double safetyStock = planningTechniques.calcSafetyStock(sdOrder, meanLeadTime, inventory.getServiceLevel());
 		
@@ -42,6 +42,13 @@ public class ContinuousQ extends InventoryPolicy{
 			
 	public void calcOrderQuantity(){
 		double meanOrder = biz.getForecastModule().getMeanDemand();
-		this.orderQuantity = planningTechniques.getEOQ(meanOrder, inventory.getFixOrderCost(), inventory.getHoldingCost());
+		double orderFixCost = biz.getOrderPlanModule().getOrderFixCost(inventory.getMaterial());
+		this.orderQuantity = planningTechniques.getEOQ(meanOrder, orderFixCost, inventory.getHoldingCost());
+	}
+
+	@Override
+	public String getParameterString() {
+		// TODO Auto-generated method stub
+		return null;
 	}	
 }

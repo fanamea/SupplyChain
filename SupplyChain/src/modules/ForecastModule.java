@@ -10,6 +10,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.jfree.data.time.TimeSeries;
 
 import agents.Business;
+import artefacts.DemandData;
 import net.sourceforge.openforecast.DataPoint;
 import net.sourceforge.openforecast.DataSet;
 import net.sourceforge.openforecast.Observation;
@@ -25,20 +26,17 @@ public class ForecastModule{
 	private ArrayList<Link> linkList;
 	
 	private AbstractForecastingModel fcModel;
-	private DataSet demandData;
-	private DescriptiveStatistics demandStats;
+	private DemandData demandData;
 	
 	public ForecastModule(Business biz){
 		this.biz = biz;
 		this.linkList = biz.getDownstrLinks();
 		this.fcModel = new MovingAverageModel(20);
-		this.demandData = new DataSet();
-		this.demandStats = new DescriptiveStatistics();
 	}
 	
 	public TreeMap<Integer, Double> getForecast(int start, int end){
 		TreeMap<Integer, Double> forecast = new TreeMap<Integer, Double>();
-		fcModel.init(this.demandData);
+		fcModel.init(this.demandData.getDemandDataSet());
 		DataSet fcSet = new DataSet();
 		for(int i=start; i<=end; i++){
 			DataPoint dp = new Observation(0.0);
@@ -64,18 +62,14 @@ public class ForecastModule{
 	}
 	
 	public double getSDDemand(){
-		return demandStats.getStandardDeviation();
+		return demandData.getSDDemand();
 	}
 	
 	public double getMeanDemand(){
-		return demandStats.getMean();
+		return demandData.getMeanDemand();
 	}
 	
-	public void handDemandData(int tick, double demand){
-		System.out.println("handDemandData: " + tick + ", demand: " + demand);
-		DataPoint dp = new Observation(demand);
-		dp.setIndependentValue("Tick", tick);
-		this.demandData.add(dp);
-		this.demandStats.addValue(demand);
+	public void setDemandData(DemandData demandData){
+		this.demandData = demandData;
 	}
 }

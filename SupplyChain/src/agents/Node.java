@@ -2,6 +2,7 @@ package agents;
 
 import java.util.ArrayList;
 
+import artefacts.DemandData;
 import artefacts.Material;
 import modules.Link;
 
@@ -17,6 +18,7 @@ public abstract class Node {
 	
 	public abstract void initNode();
 	public abstract String getInformationString();
+	public abstract DemandData searchCustomerDemandData();
 	
 	
 	public Node(int tier){

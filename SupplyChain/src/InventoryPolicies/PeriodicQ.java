@@ -33,13 +33,20 @@ public class PeriodicQ extends InventoryPolicy{
 	
 	private void calcPeriod(){
 		double meanOrder = biz.getForecastModule().getMeanDemand();
-		double eoq = planningTechniques.getEOQ(meanOrder, inventory.getFixOrderCost(), inventory.getHoldingCost());
+		double orderFixCost = biz.getOrderPlanModule().getOrderFixCost(inventory.getMaterial());
+		double eoq = planningTechniques.getEOQ(meanOrder, orderFixCost, inventory.getHoldingCost());
 		this.period = (int)Math.ceil(eoq/meanOrder);
 	}
 	
 	public void calcOrderQuantity(){
 		double meanOrder = biz.getForecastModule().getMeanDemand();
 		this.orderQuantity = planningTechniques.getEOQ(meanOrder, inventory.getFixOrderCost(), inventory.getHoldingCost());
+	}
+
+	@Override
+	public String getParameterString() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

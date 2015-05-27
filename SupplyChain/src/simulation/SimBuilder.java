@@ -3,7 +3,9 @@ package simulation;
 import modules.Link;
 import agents.Business;
 import agents.Customer;
+import agents.Manufacturer;
 import agents.MaterialSource;
+import agents.Retailer;
 import repast.simphony.context.Context;
 import repast.simphony.context.DefaultContext;
 import repast.simphony.context.space.continuous.ContinuousSpaceFactory;
@@ -22,6 +24,8 @@ import repast.simphony.space.grid.Grid;
 import repast.simphony.space.grid.GridBuilderParameters;
 import repast.simphony.space.grid.SimpleGridAdder;
 import repast.simphony.space.grid.WrapAroundBorders;
+import setups.Setup;
+import setups.TwoRetailers;
 
 public class SimBuilder implements ContextBuilder<Object> {
 
@@ -54,16 +58,19 @@ public class SimBuilder implements ContextBuilder<Object> {
 
 		Parameters params = RunEnvironment.getInstance().getParameters();
 		
-		Setup setup = new Setup();
-		setup.retailerSetUp();
+		Setup setup = new TwoRetailers();
 		setup.print();
 		
 		for(MaterialSource source : setup.getMaterialSources()){
 			context.add(source);
 		}
 		
-		for(Business biz : setup.getBusinesses()) {
-			context.add(biz);
+		for(Manufacturer man : setup.getManufacturers()) {
+			context.add(man);
+		}
+		
+		for(Retailer ret : setup.getRetailers()){
+			context.add(ret);
 		}
 		
 		for(Customer customer : setup.getCustomers()){

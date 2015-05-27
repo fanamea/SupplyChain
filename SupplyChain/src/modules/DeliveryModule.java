@@ -49,14 +49,14 @@ public class DeliveryModule {
 	 */
 	public void processOrders(ArrayList<Order> orderList){
 		orderPipeLine.addAll(orderList);
-		ForecastModule fcAgent = biz.getForecastModule();
+		InformationModule infoModule = biz.getInformationModule();
 		int currentTick = (int)RepastEssentials.GetTickCount();		
 		double sum=0;
 		for(Order order : orderList){
 			sum += order.getSize();
 		}
 		//System.out.println("handDemandData: " + currentTick + ", sum: " + sum);
-		fcAgent.handDemandData(currentTick, sum);
+		infoModule.addIntDemandData(currentTick, sum);
 	}
 	
 	/**

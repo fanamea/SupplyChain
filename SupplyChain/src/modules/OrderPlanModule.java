@@ -35,7 +35,7 @@ public class OrderPlanModule {
 		this.planningTechniques = new PlanningMethods();
 		this.orderReqPipeLine = biz.getOrderOpsModule().getOrderReqPipeLine();
 		this.suppliers = biz.getOrderOpsModule().getSuppliers();
-		this.lotSizingAlgo = new SilverMeal();
+		this.lotSizingAlgo = new SilverMeal(0, 0);
 		this.leadTimeData = biz.getOrderOpsModule().getLeadTimeData();
 		this.serviceLevel = 0.98;
 	}
@@ -57,7 +57,9 @@ public class OrderPlanModule {
 		Link supplier = suppliers.get(material).get(0);
 		double fixCost = supplier.getFixCost();
 		double holdingCost = biz.getInventoryPlanModule().getInventory(material).getHoldingCost();
-		TreeMap<Integer, Double> lotPlan = lotSizingAlgo.calcLotPlan(dueList, fixCost, holdingCost);
+		this.lotSizingAlgo.setFixCost(fixCost);
+		this.lotSizingAlgo.setHoldingCost(holdingCost);
+		TreeMap<Integer, Double> lotPlan = lotSizingAlgo.calcLotPlan(dueList);
 		
 		double meanLeadTime = calcMeanLeadTime(supplier);
 		double sdLeadTime = calcSDLeadTime(supplier);
@@ -74,6 +76,10 @@ public class OrderPlanModule {
 		return orderReqs;		
 	}
 	
+	public double getOrderFixCost(Material material){
+		Link supplier = suppliers.get(material).get(0);
+		return supplier.getFixCost();
+	}
 	
 	public double calcMeanLeadTime(Link link){
 		return leadTimeData.get(link).getMean();

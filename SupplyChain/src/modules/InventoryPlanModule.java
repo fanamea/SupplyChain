@@ -1,5 +1,8 @@
 package modules;
 
+import inventoryPlannningAlgorithm.DefaultInventoryPlanning;
+import inventoryPlannningAlgorithm.InventoryPlanningAlgorithm;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
@@ -20,16 +23,14 @@ public class InventoryPlanModule{
 	private Business biz;
 	private InventoryOpsModule opsAgent;
 	private HashMap<Material, Inventory> inventories;
+	private InventoryPlanningAlgorithm inventoryPlanningAlgorithm;
 	
-	private TreeMap<Integer, Double> demandForecast;
-	
-	private double serviceLevel;
-	
+	private TreeMap<Integer, Double> demandForecast;	
 	
 	public InventoryPlanModule(Business biz){
 		this.biz = biz;
 		this.opsAgent = biz.getInventoryOpsModule();
-		this.serviceLevel = 0.98;
+		this.inventoryPlanningAlgorithm = new DefaultInventoryPlanning();
 		
 		this.inventories = opsAgent.getInventories();		
 	}
@@ -102,7 +103,13 @@ public class InventoryPlanModule{
 				//System.out.println("inInventoryDueList: " + dueList);
 			}
 		}
-	}		
+	}
+	
+	public void setHoldingCosts(double holdingCost){
+		for(Inventory inventory : inventories.values()){
+			inventory.setHoldingCost(holdingCost);
+		}
+	}
 	
 	public void setServiceLevels(double serviceLevel){
 		for(Inventory inventory : inventories.values()){
@@ -121,52 +128,9 @@ public class InventoryPlanModule{
 	public void calcOutInventoryDueList(){
 		//System.out.println("Biz: " + this.biz.getId() + ", Forecast: " + this.demandForecast);
 		Inventory outInventory = inventories.get(biz.getProduct());
-		TreeMap<Integer, Double> plannedStocks = getPlannedStocks(this.demandForecast);
+		TreeMap<Integer, Double> inventoryPlan = inventoryPlanningAlgorithm.calcInventoryPlan(this.demandForecast, outInventory.getServiceLevel());
 		//System.out.println("plannedStocks: " + plannedStocks);
-		outInventory.setDueList(plannedStocks);
-	}
-
-		
-	/*
-	 * TODO: Substract forecasted inventory for first period
-	 */
-	public TreeMap<Integer, Double> getPlannedStocks(TreeMap<Integer, Double> forecast){
-		
-		TreeMap<Integer, Double> subMap = new TreeMap<Integer, Double>();
-		TreeMap<Integer, Double> cumulatedStocks = new TreeMap<Integer, Double>();
-		TreeMap<Integer, Double> plannedStocks = new TreeMap<Integer, Double>();
-		
-		for(Integer i : forecast.keySet()){
-			subMap.put(i, forecast.get(i));
-			cumulatedStocks.put(i, getCumulatedStock(subMap));
-		}
-		
-		boolean first = true;
-		for(Integer i : cumulatedStocks.keySet()){
-			double ante = 0;
-			if(!first){
-				ante = cumulatedStocks.get(i-1);
-			}
-			plannedStocks.put(i, cumulatedStocks.get(i)-ante);
-			first = false;
-		}
-		
-		return plannedStocks;
-	}
-	
-	//Kein Rückgriff auf history, nur forecast (sd)
-	public double getCumulatedStock(TreeMap<Integer, Double> forecast){
-		DescriptiveStatistics stats = new DescriptiveStatistics();
-		for(Integer i : forecast.keySet()){
-			stats.addValue(forecast.get(i));
-		}
-		double sd = stats.getStandardDeviation();
-		if(sd==0) sd=0.001;
-		
-		NormalDistribution normal = new NormalDistribution(stats.getSum(), sd*stats.getN());
-		double totalStock = normal.inverseCumulativeProbability(serviceLevel);
-		
-		return totalStock;
+		outInventory.setDueList(inventoryPlan);
 	}
 	
 	public void handForecast(TreeMap<Integer, Double> forecast){

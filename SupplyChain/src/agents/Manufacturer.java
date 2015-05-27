@@ -1,12 +1,18 @@
 package agents;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.TreeMap;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
+import net.sourceforge.openforecast.DataSet;
+import lotSizingAlgorithms.LotSizingAlgorithm;
 import modules.*;
 import demandPattern.Constant;
 import demandPattern.DemandPattern;
 import demandPattern.NormalDistribution;
+import artefacts.DemandData;
 import artefacts.Material;
 import artefacts.Order;
 import artefacts.Shipment;
@@ -26,10 +32,8 @@ public class Manufacturer extends Business{
 	private ProductionOpsModule productionOpsModule;
 	private ProductionPlanModule productionPlanModule;	
 	private PlanningMethods planningTechniques;	
+	private InformationModule informationModule;
 	
-	private int planningPeriod;
-	
-		
 	public Manufacturer(int tier){
 		super(tier);
 		this.product = new Material("");
@@ -45,6 +49,7 @@ public class Manufacturer extends Business{
 		this.productionPlanModule = new ProductionPlanModule(this);
 		this.orderPlanModule = new OrderPlanModule(this);
 		this.planningTechniques = new PlanningMethods();
+		this.informationModule = new InformationModule(this);
 		
 		this.inventoryOpsModule.setUpResourceInventories();
 		
@@ -52,7 +57,7 @@ public class Manufacturer extends Business{
 		
 		DemandPattern pattern = new Constant(10.0);
 		for(int i=-100; i<1; i++){
-			this.forecastModule.handDemandData(i, pattern.getNextDouble());
+			this.informationModule.addIntDemandData(i, pattern.getNextDouble());
 		}
 		
 		inventoryPlanModule.handForecast(forecastModule.getForecast(1, 10));
@@ -72,8 +77,8 @@ public class Manufacturer extends Business{
 	public void plan(){
 		//System.out.println("Biz: " + this.Id + ", plan");
 		int currentTick = (int)RepastEssentials.GetTickCount();
-		int productionTime = this.productionOpsModule.getProductionTime();
 		if(currentTick % planningPeriod == 1){
+			forecastModule.setDemandData(informationModule.fuseDemandData());
 			inventoryPlanModule.handForecast(forecastModule.getForecast(currentTick+planningPeriod, currentTick+2*planningPeriod-1));
 			inventoryPlanModule.planEndProduct();
 			productionPlanModule.planProduction();
@@ -117,7 +122,11 @@ public class Manufacturer extends Business{
 	@ScheduledMethod(start=1, interval = 1, priority = 9.5)
 	public void dispatchShipments(){
 		this.deliveryModule.dispatchShipments();
-	}	
+	}
+	
+	public void setProduct(Material material){
+		this.product = material;
+	}
 	
 	public void addDownstrPartner(Link b){
 		downstrLinks.add(b);
@@ -178,7 +187,7 @@ public class Manufacturer extends Business{
 	}
 	
 	public double getOrderVariance(){
-		return this.forecastModule.getSDDemand();
+		return this.informationModule.getSDinternDemand();
 	}
 	
 	public String getInformationString(){
@@ -196,7 +205,61 @@ public class Manufacturer extends Business{
 		return string;
 	}
 
+	@Override
+	public void handExtDemandData(DemandData demandData) {
+		this.forecastModule.setDemandData(demandData);		
+	}
 	
+	/*
+	 * ---------------Parameter Setup-------------------------------
+	 */
+	
+	//Inventory
 
+	@Override
+	public void setHoldingCost(double holdingCost) {
+		this.inventoryPlanModule.setHoldingCosts(holdingCost);		
+	}
+	
+	public void setServiceLevel(double serviceLevel){
+		this.inventoryPlanModule.setServiceLevels(serviceLevel);
+	}
+	
+	//Production
+	
+	public void setProductionTime(int productionTime){
+		this.productionPlanModule.setProductionTime(productionTime);
+	}
+	
+	public void setProductionCapacity(double capacity){
+		this.productionPlanModule.setProductionCapacity(capacity);
+	}
+	
+	public void setBillOfMaterial(HashMap<Material, Double> boM){
+		this.productionPlanModule.setBillOfMaterial(boM);
+	}
+	
+	public void setSetUpCost(double setUpCost){
+		this.productionPlanModule.setSetUpCost(setUpCost);
+	}
+	
+	public void setLotSizingAlgorithm(LotSizingAlgorithm lotSizingAlgo){
+		this.productionPlanModule.setLotSizingAlgorithm(lotSizingAlgo);
+	}
 
+	@Override
+	public InformationModule getInformationModule() {
+		return this.informationModule;
+	}
+
+	@Override
+	public DemandData searchCustomerDemandData() {
+		return this.informationModule.searchCustomerDemandData();
+	}
+
+	@Override
+	public void setCustomerDemandData() {
+		this.informationModule.setCustomerDemandData();
+	}
+	
 }

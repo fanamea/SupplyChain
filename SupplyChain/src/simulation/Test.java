@@ -24,28 +24,10 @@ import repast.simphony.random.RandomHelper;
 public class Test {
 	
 	public static void main(String[] args){
-		DataSet dataSet = new DataSet();
-		DataPoint dp; 
-		for(int i=1; i<=10; i++){
-			dp = new Observation(10.0);
-			dp.setIndependentValue("Tick", i);
-			dataSet.add(dp);
+		AbstractDistribution distr = new Uniform(3,3,3);
+		for(int i=0; i<10; i++){
+			System.out.println(distr.nextInt());
 		}
-		dp = new Observation(5.0);
-		dp.setIndependentValue("Tick", 5);
-		dataSet.add(dp);
-		AbstractForecastingModel fcModel = new MovingAverageModel(10);
-		fcModel.init(dataSet);
-		DataSet fcSet = new DataSet();
-		DataPoint fc = new Observation(0);
-		fc.setIndependentValue("Tick", 11);
-		fcSet.add(fc);
-		fcModel.forecast(fcSet);
-		Iterator it = fcSet.iterator();
-		while(it.hasNext()){
-			dp = (DataPoint)it.next();
-			System.out.println(dp);
-		}		
 	}
 	
 	
@@ -93,20 +75,6 @@ public class Test {
 		return totalStock;
 	}
 	
-	public static void exampleSetUp(Setup setup){
-		
-		for(int i = 0; i < 7; i++){
-			setup.addNode(i);
-		}
-		
-		setup.addLink(0, 3, 3);
-		setup.addLink(1, 3, 3);
-		setup.addLink(2, 4, 3);
-		setup.addLink(3, 5, 2);
-		setup.addLink(4, 5, 2);
-		setup.addLink(5, 6, 1);
-		
-		setup.print();
-	}
+	
 
 }

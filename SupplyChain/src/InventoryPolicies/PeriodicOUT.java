@@ -37,7 +37,8 @@ public class PeriodicOUT extends InventoryPolicy{
 	
 	private void calcPeriod(){
 		double meanOrder = biz.getForecastModule().getMeanDemand();
-		double eoq = planningTechniques.getEOQ(meanOrder, inventory.getFixOrderCost(), inventory.getHoldingCost());
+		double orderFixCost = biz.getOrderPlanModule().getOrderFixCost(inventory.getMaterial());
+		double eoq = planningTechniques.getEOQ(meanOrder, orderFixCost, inventory.getHoldingCost());
 		this.period = (int)Math.ceil(eoq/meanOrder);
 	}
 	
@@ -45,11 +46,17 @@ public class PeriodicOUT extends InventoryPolicy{
 		Material material = inventory.getMaterial();
 		double meanOrder = biz.getForecastModule().getMeanDemand();
 		double meanLeadTime = biz.getOrderPlanModule().calcMeanLeadTime(material);
-		double sdOrder = biz.getForecastModule().getSDDemand()*biz.getProductionAgent().getBillOfMaterial().get(material);
+		double sdOrder = biz.getForecastModule().getSDDemand();
 		double sdLeadTime = biz.getOrderPlanModule().calcSDLeadTime(material);
 		double safetyStock = planningTechniques.calcSafetyStock(sdOrder, period+meanLeadTime, inventory.getServiceLevel());
 		
 		this.outLevel = (period+meanLeadTime)*meanOrder + safetyStock;
+	}
+
+	@Override
+	public String getParameterString() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }

@@ -5,9 +5,12 @@ import java.util.TreeMap;
 
 public class SilverMeal extends LotSizingAlgorithm{
 
+	public SilverMeal(double fixCost, double holdingCost) {
+		super(fixCost, holdingCost);
+	}
+
 	@Override
-	public TreeMap<Integer, Double> calcLotPlan(
-			TreeMap<Integer, Double> demand, double fixCost, double holdingCost) {
+	public TreeMap<Integer, Double> calcLotPlan(TreeMap<Integer, Double> demand) {
 		
 		TreeMap<Integer, Double> lotPlan = new TreeMap<Integer, Double>();
 		

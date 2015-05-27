@@ -6,6 +6,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
+import cern.jet.random.AbstractDistribution;
+import cern.jet.random.Normal;
 import agents.Business;
 import agents.Node;
 import artefacts.Material;
@@ -13,6 +15,7 @@ import artefacts.Order;
 import artefacts.Shipment;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
+import repast.simphony.random.RandomHelper;
 
 public class Link {
 	
@@ -21,8 +24,11 @@ public class Link {
 	private int Id;
 	private Node upstrNode;
 	private Node downstrNode;
-	private Material material;
+	
+	private Material material;	
 	private double fixCost;
+	private AbstractDistribution  distrDuration;
+	
 	private ArrayList<Order> orderHistory;
 	private CopyOnWriteArrayList<Order> orderPipeLine;
 	private ArrayList<Shipment> shipmentHistory;
@@ -34,7 +40,7 @@ public class Link {
 		this.downstrNode = down;
 		upstrNode.addDownstrLink(this);
 		downstrNode.addUpstrLink(this);
-		this.material = upstrNode.getProduct();   //TODO: BillOfMaterial beim Setup einlesen
+		this.material = upstrNode.getProduct();
 		orderHistory = new ArrayList<Order>();
 		orderPipeLine = new CopyOnWriteArrayList<Order>();
 		shipmentHistory = new ArrayList<Shipment>();
@@ -62,9 +68,12 @@ public class Link {
 		shipmentPipeLine.add(shipment);
 	}
 	
-	//TODO: Leadtime generieren
 	public int genDuration(){
-		return 1;
+		return this.distrDuration.nextInt();
+	}
+	
+	public void setDistrDuration(AbstractDistribution distr){
+		this.distrDuration = distr;
 	}
 	
 	/**
@@ -117,8 +126,16 @@ public class Link {
 		return this.material;
 	}
 	
+	public void setMaterial(Material material){
+		this.material = material;
+	}
+	
 	public double getFixCost(){
 		return this.fixCost;
+	}
+	
+	public void setFixCost(double fixCost){
+		this.fixCost = fixCost;
 	}
 
 	public String getAmountInformation(){

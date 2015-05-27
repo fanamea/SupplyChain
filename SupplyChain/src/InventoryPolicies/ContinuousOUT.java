@@ -45,7 +45,8 @@ public class ContinuousOUT extends InventoryPolicy{
 			
 	public void calcOutLevel(){
 		double meanOrder = biz.getForecastModule().getMeanDemand();
-		double orderQuantity = planningTechniques.getEOQ(meanOrder, inventory.getFixOrderCost(), inventory.getHoldingCost());
+		double orderFixCost = biz.getOrderPlanModule().getOrderFixCost(inventory.getMaterial());
+		double orderQuantity = planningTechniques.getEOQ(meanOrder, orderFixCost, inventory.getHoldingCost());
 		
 		System.out.println("meanOrder: " + meanOrder + ", orderQuantity: " + orderQuantity);
 		this.outLevel = this.reorderLevel + orderQuantity;

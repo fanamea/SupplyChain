@@ -24,10 +24,12 @@ public class Inventory {
 	private ArrayList<Double> inventoryLevel;
 	private TreeMap<Integer, Double> dueList;
 	private TreeMap<Integer, Double> orderList;
-		
-	private double fixOrderCost;
+	
+	//Parameters to define durint setup!
 	private double holdingCost;
 	private double serviceLevel;
+	
+	
 	
 	public Inventory(Business biz, InventoryOpsModule opsModule, Material material){
 		this.biz = biz;
@@ -36,9 +38,6 @@ public class Inventory {
 		this.dueList = new TreeMap<Integer, Double>();
 		this.orderList = new TreeMap<Integer, Double>();
 		this.inventoryLevel = new ArrayList<Double>();
-		fixOrderCost = 100;
-		holdingCost = 0.5;	
-		serviceLevel = 0.95;		
 		
 		inventoryLevel.add(0.0);
 	}
@@ -103,6 +102,10 @@ public class Inventory {
 		return this.serviceLevel;
 	}
 	
+	public void setHoldingCost(double holdingCost){
+		this.holdingCost = holdingCost;
+	}
+	
 	public void setServiceLevel(double d){
 		this.serviceLevel = d;
 	}
@@ -125,10 +128,6 @@ public class Inventory {
 	
 	public double getDueListEntry(int index){
 		return this.dueList.get(index);
-	}
-	
-	public double getFixOrderCost(){
-		return this.fixOrderCost;
 	}
 	
 	public double getHoldingCost(){
