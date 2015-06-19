@@ -31,9 +31,9 @@ public class ContinuousQ extends InventoryPolicy{
 	
 	public void calcReorderLevel(){
 		Material material = inventory.getMaterial();
-		double meanOrder = biz.getForecastModule().getMeanDemand();
+		double meanOrder = biz.getInformationModule().getMeanDemand();
 		double meanLeadTime = biz.getOrderPlanModule().calcMeanLeadTime(material);
-		double sdOrder = biz.getForecastModule().getSDDemand();
+		double sdOrder = biz.getInformationModule().getSDDemand();
 		double sdLeadTime = biz.getOrderPlanModule().calcSDLeadTime(material);
 		double safetyStock = planningTechniques.calcSafetyStock(sdOrder, meanLeadTime, inventory.getServiceLevel());
 		
@@ -41,7 +41,7 @@ public class ContinuousQ extends InventoryPolicy{
 	}
 			
 	public void calcOrderQuantity(){
-		double meanOrder = biz.getForecastModule().getMeanDemand();
+		double meanOrder = biz.getInformationModule().getMeanDemand();
 		double orderFixCost = biz.getOrderPlanModule().getOrderFixCost(inventory.getMaterial());
 		this.orderQuantity = planningTechniques.getEOQ(meanOrder, orderFixCost, inventory.getHoldingCost());
 	}

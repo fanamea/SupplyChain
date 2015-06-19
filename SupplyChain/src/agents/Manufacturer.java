@@ -19,23 +19,18 @@ import artefacts.Shipment;
 import InventoryPolicies.InvPolicies;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
+import setups.Setup;
 import modules.Link;
 
 public class Manufacturer extends Business{	
 	
-	private DeliveryModule deliveryModule;
-	private OrderOpsModule orderOpsModule;
-	private InventoryOpsModule inventoryOpsModule;	
-	private InventoryPlanModule inventoryPlanModule;
-	private ForecastModule forecastModule;
 	private OrderPlanModule orderPlanModule;
 	private ProductionOpsModule productionOpsModule;
 	private ProductionPlanModule productionPlanModule;	
-	private PlanningMethods planningTechniques;	
-	private InformationModule informationModule;
 	
-	public Manufacturer(int tier){
-		super(tier);
+	
+	public Manufacturer(Setup setup, int tier){
+		super(setup, tier);
 		this.product = new Material("");
 	}
 	
@@ -78,8 +73,9 @@ public class Manufacturer extends Business{
 		//System.out.println("Biz: " + this.Id + ", plan");
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		if(currentTick % planningPeriod == 1){
-			forecastModule.setDemandData(informationModule.fuseDemandData());
-			inventoryPlanModule.handForecast(forecastModule.getForecast(currentTick+planningPeriod, currentTick+2*planningPeriod-1));
+			informationModule.recalcTrustLevel();
+			informationModule.forecast(currentTick+planningPeriod, currentTick+2*planningPeriod-1);
+			inventoryPlanModule.handForecast(informationModule.getForecast());
 			inventoryPlanModule.planEndProduct();
 			productionPlanModule.planProduction();
 			inventoryPlanModule.planMRP(productionPlanModule);			
@@ -186,10 +182,6 @@ public class Manufacturer extends Business{
 		return this.productionOpsModule;
 	}
 	
-	public double getOrderVariance(){
-		return this.informationModule.getSDinternDemand();
-	}
-	
 	public String getInformationString(){
 		String string = "";
 		string += "Node: " + this.Id + ", Tier: " + this.tier + "\n";
@@ -260,6 +252,27 @@ public class Manufacturer extends Business{
 	@Override
 	public void setCustomerDemandData() {
 		this.informationModule.setCustomerDemandData();
+	}
+	
+	public void setTrustFeedback(){
+		this.informationModule.setTrustFeedback();
+	}
+
+	
+	@Override
+	public Class<?> getDataType() {
+		return Double.class;
+	}
+
+	@Override
+	public Class<?> getSourceType() {
+		return Business.class;
+	}
+
+	@Override
+	public Object get(Object obj) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }

@@ -32,9 +32,9 @@ public class ContinuousOUT extends InventoryPolicy{
 	
 	public void calcReorderLevel(){
 		Material material = inventory.getMaterial();
-		double meanOrder = biz.getForecastModule().getMeanDemand();
+		double meanOrder = biz.getInformationModule().getMeanDemand();
 		double meanLeadTime = biz.getOrderPlanModule().calcMeanLeadTime(material);
-		double sdOrder = biz.getForecastModule().getSDDemand();
+		double sdOrder = biz.getInformationModule().getSDDemand();
 		double sdLeadTime = biz.getOrderPlanModule().calcSDLeadTime(material);
 		double safetyStock = planningTechniques.calcSafetyStock(sdOrder, meanLeadTime, inventory.getServiceLevel());
 		
@@ -44,7 +44,7 @@ public class ContinuousOUT extends InventoryPolicy{
 	}
 			
 	public void calcOutLevel(){
-		double meanOrder = biz.getForecastModule().getMeanDemand();
+		double meanOrder = biz.getInformationModule().getMeanDemand();
 		double orderFixCost = biz.getOrderPlanModule().getOrderFixCost(inventory.getMaterial());
 		double orderQuantity = planningTechniques.getEOQ(meanOrder, orderFixCost, inventory.getHoldingCost());
 		

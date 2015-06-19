@@ -18,21 +18,15 @@ import InventoryPolicies.InvPolicies;
 import InventoryPolicies.InventoryPolicy;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
+import setups.Setup;
 import modules.Link;
 
 public class Retailer extends Business{
 	
-	private DeliveryModule deliveryModule;
-	private OrderOpsModule orderOpsModule;
-	private InventoryOpsModule inventoryOpsModule;	
-	private ForecastModule forecastModule;
-	private InventoryPlanModule inventoryPlanModule;
-	private OrderPlanModule orderPlanModule;
-	private PlanningMethods planningTechniques;
-	private InformationModule informationModule;
+	
 		
-	public Retailer(int tier){
-		super(tier);
+	public Retailer(Setup setup, int tier){
+		super(setup, tier);
 	}
 	
 	public void initNode(){	
@@ -63,7 +57,7 @@ public class Retailer extends Business{
 	@ScheduledMethod(start=1, interval = 1, priority = 9)
 	public void plan(){
 		int currentTick = (int)RepastEssentials.GetTickCount();
-		this.forecastModule.setDemandData(informationModule.fuseDemandData());
+		informationModule.combineDemandData();
 		if(currentTick % planningPeriod == 0){
 			inventoryPlanModule.recalcPolicyParams();
 			//System.out.println("Planning Period:" + inventoryPlanModule.getPlanString());
@@ -140,12 +134,7 @@ public class Retailer extends Business{
 	
 	public InventoryOpsModule getInventoryOpsModule(){
 		return this.inventoryOpsModule;
-	}
-	
-	public double getOrderVariance(){
-		return this.forecastModule.getSDDemand();
-	}
-	
+	}	
 	
 	public String getInformationString(){
 		String string = "";
@@ -165,7 +154,12 @@ public class Retailer extends Business{
 	public void handExtDemandData(DemandData demandData) {
 		this.forecastModule.setDemandData(demandData);		
 	}
-
+	
+	/*
+	 * ----------------- Analysis -------------------------------
+	 */
+	
+	
 	/*
 	 * ----------------- Parameter Setup ------------------------
 	 */
@@ -183,6 +177,10 @@ public class Retailer extends Business{
 		this.inventoryPlanModule.setInventoryPolicy(policy);
 	}
 	
+	public void setTrustLevel(double trustLevel){
+		this.informationModule.setTrustLevel(trustLevel);
+	}
+	
 	@Override
 	public InformationModule getInformationModule() {
 		return this.informationModule;
@@ -196,6 +194,22 @@ public class Retailer extends Business{
 	@Override
 	public void setCustomerDemandData() {
 		this.informationModule.setCustomerDemandData();		
+	}
+
+	@Override
+	public Class<?> getDataType() {
+		
+		return Double.class;
+	}
+
+	@Override
+	public Class<?> getSourceType() {
+		return Retailer.class;
+	}
+
+	@Override
+	public Object get(Object obj) {
+		return informationModule.getOrderVariance();
 	}
 
 

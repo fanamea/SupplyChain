@@ -14,16 +14,27 @@ import artefacts.Material;
 import artefacts.Order;
 import artefacts.Shipment;
 import InventoryPolicies.InvPolicies;
+import repast.simphony.data2.NonAggregateDataSource;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
+import setups.Setup;
 import modules.Link;
 
-public abstract class Business extends Node{	
+public abstract class Business extends Node implements NonAggregateDataSource{	
 	
 	protected int planningPeriod;
 	
-	public Business(int tier){
-		super(tier);
+	protected DeliveryModule deliveryModule;
+	protected OrderOpsModule orderOpsModule;
+	protected InventoryOpsModule inventoryOpsModule;	
+	protected ForecastModule forecastModule;
+	protected InventoryPlanModule inventoryPlanModule;
+	protected OrderPlanModule orderPlanModule;
+	protected PlanningMethods planningTechniques;
+	protected InformationModule informationModule;
+	
+	public Business(Setup setup, int tier){
+		super(setup, tier);
 	}
 	
 	public abstract void initNode();	
@@ -52,7 +63,31 @@ public abstract class Business extends Node{
 	public abstract void setCustomerDemandData();
 	
 	//Analysis
-	public abstract double getOrderVariance();
+	public double getBWEMeasure(){
+		Customer customer = setup.getCustomers().get(0);
+		//System.out.println("BWE: " + this.informationModule.getVarianceOrders() + ", " + customer.getVarianceOrders());
+		return this.informationModule.getVarianceOrders()/customer.getVarianceOrders();
+	}
+	
+	public double getOrderVariance(){
+		return this.informationModule.getVarianceOrders();
+	}
+	
+	public double getTrustLevel(){
+		return this.informationModule.getTrustLevel();
+	}
+	
+	public double getOrderAmount(){
+		return this.informationModule.getOrderAmount();
+	}
+	
+	public double getInventoryLevel(){
+		return this.inventoryOpsModule.getInventoryLevel(this.product);
+	}
+	
+	public double getBacklog(){
+		return this.deliveryModule.getBacklog();
+	}
 	
 	public void addDownstrPartner(Link b){
 		downstrLinks.add(b);
@@ -65,5 +100,9 @@ public abstract class Business extends Node{
 	public void setPlanningPeriod(int period){
 		this.planningPeriod = period;
 	}
+	
+	
+	
+
 
 }

@@ -62,11 +62,11 @@ public class ForecastModule{
 	}
 	
 	public double getSDDemand(){
-		return demandData.getSDDemand();
+		return demandData.getStandardDeviation();
 	}
 	
 	public double getMeanDemand(){
-		return demandData.getMeanDemand();
+		return demandData.getMean();
 	}
 	
 	public void setDemandData(DemandData demandData){

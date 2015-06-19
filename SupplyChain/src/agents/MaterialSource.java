@@ -9,6 +9,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import modules.*;
 import demandPattern.DemandPattern;
 import demandPattern.NormalDistribution;
+import artefacts.DemandData;
 import artefacts.Material;
 import artefacts.Order;
 import artefacts.OrderComparator;
@@ -16,6 +17,7 @@ import artefacts.Shipment;
 import InventoryPolicies.InvPolicies;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
+import setups.Setup;
 import modules.Link;
 
 public class MaterialSource extends Node{
@@ -24,8 +26,8 @@ public class MaterialSource extends Node{
 	private double capacity;
 	private CopyOnWriteArrayList<Order> orderPipeLine;
 	
-	public MaterialSource(int tier){
-		super(tier);
+	public MaterialSource(Setup setup, int tier){
+		super(setup, tier);
 		this.capacity = 100;
 		this.product = new Material("");
 		this.orderPipeLine = new CopyOnWriteArrayList<Order>();
@@ -81,6 +83,12 @@ public class MaterialSource extends Node{
 		String string = "";
 		string += "OrderPipeLine: " + this.orderPipeLine;
 		return string;
+	}
+
+	@Override
+	public DemandData searchCustomerDemandData() {
+		// TODO Auto-generated method stub
+		return null;
 	}	
 	
 	

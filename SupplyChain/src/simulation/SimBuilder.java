@@ -24,8 +24,10 @@ import repast.simphony.space.grid.Grid;
 import repast.simphony.space.grid.GridBuilderParameters;
 import repast.simphony.space.grid.SimpleGridAdder;
 import repast.simphony.space.grid.WrapAroundBorders;
+import setups.OneManufacturer;
 import setups.Setup;
 import setups.TwoRetailers;
+import setups.TwoRetailers_InfSh;
 
 public class SimBuilder implements ContextBuilder<Object> {
 
@@ -58,7 +60,7 @@ public class SimBuilder implements ContextBuilder<Object> {
 
 		Parameters params = RunEnvironment.getInstance().getParameters();
 		
-		Setup setup = new TwoRetailers();
+		Setup setup = new OneManufacturer();
 		setup.print();
 		
 		for(MaterialSource source : setup.getMaterialSources()){

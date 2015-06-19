@@ -22,7 +22,6 @@ public class OrderOpsModule {
 	private HashMap<Material, ArrayList<Link>> suppliers;
 	private HashMap<Material, CopyOnWriteArrayList<Order>> orderPipeLine;
 	private HashMap<Material, CopyOnWriteArrayList<OrderReq>> orderReqPipeLine;
-	private ArrayList<Order> orderHistory;	
 	private HashMap<Link, DescriptiveStatistics> leadTimeData;	
 	
 	public OrderOpsModule(Business biz){
@@ -64,6 +63,7 @@ public class OrderOpsModule {
 					pipeline.remove(orderReq);
 					orderPipeLine.get(material).add(newOrder);
 					supplier.putOrder(newOrder);
+					biz.getInformationModule().putOrderData(currentTick, newOrder.getSize());
 				}
 			}
 			//System.out.println("OrderReqPipeLine: " + orderReqPipeLine.get(material));

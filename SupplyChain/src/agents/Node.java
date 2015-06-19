@@ -2,6 +2,7 @@ package agents;
 
 import java.util.ArrayList;
 
+import setups.Setup;
 import artefacts.DemandData;
 import artefacts.Material;
 import modules.Link;
@@ -11,6 +12,7 @@ public abstract class Node {
 	static int idCount;
 	
 	protected int Id;
+	protected Setup setup;
 	protected int tier;		//1=Customer
 	protected ArrayList<Link> downstrLinks;
 	protected ArrayList<Link> upstrLinks;
@@ -21,8 +23,9 @@ public abstract class Node {
 	public abstract DemandData searchCustomerDemandData();
 	
 	
-	public Node(int tier){
+	public Node(Setup setup, int tier){
 		this.Id = idCount++;
+		this.setup = setup;
 		this.tier = tier;
 		this.downstrLinks = new ArrayList<Link>();
 		this.upstrLinks = new ArrayList<Link>();
@@ -36,8 +39,8 @@ public abstract class Node {
 		this.downstrLinks.add(link);
 	}
 	
-	public int getId(){
-		return this.Id;
+	public String getId(){
+		return Integer.toString(this.Id);
 	}
 	
 	public int getTier(){
@@ -57,6 +60,15 @@ public abstract class Node {
 			this.product = this.upstrLinks.get(0).getMaterial();
 		}
 		return this.product;
+	}
+	
+	public Customer searchCustomer(){
+		if(this.tier==1){
+			return (Customer)this;
+		}
+		else{
+			return (Customer)this.downstrLinks.get(0).getDownstrNode();
+		}
 	}
 	
 	public void print(){
