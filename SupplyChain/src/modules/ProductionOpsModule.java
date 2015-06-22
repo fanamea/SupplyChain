@@ -32,7 +32,7 @@ public class ProductionOpsModule {
 	
 	
 	public void startProdJobs(){
-		//System.out.println("startProdJobs");
+		////System.out.println("startProdJobs");
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		double productionCounter = 0;		
 		double capacityLeft = biz.getProductionPlanModule().getProductionCapacity();
@@ -51,12 +51,12 @@ public class ProductionOpsModule {
 				isProdRequest = pReq.getDate()<=currentTick;
 				if(isProdRequest){
 					maxProduction = calcMaxProduction(pReq.getBoM());
-					System.out.println("CapacityLeft: " + capacityLeft + ", maxProduction: " + maxProduction);
+					//System.out.println("CapacityLeft: " + capacityLeft + ", maxProduction: " + maxProduction);
 					batchSize = Math.min(maxProduction, pReq.getShortageSent());
-					System.out.println("batchSize: " + batchSize);
+					//System.out.println("batchSize: " + batchSize);
 					if(batchSize>0){
 						batchSize = Math.min(capacityLeft, batchSize);
-						//System.out.println("batchSize: " + batchSize);
+						////System.out.println("batchSize: " + batchSize);
 						HashMap<Material, Double> request = calcRessourceDemand(batchSize, pReq.getBoM());
 						biz.getInventoryOpsModule().requestMaterials(request);						
 						ProdJob job = new ProdJob(currentTick, batchSize, productionTime, pReq);
@@ -70,13 +70,13 @@ public class ProductionOpsModule {
 					}
 				}
 			}
-			System.out.println("Condition: !empty: " + !prodRequestPipeLine.isEmpty() + ", date: " + isProdRequest + ", capacityLeft: " + capacityLeft + ", batchSize: " + batchSize);
+			//System.out.println("Condition: !empty: " + !prodRequestPipeLine.isEmpty() + ", date: " + isProdRequest + ", capacityLeft: " + capacityLeft + ", batchSize: " + batchSize);
 			condition = !prodRequestPipeLine.isEmpty() && isProdRequest && capacityLeft>0 && batchSize>0;
 		}while(condition);
 		
 		
-		//System.out.println("ProdRequestPipeLine: " + prodRequestPipeLine);
-		//System.out.println("ProductionPipeLine: " + productionPipeLine);
+		////System.out.println("ProdRequestPipeLine: " + prodRequestPipeLine);
+		////System.out.println("ProductionPipeLine: " + productionPipeLine);
 	}
 		
 	/**
@@ -94,9 +94,9 @@ public class ProductionOpsModule {
 			}
 		}
 		
-		//System.out.println("getArrivingProduction");
-		//System.out.println("ProdRequestPipeLine: " + prodRequestPipeLine);
-		//System.out.println("ProductionPipeLine: " + productionPipeLine);
+		////System.out.println("getArrivingProduction");
+		////System.out.println("ProdRequestPipeLine: " + prodRequestPipeLine);
+		////System.out.println("ProductionPipeLine: " + productionPipeLine);
 		
 		return output;		
 	}
@@ -129,6 +129,21 @@ public class ProductionOpsModule {
 		return sum;
 	}
 	
+	/**
+	 * including processing production
+	 * @return
+	 */
+	public double getFutureProduction(){
+		double sum = 0;
+		for(ProdRequest pReq : this.prodRequestPipeLine){
+			sum += pReq.getShortageSent();
+		}
+		for(ProdJob job : this.productionPipeLine){
+			sum += job.getSize();
+		}
+		return sum;
+	}
+	
 	public double getProcessingProduction(){
 		double currentTick = (int)RepastEssentials.GetTickCount();
 		double sum = 0;
@@ -146,7 +161,7 @@ public class ProductionOpsModule {
 		ArrayList<Double> quotients = new ArrayList<Double>();		
 		
 		for(Material material : boM.keySet()){
-			//System.out.println("debug: Biz: " + biz.getId() + "Link: " + link.getId());
+			////System.out.println("debug: Biz: " + biz.getId() + "Link: " + link.getId());
 			double quotient = biz.getInventoryOpsModule().getInventoryLevel(material)/boM.get(material);
 			quotients.add(quotient);
 		}

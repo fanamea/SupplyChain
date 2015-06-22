@@ -42,9 +42,9 @@ public class Customer extends Node{
 	
 	@ScheduledMethod(start = 1, interval = 1, priority = 10)
 	public void placeOrder(){
-		//System.out.println("placeOrderCustomer");
+		////System.out.println("placeOrderCustomer");
 		double size = pattern.getNextDouble();
-		//System.out.println("Customer Order: " + size);
+		////System.out.println("Customer Order: " + size);
 		ArrayList<Order> orderList = new ArrayList<Order>();
 		orderList.add(new Order(upstrLinks.get(0),(int)RepastEssentials.GetTickCount(), size));
 		upstrLinks.get(0).putOrders(orderList);
@@ -53,6 +53,10 @@ public class Customer extends Node{
 	
 	public double getSampleOrder(){
 		return this.pattern.getNextDouble();
+	}
+	
+	public double getLastOrder(){
+		return this.demandData.getDemandData((int)RepastEssentials.GetTickCount());
 	}
 	
 	public double getVarianceOrders(){

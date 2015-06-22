@@ -54,7 +54,7 @@ public class Manufacturer extends Business{
 		for(int i=-100; i<1; i++){
 			this.informationModule.addIntDemandData(i, customer.getSampleOrder());
 		}
-		//System.out.println("Tier: " + this.tier + ", DemandData: " + informationModule.getInternDemandData().getDataMap());
+		////System.out.println("Tier: " + this.tier + ", DemandData: " + informationModule.getInternDemandData().getDataMap());
 		
 	}
 	
@@ -85,7 +85,7 @@ public class Manufacturer extends Business{
 	
 	@ScheduledMethod(start=1, interval = 1, priority = 8)
 	public void fetchOrders(){
-		//System.out.println("Biz: " + this.Id + ", fetchOrders");
+		////System.out.println("Biz: " + this.Id + ", fetchOrders");
 		ArrayList<Order> newOrders = new ArrayList<Order>();
 		for(Link link : this.downstrLinks){
 			newOrders.addAll(link.fetchOrders());
@@ -95,7 +95,7 @@ public class Manufacturer extends Business{
 	
 	@ScheduledMethod(start=1, interval=1, priority = 7)
 	public void produce(){
-		//System.out.println("Biz: " + this.Id + ", produce");
+		////System.out.println("Biz: " + this.Id + ", produce");
 		productionOpsModule.startProdJobs();
 		inventoryOpsModule.storeMaterials(productionOpsModule.getArrivingProduction());		
 	}
@@ -107,7 +107,7 @@ public class Manufacturer extends Business{
 	
 	@ScheduledMethod(start=1, interval = 1, priority = 5)
 	public void plan(){
-		//System.out.println("Biz: " + this.Id + ", plan");
+		////System.out.println("Biz: " + this.Id + ", plan");
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		if(currentTick % planningPeriod == 1){
 			if(currentTick>20){
@@ -255,6 +255,10 @@ public class Manufacturer extends Business{
 	
 	public double getSumProdRequests(){
 		return this.productionPlanModule.getSumProdRequests();
+	}
+	
+	public double getAdjustment(){
+		return this.productionPlanModule.getAdjustment();
 	}
 	
 	public double getSumDueList(){

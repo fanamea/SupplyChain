@@ -39,7 +39,7 @@ public class InventoryOpsModule {
 	}
 	
 	public void storeMaterials(HashMap<Material, Double> materials){
-		//System.out.println("storeMaterials" + materials);
+		////System.out.println("storeMaterials" + materials);
 		for(Material material : materials.keySet()){
 			inventories.get(material).incrInventory(materials.get(material));
 		}
@@ -95,7 +95,7 @@ public class InventoryOpsModule {
 			backlog = biz.getDeliveryModule().getBacklog();
 		}
 		
-		//System.out.println("inventoryLevel: " + inventoryLevel + ", ordered: " + ordered + ", backlog: " + backlog);
+		////System.out.println("inventoryLevel: " + inventoryLevel + ", ordered: " + ordered + ", backlog: " + backlog);
 		return inventoryLevel + ordered - backlog;		
 	}
 	

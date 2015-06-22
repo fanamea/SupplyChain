@@ -29,7 +29,7 @@ public class Test {
 			treemap.put(i, i);
 		}
 		SortedMap<Integer, Integer> tailMap = treemap.tailMap(3);
-		System.out.println(tailMap);
+		//System.out.println(tailMap);
 		TreeMap<Integer, Integer> newMap = new TreeMap<Integer, Integer>(tailMap);
 	}
 	
@@ -46,9 +46,9 @@ public class Test {
 		for(Integer i : forecast.keySet()){
 			subMap.put(i, forecast.get(i));
 			cumulatedStocks.put(i, getCumulatedStock(subMap));
-			//System.out.println(i + ": " + cumulatedStocks.get(i));
+			////System.out.println(i + ": " + cumulatedStocks.get(i));
 		}
-		//System.out.println("----------");
+		////System.out.println("----------");
 		
 		boolean first = true;
 		for(Integer i : cumulatedStocks.keySet()){

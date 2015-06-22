@@ -45,7 +45,7 @@ public class Inventory {
 	public void prepareTick(){
 		int date = (int)RepastEssentials.GetTickCount();
 		inventoryLevel.add(inventoryLevel.get(date-1));
-		//System.out.println("Inventory: date: " + date + ", inventory: " + inventoryLevel);
+		////System.out.println("Inventory: date: " + date + ", inventory: " + inventoryLevel);
 	}
 	
 	
@@ -77,7 +77,7 @@ public class Inventory {
 	public void incrInventory(double size){
 		double currentLevel = this.inventoryLevel.get((int)RepastEssentials.GetTickCount());
 		this.inventoryLevel.set((int)RepastEssentials.GetTickCount(), currentLevel + size);
-		//System.out.println("BIZ: " + biz.getId() + ", MATERIAL: " + material + ", INVENTORY INCREASED: " + size);
+		////System.out.println("BIZ: " + biz.getId() + ", MATERIAL: " + material + ", INVENTORY INCREASED: " + size);
 	}
 	
 	

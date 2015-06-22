@@ -27,14 +27,17 @@ public class ForecastModule{
 	private AbstractForecastingModel fcModel;
 	private DemandData demandData;
 	
+	private int reviewPeriod;
+	
 	public ForecastModule(Business biz){
 		this.biz = biz;
-		this.fcModel = new MovingAverageModel(20);
+		this.reviewPeriod = 20;
+		this.fcModel = new MovingAverageModel(this.reviewPeriod);
 	}
 	
 	public TreeMap<Integer, Double> getForecast(int start, int end){
 		TreeMap<Integer, Double> forecast = new TreeMap<Integer, Double>();
-		fcModel.init(this.demandData.getDemandDataSet());
+		fcModel.init(this.demandData.getDemandDataSet(reviewPeriod));
 		DataSet fcSet = new DataSet();
 		for(int i=start; i<=end; i++){
 			DataPoint dp = new Observation(0.0);
@@ -47,8 +50,8 @@ public class ForecastModule{
 			DataPoint dp = (DataPoint)it.next();
 			forecast.put((int)dp.getIndependentValue("Tick"), dp.getDependentValue());
 		}
-		System.out.println("DemandData: " + this.demandData.getDataMap());
-		System.out.println("Forecast: " + forecast);
+		//System.out.println("DemandData: " + this.demandData.getDataMap());
+		//System.out.println("Forecast: " + forecast);
 		return forecast;
 	}
 	

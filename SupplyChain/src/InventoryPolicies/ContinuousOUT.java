@@ -38,7 +38,7 @@ public class ContinuousOUT extends InventoryPolicy{
 		double sdLeadTime = biz.getOrderPlanModule().calcSDLeadTime(material);
 		double safetyStock = planningTechniques.calcSafetyStock(sdOrder, meanLeadTime, inventory.getServiceLevel());
 		
-		System.out.println("Tier: " + biz.getTier() + ", meanOrder: " + meanOrder + ", meanLeadTime: " + meanLeadTime + ", sdOrder: " + sdOrder + ", sdLeadTime: " + sdLeadTime + ", safetyStock: " + safetyStock);
+		//System.out.println("Tier: " + biz.getTier() + ", meanOrder: " + meanOrder + ", meanLeadTime: " + meanLeadTime + ", sdOrder: " + sdOrder + ", sdLeadTime: " + sdLeadTime + ", safetyStock: " + safetyStock);
 		
 		reorderLevel = meanLeadTime*meanOrder + safetyStock;
 	}
@@ -48,7 +48,7 @@ public class ContinuousOUT extends InventoryPolicy{
 		double orderFixCost = biz.getOrderPlanModule().getOrderFixCost(inventory.getMaterial());
 		double orderQuantity = planningTechniques.getEOQ(meanOrder, orderFixCost, inventory.getHoldingCost());
 		
-		System.out.println("meanOrder: " + meanOrder + ", orderQuantity: " + orderQuantity);
+		//System.out.println("meanOrder: " + meanOrder + ", orderQuantity: " + orderQuantity);
 		this.outLevel = this.reorderLevel + orderQuantity;
 	}
 	

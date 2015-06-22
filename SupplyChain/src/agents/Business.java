@@ -91,11 +91,11 @@ public abstract class Business extends Node{
 	//Analysis
 	public double getBWEMeasure(){
 		Customer customer = setup.getCustomers().get(0);
-		//System.out.println("BWE: " + this.informationModule.getVarianceOrders() + ", " + customer.getVarianceOrders());
+		////System.out.println("BWE: " + this.informationModule.getVarianceOrders() + ", " + customer.getVarianceOrders());
 		return this.informationModule.getVarianceOrders()/customer.getVarianceOrders();
 	}
 	
-	public double getOrderVariance(){
+	public double getVarianceOrders(){
 		return this.informationModule.getVarianceOrders();
 	}
 	

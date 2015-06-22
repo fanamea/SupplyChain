@@ -19,11 +19,11 @@ public class PlanningMethods {
 	 */
 	public double calcSafetyStock(double sdOrder, double period, double serviceLevel){
 		//TODO: krasser Workaround!!!
-		//System.out.println("calcSafetyStock: sd: " + sd + ", avgLeadTime: " + avgLeadTime + ", serviceLevel: " + serviceLevel);
+		////System.out.println("calcSafetyStock: sd: " + sd + ", avgLeadTime: " + avgLeadTime + ", serviceLevel: " + serviceLevel);
 		if(sdOrder==0) sdOrder=0.001;
 		NormalDistribution normal = new NormalDistribution(0, sdOrder/period);
 		double safetyStock = normal.inverseCumulativeProbability(serviceLevel);
-		//System.out.println("SafetyStock: " + safetyStock);
+		////System.out.println("SafetyStock: " + safetyStock);
 		return safetyStock;
 	}
 	
@@ -31,7 +31,7 @@ public class PlanningMethods {
 		if(sdLeadTime==0) return 0;
 		NormalDistribution normal = new NormalDistribution(0, sdLeadTime);
 		int safetyLeadTime = (int)Math.ceil(normal.inverseCumulativeProbability(serviceLevel));
-		//System.out.println("SafetyStock: " + safetyStock);
+		////System.out.println("SafetyStock: " + safetyStock);
 		return safetyLeadTime;
 	}
 	

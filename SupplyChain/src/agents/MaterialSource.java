@@ -36,7 +36,7 @@ public class MaterialSource extends Node{
 	public void shipOrders(){
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		double shipped = 0;
-		//System.out.println("CurrentTick: " + currentTick + ", ORDERPIPELINE: " + orderPipeLine);
+		////System.out.println("CurrentTick: " + currentTick + ", ORDERPIPELINE: " + orderPipeLine);
 		Link link = this.getDownstrLinks().get(0);
 		ArrayList<Order> newOrders = new ArrayList<Order>();
 		newOrders.addAll(link.fetchOrders());
@@ -46,23 +46,23 @@ public class MaterialSource extends Node{
 		orderPipeLine.clear();
 		orderPipeLine.addAll(temp);
 		
-		//System.out.println("CurrentTick: " + currentTick + ", ORDERPIPELINE: " + orderPipeLine);
+		////System.out.println("CurrentTick: " + currentTick + ", ORDERPIPELINE: " + orderPipeLine);
 		
 		while(shipped<capacity && !orderPipeLine.isEmpty()){
-			//System.out.println("Pipeline size: " + orderPipeLine.size() + ", isEmpty: " + orderPipeLine.isEmpty());
+			////System.out.println("Pipeline size: " + orderPipeLine.size() + ", isEmpty: " + orderPipeLine.isEmpty());
 			Order order = orderPipeLine.get(0);
 			int duration = link.genDuration();
 			double amount = Math.min(capacity-shipped, order.getSize());
 			Shipment newShipment = new Shipment(link, currentTick, amount, duration, order);
-			System.out.println("SHIPMENT FROM SOURCE: " + newShipment);
+			//System.out.println("SHIPMENT FROM SOURCE: " + newShipment);
 			order.addShipment(newShipment);
 			order.incrSent(amount);
-			//System.out.println("Shortage sent: " + order.getShortageSent() + ", isSent(): " + order.isSent() + ", orderPipeLine.size: " + orderPipeLine.size());
+			////System.out.println("Shortage sent: " + order.getShortageSent() + ", isSent(): " + order.isSent() + ", orderPipeLine.size: " + orderPipeLine.size());
 			if(order.isSent()){
 				//orderPipeLine.remove(order);
 				orderPipeLine.remove(0);
 			}
-			//System.out.println("OrderPipeLine.size after remove: " + orderPipeLine.size());
+			////System.out.println("OrderPipeLine.size after remove: " + orderPipeLine.size());
 			link.induceShipment(newShipment);
 			shipped += amount;
 		}
@@ -92,6 +92,12 @@ public class MaterialSource extends Node{
 	public DemandData searchCustomerDemandData() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public double getVarianceOrders() {
+		// TODO Auto-generated method stub
+		return 0;
 	}	
 	
 	

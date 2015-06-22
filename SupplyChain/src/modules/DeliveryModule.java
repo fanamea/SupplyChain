@@ -47,7 +47,7 @@ public class DeliveryModule {
 		for(Order order : orderList){
 			sum += order.getSize();
 		}
-		//System.out.println("handDemandData: " + currentTick + ", sum: " + sum);
+		////System.out.println("handDemandData: " + currentTick + ", sum: " + sum);
 		infoModule.addIntDemandData(currentTick, sum);
 	}
 	
@@ -71,12 +71,12 @@ public class DeliveryModule {
 				int currentTick = (int)RepastEssentials.GetTickCount();
 				if(shipableAmount.get(endProduct) > 0){
 					Shipment shipment = new Shipment(link, currentTick, shipableAmount.get(endProduct), link.genDuration(), order);
-					//System.out.println("Shipment: " + shipment);
+					////System.out.println("Shipment: " + shipment);
 					order.addShipment(shipment);
 					order.incrSent(shipableAmount.get(endProduct));
 					link.induceShipment(shipment);
 				}
-				//System.out.println(order.isSent());
+				////System.out.println(order.isSent());
 				if(order.isSent()){
 					orderPipeLine.remove(order);
 				}

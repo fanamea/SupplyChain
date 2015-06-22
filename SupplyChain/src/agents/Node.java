@@ -31,6 +31,8 @@ public abstract class Node {
 		this.upstrLinks = new ArrayList<Link>();
 	};
 	
+	public abstract double getVarianceOrders();
+	
 	public void addUpstrLink(Link link){
 		this.upstrLinks.add(link);
 	}
@@ -72,7 +74,7 @@ public abstract class Node {
 	}
 	
 	public void print(){
-		//System.out.println("Node: " + this.Id + ", Tier: " + + this.tier + ", " + getLinksString());
+		////System.out.println("Node: " + this.Id + ", Tier: " + + this.tier + ", " + getLinksString());
 	}
 	
 	private String getLinksString(){

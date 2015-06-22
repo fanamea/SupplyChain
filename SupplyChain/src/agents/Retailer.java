@@ -31,7 +31,7 @@ public class Retailer extends Business{
 	
 	public void initNode(){	
 		this.product = this.upstrLinks.get(0).getMaterial();
-		//System.out.println("Tier: " + this.tier + ", Product: " + this.product);
+		////System.out.println("Tier: " + this.tier + ", Product: " + this.product);
 		
 		this.deliveryModule = new DeliveryModule(this);
 		this.orderOpsModule= new OrderOpsModule(this);
@@ -69,7 +69,7 @@ public class Retailer extends Business{
 		for(Link link : this.downstrLinks){
 			newOrders.addAll(link.fetchOrders());
 		}
-		//System.out.println("newOrders.size: " + newOrders.size());
+		////System.out.println("newOrders.size: " + newOrders.size());
 		deliveryModule.processOrders(newOrders);
 	}
 	
@@ -84,7 +84,7 @@ public class Retailer extends Business{
 		informationModule.combineDemandData();
 		if(currentTick % planningPeriod == 0){
 			inventoryPlanModule.recalcPolicyParams();
-			//System.out.println("Planning Period:" + inventoryPlanModule.getPlanString());
+			////System.out.println("Planning Period:" + inventoryPlanModule.getPlanString());
 		}
 		
 	}	

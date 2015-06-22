@@ -54,7 +54,7 @@ public class OrderOpsModule {
 	public void placeOrders(){
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		for(Material material : orderReqPipeLine.keySet()){
-			//System.out.println("Biz: " + biz.getId() + ", placeOrders, orderReqPipeLine.size: " + orderReqPipeLine.get(material).size());
+			////System.out.println("Biz: " + biz.getId() + ", placeOrders, orderReqPipeLine.size: " + orderReqPipeLine.get(material).size());
 			CopyOnWriteArrayList<OrderReq> pipeline = orderReqPipeLine.get(material);
 			for(OrderReq orderReq : orderReqPipeLine.get(material)){
 				if(orderReq.getDate()<=currentTick){
@@ -66,8 +66,8 @@ public class OrderOpsModule {
 					biz.getInformationModule().putOrderData(currentTick, newOrder.getSize());
 				}
 			}
-			//System.out.println("OrderReqPipeLine: " + orderReqPipeLine.get(material));
-			//System.out.println("OrderPipeLine: " + orderPipeLine.get(material));
+			////System.out.println("OrderReqPipeLine: " + orderReqPipeLine.get(material));
+			////System.out.println("OrderPipeLine: " + orderPipeLine.get(material));
 		}	
 	}
 	
@@ -88,7 +88,7 @@ public class OrderOpsModule {
 			}
 		}
 		this.leadTimeData.get(shipment.getLink()).addValue(sum);
-		System.out.println("LeadTimeData: " + sum);
+		//System.out.println("LeadTimeData: " + sum);
 	}
 	
 	public void processInShipments(ArrayList<Shipment> shipments){
@@ -105,13 +105,13 @@ public class OrderOpsModule {
 			order.incrArrived(shipment.getSize());
 			if(order.hasArrived()){
 				orderPipeLine.get(shipment.getMaterial()).remove(order);
-				System.out.println("Shipment arrived: " + shipment);
+				//System.out.println("Shipment arrived: " + shipment);
 			}
 			
 			maintainLeadTimeData(shipment);
-			//System.out.println("maintainLeadTimeData, Tier: " + biz.getTier() + ", " + shipment);
+			////System.out.println("maintainLeadTimeData, Tier: " + biz.getTier() + ", " + shipment);
 		}
-		System.out.println("Store Materials: " + materials);
+		//System.out.println("Store Materials: " + materials);
 		biz.getInventoryOpsModule().storeMaterials(materials);
 	}
 	
