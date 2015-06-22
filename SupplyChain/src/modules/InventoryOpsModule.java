@@ -85,8 +85,16 @@ public class InventoryOpsModule {
 		double inventoryLevel = getInventoryLevel(material);
 		double ordered;
 		double backlog;
-		ordered = biz.getOrderOpsModule().getProcessingOrders(material);
-		backlog = biz.getDeliveryModule().getBacklog();
+		
+		if(biz.getProductionOpsModule() != null && material == biz.getProduct()){
+			ordered = biz.getProductionOpsModule().getProcessingProduction();
+			backlog = biz.getProductionOpsModule().getBacklogStart();
+		}
+		else{
+			ordered = biz.getOrderOpsModule().getProcessingOrders(material);
+			backlog = biz.getDeliveryModule().getBacklog();
+		}
+		
 		//System.out.println("inventoryLevel: " + inventoryLevel + ", ordered: " + ordered + ", backlog: " + backlog);
 		return inventoryLevel + ordered - backlog;		
 	}

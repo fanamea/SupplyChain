@@ -37,7 +37,6 @@ public class OrderPlanModule {
 		this.suppliers = biz.getOrderOpsModule().getSuppliers();
 		this.lotSizingAlgo = new SilverMeal(0, 0);
 		this.leadTimeData = biz.getOrderOpsModule().getLeadTimeData();
-		this.serviceLevel = 0.98;
 	}
 	
 	public void plan(){
@@ -96,6 +95,10 @@ public class OrderPlanModule {
 	public double calcMeanLeadTime(Material material){
 		double min = calcMeanLeadTime(suppliers.get(material).get(0));		
 		return min;
+	}
+	
+	public void setServiceLevel(double serviceLevel){
+		this.serviceLevel = serviceLevel;
 	}
 
 }

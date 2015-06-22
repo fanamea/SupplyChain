@@ -50,12 +50,10 @@ public class ProductionOpsModule {
 				ProdRequest pReq = prodRequestPipeLine.get(0);
 				isProdRequest = pReq.getDate()<=currentTick;
 				if(isProdRequest){
-					capacityLeft = capacityLeft-productionCounter;
-					//System.out.println("capacityLeft: " + capacityLeft);
 					maxProduction = calcMaxProduction(pReq.getBoM());
-					//System.out.println("maxProduction: " + maxProduction);
+					System.out.println("CapacityLeft: " + capacityLeft + ", maxProduction: " + maxProduction);
 					batchSize = Math.min(maxProduction, pReq.getShortageSent());
-					//System.out.println("batchSize: " + batchSize);
+					System.out.println("batchSize: " + batchSize);
 					if(batchSize>0){
 						batchSize = Math.min(capacityLeft, batchSize);
 						//System.out.println("batchSize: " + batchSize);
@@ -72,6 +70,7 @@ public class ProductionOpsModule {
 					}
 				}
 			}
+			System.out.println("Condition: !empty: " + !prodRequestPipeLine.isEmpty() + ", date: " + isProdRequest + ", capacityLeft: " + capacityLeft + ", batchSize: " + batchSize);
 			condition = !prodRequestPipeLine.isEmpty() && isProdRequest && capacityLeft>0 && batchSize>0;
 		}while(condition);
 		
@@ -102,7 +101,7 @@ public class ProductionOpsModule {
 		return output;		
 	}
 	
-	public double getBacklog(){
+	public double getBacklogStart(){
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		double sum = 0;
 		for(ProdRequest pReq : prodRequestPipeLine){
@@ -113,6 +112,22 @@ public class ProductionOpsModule {
 		return sum;
 	}
 	
+	public double getBacklogEnd(){
+		int currentTick = (int)RepastEssentials.GetTickCount();
+		int productionTime = biz.getProductionPlanModule().getProductionTime();
+		double sum = 0;
+		for(ProdRequest pReq : prodRequestPipeLine){
+			if(pReq.getDate()+productionTime <= currentTick){
+				sum += pReq.getShortageArrived();
+			}
+		}
+		for(ProdJob job : productionPipeLine){
+			if(job.getDate()+job.getLeadTime() <= currentTick){
+				sum += job.getSize();
+			}
+		}
+		return sum;
+	}
 	
 	public double getProcessingProduction(){
 		double currentTick = (int)RepastEssentials.GetTickCount();
@@ -121,16 +136,7 @@ public class ProductionOpsModule {
 			sum += job.getSize();
 		}
 		return sum;
-	}
-	
-	public double getScheduledProduction(){
-		double sum = 0;
-		for(ProdRequest pReq : prodRequestPipeLine){
-			sum+=pReq.getSize();
-		}
-		return sum;
-	}
-	
+	}	
 	
 	/**
 	 * Berechnet die auf Grund von: Input Lagerbeständen die maximal mögliche Produktionsmenge.
@@ -177,7 +183,7 @@ public class ProductionOpsModule {
 		string += "      ProdRequestPipeLine: " + prodRequestPipeLine + "\n";
 		string += "      ProductionPipeLine: " + productionPipeLine + "\n";
 		string += "      Processing Production: " + getProcessingProduction() + "\n";
-		string += "      Backlog: " + getBacklog();
+		string += "      Backlog: " + getBacklogStart();
 		return string;
 	}
 

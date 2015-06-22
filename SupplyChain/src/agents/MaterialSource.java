@@ -28,7 +28,6 @@ public class MaterialSource extends Node{
 	
 	public MaterialSource(Setup setup, int tier){
 		super(setup, tier);
-		this.capacity = 100;
 		this.product = new Material("");
 		this.orderPipeLine = new CopyOnWriteArrayList<Order>();
 	}
@@ -71,6 +70,10 @@ public class MaterialSource extends Node{
 	
 	public Material getProduct(){
 		return this.product;
+	}
+	
+	public void setCapacity(double capacity){
+		this.capacity = capacity;
 	}
 	
 	@Override

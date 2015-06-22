@@ -21,20 +21,12 @@ import modules.Link;
 
 public class DeliveryModule {
 	
-	Business biz;
-	private ArrayList<Link> linkList;
-	private boolean infiniteSupplier;
+	private Business biz;
 	private CopyOnWriteArrayList<Order> orderPipeLine;
 
 	
 	public DeliveryModule(Business biz){
 		this.biz = biz;
-		this.linkList = biz.getDownstrLinks();
-		if(biz.getUpstrLinks().isEmpty()){
-			infiniteSupplier = true;
-		}
-		else
-			infiniteSupplier = false;
 		this.orderPipeLine = new CopyOnWriteArrayList<Order>();
 
 

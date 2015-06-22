@@ -1,6 +1,7 @@
 package lotSizingAlgorithms;
 
 import java.util.Iterator;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class SilverMeal extends LotSizingAlgorithm{

@@ -28,7 +28,7 @@ public class PlanningMethods {
 	}
 	
 	public int calcSafetyLeadTime(double sdLeadTime, double serviceLevel){
-		if(sdLeadTime==0) sdLeadTime=0.001;
+		if(sdLeadTime==0) return 0;
 		NormalDistribution normal = new NormalDistribution(0, sdLeadTime);
 		int safetyLeadTime = (int)Math.ceil(normal.inverseCumulativeProbability(serviceLevel));
 		//System.out.println("SafetyStock: " + safetyStock);

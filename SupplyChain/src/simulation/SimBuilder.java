@@ -26,6 +26,7 @@ import repast.simphony.space.grid.SimpleGridAdder;
 import repast.simphony.space.grid.WrapAroundBorders;
 import setups.OneManufacturer;
 import setups.Setup;
+import setups.ThreeManufacturer_Trust;
 import setups.TwoRetailers;
 import setups.TwoRetailers_InfSh;
 

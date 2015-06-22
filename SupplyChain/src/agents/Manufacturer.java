@@ -50,18 +50,24 @@ public class Manufacturer extends Business{
 		
 		this.planningPeriod = 10;
 		
-		DemandPattern pattern = new Constant(10.0);
+		Customer customer = this.searchCustomer();
 		for(int i=-100; i<1; i++){
-			this.informationModule.addIntDemandData(i, pattern.getNextDouble());
+			this.informationModule.addIntDemandData(i, customer.getSampleOrder());
 		}
+		//System.out.println("Tier: " + this.tier + ", DemandData: " + informationModule.getInternDemandData().getDataMap());
 		
-		inventoryPlanModule.handForecast(forecastModule.getForecast(1, 10));
+	}
+	
+	@ScheduledMethod(start=1, interval = 0, priority = 11)
+	public void planFirstPeriods(){
+		
+		informationModule.forecast(1, 10);
+		inventoryPlanModule.handForecast(informationModule.getLastForecast());
 		inventoryPlanModule.planEndProduct();
 		productionPlanModule.planProduction();
 		inventoryPlanModule.planMRP(productionPlanModule);			
 		orderPlanModule.plan();
-		
-	}	
+	}
 	
 	@ScheduledMethod(start=1, interval = 1, priority = 10)
 	public void prepareTick(){
@@ -69,28 +75,22 @@ public class Manufacturer extends Business{
 	}
 	
 	@ScheduledMethod(start=1, interval = 1, priority = 9)
-	public void plan(){
-		//System.out.println("Biz: " + this.Id + ", plan");
-		int currentTick = (int)RepastEssentials.GetTickCount();
-		if(currentTick % planningPeriod == 1){
-			informationModule.recalcTrustLevel();
-			informationModule.forecast(currentTick+planningPeriod, currentTick+2*planningPeriod-1);
-			inventoryPlanModule.handForecast(informationModule.getForecast());
-			inventoryPlanModule.planEndProduct();
-			productionPlanModule.planProduction();
-			inventoryPlanModule.planMRP(productionPlanModule);			
-			orderPlanModule.plan();
-		}
-		
-	}
-	
-	@ScheduledMethod(start=1, interval = 1, priority = 8)
 	public void receiveShipments(){
 		ArrayList<Shipment> shipments = new ArrayList<Shipment>();
 		for(Link link : this.upstrLinks){
 			shipments = link.getArrivingShipments();
 			orderOpsModule.processInShipments(shipments);
 		}
+	}
+	
+	@ScheduledMethod(start=1, interval = 1, priority = 8)
+	public void fetchOrders(){
+		//System.out.println("Biz: " + this.Id + ", fetchOrders");
+		ArrayList<Order> newOrders = new ArrayList<Order>();
+		for(Link link : this.downstrLinks){
+			newOrders.addAll(link.fetchOrders());
+		}
+		deliveryModule.processOrders(newOrders);
 	}
 	
 	@ScheduledMethod(start=1, interval=1, priority = 7)
@@ -101,24 +101,32 @@ public class Manufacturer extends Business{
 	}
 	
 	@ScheduledMethod(start=1, interval = 1, priority = 6)
-	public void placeOrders(){
-		orderOpsModule.placeOrders();
-		}
-	
-	@ScheduledMethod(start=1, interval = 1, priority = 4)
-	public void fetchOrders(){
-		//System.out.println("Biz: " + this.Id + ", fetchOrders");
-		ArrayList<Order> newOrders = new ArrayList<Order>();
-		for(Link link : this.downstrLinks){
-			newOrders.addAll(link.fetchOrders());
-		}
-		deliveryModule.processOrders(newOrders);
-	}
-	
-	@ScheduledMethod(start=1, interval = 1, priority = 9.5)
 	public void dispatchShipments(){
 		this.deliveryModule.dispatchShipments();
 	}
+	
+	@ScheduledMethod(start=1, interval = 1, priority = 5)
+	public void plan(){
+		//System.out.println("Biz: " + this.Id + ", plan");
+		int currentTick = (int)RepastEssentials.GetTickCount();
+		if(currentTick % planningPeriod == 1){
+			if(currentTick>20){
+				informationModule.recalcTrustLevel();
+			}			
+			informationModule.forecast(currentTick+planningPeriod, currentTick+2*planningPeriod-1);
+			inventoryPlanModule.handForecast(informationModule.getLastForecast());
+			inventoryPlanModule.planEndProduct();
+			productionPlanModule.planProduction();
+			inventoryPlanModule.planMRP(productionPlanModule);			
+			orderPlanModule.plan();
+		}
+		
+	}
+	
+	@ScheduledMethod(start=1, interval = 1, priority = 4)
+	public void placeOrders(){
+		orderOpsModule.placeOrders();
+	}	
 	
 	public void setProduct(Material material){
 		this.product = material;
@@ -182,6 +190,10 @@ public class Manufacturer extends Business{
 		return this.productionOpsModule;
 	}
 	
+	public InformationModule getInformationModule() {
+		return this.informationModule;
+	}
+	
 	public String getInformationString(){
 		String string = "";
 		string += "Node: " + this.Id + ", Tier: " + this.tier + "\n";
@@ -196,11 +208,6 @@ public class Manufacturer extends Business{
 		
 		return string;
 	}
-
-	@Override
-	public void handExtDemandData(DemandData demandData) {
-		this.forecastModule.setDemandData(demandData);		
-	}
 	
 	/*
 	 * ---------------Parameter Setup-------------------------------
@@ -210,11 +217,13 @@ public class Manufacturer extends Business{
 
 	@Override
 	public void setHoldingCost(double holdingCost) {
-		this.inventoryPlanModule.setHoldingCosts(holdingCost);		
+		this.inventoryPlanModule.setHoldingCosts(holdingCost);
+		this.productionPlanModule.setHoldingCost(holdingCost);
 	}
 	
 	public void setServiceLevel(double serviceLevel){
 		this.inventoryPlanModule.setServiceLevels(serviceLevel);
+		this.orderPlanModule.setServiceLevel(serviceLevel);
 	}
 	
 	//Production
@@ -239,40 +248,22 @@ public class Manufacturer extends Business{
 		this.productionPlanModule.setLotSizingAlgorithm(lotSizingAlgo);
 	}
 
-	@Override
-	public InformationModule getInformationModule() {
-		return this.informationModule;
-	}
-
-	@Override
-	public DemandData searchCustomerDemandData() {
-		return this.informationModule.searchCustomerDemandData();
-	}
-
-	@Override
-	public void setCustomerDemandData() {
-		this.informationModule.setCustomerDemandData();
-	}
-	
+	//Information Sharing
 	public void setTrustFeedback(){
 		this.informationModule.setTrustFeedback();
 	}
-
 	
-	@Override
-	public Class<?> getDataType() {
-		return Double.class;
+	public double getSumProdRequests(){
+		return this.productionPlanModule.getSumProdRequests();
 	}
-
-	@Override
-	public Class<?> getSourceType() {
-		return Business.class;
-	}
-
-	@Override
-	public Object get(Object obj) {
-		// TODO Auto-generated method stub
-		return null;
+	
+	public double getSumDueList(){
+		TreeMap<Integer, Double> dueList = this.inventoryPlanModule.getInventory(product).getDueList();
+		double sum = 0;
+		for(Double d : dueList.values()){
+			sum += d;
+		}
+		return sum;
 	}
 	
 }

@@ -23,14 +23,12 @@ import modules.Link;
 public class ForecastModule{
 	
 	private Business biz;
-	private ArrayList<Link> linkList;
 	
 	private AbstractForecastingModel fcModel;
 	private DemandData demandData;
 	
 	public ForecastModule(Business biz){
 		this.biz = biz;
-		this.linkList = biz.getDownstrLinks();
 		this.fcModel = new MovingAverageModel(20);
 	}
 	
@@ -49,6 +47,8 @@ public class ForecastModule{
 			DataPoint dp = (DataPoint)it.next();
 			forecast.put((int)dp.getIndependentValue("Tick"), dp.getDependentValue());
 		}
+		System.out.println("DemandData: " + this.demandData.getDataMap());
+		System.out.println("Forecast: " + forecast);
 		return forecast;
 	}
 	

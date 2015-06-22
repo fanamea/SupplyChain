@@ -88,6 +88,7 @@ public class OrderOpsModule {
 			}
 		}
 		this.leadTimeData.get(shipment.getLink()).addValue(sum);
+		System.out.println("LeadTimeData: " + sum);
 	}
 	
 	public void processInShipments(ArrayList<Shipment> shipments){

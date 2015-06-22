@@ -2,6 +2,8 @@ package agents;
 
 import java.util.ArrayList;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
 import cern.jet.random.AbstractDistribution;
 import artefacts.DemandData;
 import artefacts.Order;
@@ -17,11 +19,13 @@ public class Customer extends Node{
 	
 	private DemandPattern pattern;
 	private DemandData demandData;
+	private DescriptiveStatistics received;
 	
 	public Customer(Setup setup, DemandPattern pattern){
 		super(setup, 1);
 		this.pattern = pattern;
 		this.demandData = new DemandData();
+		this.received = new DescriptiveStatistics();
 	}
 	
 	public void initNode(){		
@@ -36,7 +40,7 @@ public class Customer extends Node{
 	}
 	
 	
-	@ScheduledMethod(start = 1, interval = 1, priority = 7)
+	@ScheduledMethod(start = 1, interval = 1, priority = 10)
 	public void placeOrder(){
 		//System.out.println("placeOrderCustomer");
 		double size = pattern.getNextDouble();
@@ -47,6 +51,10 @@ public class Customer extends Node{
 		this.demandData.handDemandData((int)RepastEssentials.GetTickCount(), size);
 	}
 	
+	public double getSampleOrder(){
+		return this.pattern.getNextDouble();
+	}
+	
 	public double getVarianceOrders(){
 		return this.demandData.getVariance();
 	}
@@ -54,7 +62,13 @@ public class Customer extends Node{
 	public void efectShipment(Shipment shipment){		
 	}
 	
-	public void receive(Shipment shipment){		
+	@ScheduledMethod(start=1, interval=1, priority=10)
+	public void receiveShipments(){
+		ArrayList<Shipment> shipments = new ArrayList<Shipment>();
+		shipments = this.upstrLinks.get(0).getArrivingShipments();
+		for(Shipment shipment : shipments){
+			this.received.addValue(shipment.getSize());
+		}
 	}
 	
 	public boolean isOrderShipable(Order order){
@@ -63,6 +77,18 @@ public class Customer extends Node{
 	
 	public int getShipableAmount(Order order){
 		return 0;
+	}
+	
+	public double getSumOrders(){
+		return this.demandData.getDemandStats().getSum();
+	}
+	
+	public double getSumReceived(){
+		return this.received.getSum();
+	}
+	
+	public double getBacklog(){
+		return getSumOrders()-getSumReceived();
 	}
 	
 	public String getInformationString(){

@@ -24,10 +24,13 @@ import repast.simphony.random.RandomHelper;
 public class Test {
 	
 	public static void main(String[] args){
-		AbstractDistribution distr = new Uniform(3,3,3);
-		for(int i=0; i<10; i++){
-			System.out.println(distr.nextInt());
+		TreeMap<Integer, Integer> treemap = new TreeMap<Integer, Integer>();
+		for(int i = 1; i<=10; i++){
+			treemap.put(i, i);
 		}
+		SortedMap<Integer, Integer> tailMap = treemap.tailMap(3);
+		System.out.println(tailMap);
+		TreeMap<Integer, Integer> newMap = new TreeMap<Integer, Integer>(tailMap);
 	}
 	
 	

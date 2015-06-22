@@ -55,6 +55,30 @@ public class Retailer extends Business{
 	}
 	
 	@ScheduledMethod(start=1, interval = 1, priority = 9)
+	public void receiveShipments(){
+		ArrayList<Shipment> shipments = new ArrayList<Shipment>();
+		for(Link link : this.upstrLinks){
+			shipments = link.getArrivingShipments();
+			orderOpsModule.processInShipments(shipments);
+		}
+	}
+	
+	@ScheduledMethod(start=1, interval = 1, priority = 8)
+	public void fetchOrders(){
+		ArrayList<Order> newOrders = new ArrayList<Order>();
+		for(Link link : this.downstrLinks){
+			newOrders.addAll(link.fetchOrders());
+		}
+		//System.out.println("newOrders.size: " + newOrders.size());
+		deliveryModule.processOrders(newOrders);
+	}
+	
+	@ScheduledMethod(start=1, interval = 1, priority = 6)
+	public void dispatchShipments(){
+		this.deliveryModule.dispatchShipments();
+	}
+	
+	@ScheduledMethod(start=1, interval = 1, priority = 5)
 	public void plan(){
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		informationModule.combineDemandData();
@@ -65,39 +89,11 @@ public class Retailer extends Business{
 		
 	}	
 	
-	@ScheduledMethod(start=1, interval = 1, priority = 8)
-	public void receiveShipments(){
-		ArrayList<Shipment> shipments = new ArrayList<Shipment>();
-		for(Link link : this.upstrLinks){
-			shipments = link.getArrivingShipments();
-			orderOpsModule.processInShipments(shipments);
-		}
-	}
-	
-	@ScheduledMethod(start = 1, interval = 1, priority = 7)
-	public void checkOrders(){
-		inventoryPlanModule.placeOrderReqs();
-	}
-	
-	@ScheduledMethod(start=1, interval = 1, priority = 6)
-	public void placeOrders(){
-		orderOpsModule.placeOrders();
-		}
-	
 	@ScheduledMethod(start=1, interval = 1, priority = 4)
-	public void fetchOrders(){
-		ArrayList<Order> newOrders = new ArrayList<Order>();
-		for(Link link : this.downstrLinks){
-			newOrders.addAll(link.fetchOrders());
-		}
-		//System.out.println("newOrders.size: " + newOrders.size());
-		deliveryModule.processOrders(newOrders);
-	}
-	
-	@ScheduledMethod(start=1, interval = 1, priority = 2)
-	public void dispatchShipments(){
-		this.deliveryModule.dispatchShipments();
-	}	
+	public void placeOrders(){
+		inventoryPlanModule.placeOrderReqs();
+		orderOpsModule.placeOrders();
+	}		
 	
 	public void addDownstrPartner(Link b){
 		downstrLinks.add(b);
@@ -134,7 +130,16 @@ public class Retailer extends Business{
 	
 	public InventoryOpsModule getInventoryOpsModule(){
 		return this.inventoryOpsModule;
-	}	
+	}
+	
+	public InformationModule getInformationModule() {
+		return this.informationModule;
+	}
+	
+	public ProductionOpsModule getProductionOpsModule() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 	public String getInformationString(){
 		String string = "";
@@ -144,73 +149,17 @@ public class Retailer extends Business{
 		return string;
 	}
 
-	@Override
-	public ProductionOpsModule getProductionOpsModule() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	@Override
-	public void handExtDemandData(DemandData demandData) {
-		this.forecastModule.setDemandData(demandData);		
-	}
-	
-	/*
-	 * ----------------- Analysis -------------------------------
-	 */
 	
 	
 	/*
 	 * ----------------- Parameter Setup ------------------------
 	 */
 	
-	@Override
-	public void setHoldingCost(double holdingCost) {
-		this.inventoryPlanModule.setHoldingCosts(holdingCost);		
-	}
-	
-	public void setServiceLevel(double serviceLevel){
-		this.inventoryPlanModule.setServiceLevels(serviceLevel);
-	}
 	
 	public void setInventoryPolicy(InvPolicies policy){
 		this.inventoryPlanModule.setInventoryPolicy(policy);
 	}
 	
-	public void setTrustLevel(double trustLevel){
-		this.informationModule.setTrustLevel(trustLevel);
-	}
 	
-	@Override
-	public InformationModule getInformationModule() {
-		return this.informationModule;
-	}
-
-	@Override
-	public DemandData searchCustomerDemandData() {
-		return this.informationModule.searchCustomerDemandData();
-	}
-
-	@Override
-	public void setCustomerDemandData() {
-		this.informationModule.setCustomerDemandData();		
-	}
-
-	@Override
-	public Class<?> getDataType() {
-		
-		return Double.class;
-	}
-
-	@Override
-	public Class<?> getSourceType() {
-		return Retailer.class;
-	}
-
-	@Override
-	public Object get(Object obj) {
-		return informationModule.getOrderVariance();
-	}
-
 
 }

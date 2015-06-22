@@ -67,7 +67,7 @@ public abstract class Node {
 			return (Customer)this;
 		}
 		else{
-			return (Customer)this.downstrLinks.get(0).getDownstrNode();
+			return (Customer)this.downstrLinks.get(0).getDownstrNode().searchCustomer();
 		}
 	}
 	

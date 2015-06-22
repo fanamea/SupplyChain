@@ -20,7 +20,7 @@ import repast.simphony.essentials.RepastEssentials;
 import setups.Setup;
 import modules.Link;
 
-public abstract class Business extends Node implements NonAggregateDataSource{	
+public abstract class Business extends Node{	
 	
 	protected int planningPeriod;
 	
@@ -55,12 +55,38 @@ public abstract class Business extends Node implements NonAggregateDataSource{
 	public abstract ProductionOpsModule getProductionOpsModule();
 	public abstract InformationModule getInformationModule();
 	
+	public int getPlanningPeriod(){
+		return this.planningPeriod;
+	}
+	
 	//Setup
-	public abstract void setHoldingCost(double holdingCost);
+	
+	//Parameter
+	public void setHoldingCost(double holdingCost) {
+		this.inventoryPlanModule.setHoldingCosts(holdingCost);		
+	}
+	
+	public void setServiceLevel(double serviceLevel){
+		this.inventoryPlanModule.setServiceLevels(serviceLevel);
+	}
+	
+	public void setInventoryPolicy(InvPolicies policy){
+		this.inventoryPlanModule.setInventoryPolicy(policy);
+	}
+	
+	public void setTrustLevel(double trustLevel){
+		this.informationModule.setTrustLevel(trustLevel);
+	}
 	
 	//Information Sharing
-	public abstract void handExtDemandData(DemandData demandData);
-	public abstract void setCustomerDemandData();
+	
+	public DemandData searchCustomerDemandData() {
+		return this.informationModule.searchCustomerDemandData();
+	}
+
+	public void setCustomerDemandData() {
+		this.informationModule.setCustomerDemandData();		
+	}
 	
 	//Analysis
 	public double getBWEMeasure(){
@@ -102,7 +128,4 @@ public abstract class Business extends Node implements NonAggregateDataSource{
 	}
 	
 	
-	
-
-
 }
