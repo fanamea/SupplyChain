@@ -1,6 +1,11 @@
 package simulation;
 
+import inventoryPlannningAlgorithm.BookbinderTan;
+import inventoryPlannningAlgorithm.DefaultInventoryPlanning;
+import inventoryPlannningAlgorithm.InventoryPlanningAlgorithm;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Iterator;
@@ -16,22 +21,38 @@ import net.sourceforge.openforecast.models.MovingAverageModel;
 import org.apache.commons.math3.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 
+import agents.Business;
+import agents.Retailer;
+import artefacts.DemandData;
+import artefacts.TierComparator;
 import cern.jet.random.AbstractDistribution;
 import cern.jet.random.Uniform;
 import repast.simphony.random.RandomHelper;
+import setups.ReturnsAndBWE;
+import setups.Setup;
+import setups.TestSetup;
 
 public class Test {
 	
 	public static void main(String[] args){
-		TreeMap<Integer, Integer> treemap = new TreeMap<Integer, Integer>();
-		for(int i = 1; i<=10; i++){
-			treemap.put(i, i);
+		Setup setup = new TestSetup();
+		ArrayList<Business> list = new ArrayList<Business>();
+		list.add(new Retailer(setup, 3));
+		list.add(new Retailer(setup, 2));
+		list.add(new Retailer(setup, 1));
+		
+		System.out.println(list);
+		
+		Collections.sort(list, new TierComparator());
+		
+		for(Business biz : list){
+			System.out.println(biz.getTier());
 		}
-		SortedMap<Integer, Integer> tailMap = treemap.tailMap(3);
-		//System.out.println(tailMap);
-		TreeMap<Integer, Integer> newMap = new TreeMap<Integer, Integer>(tailMap);
+		
 	}
+	
 	
 	
 	/*

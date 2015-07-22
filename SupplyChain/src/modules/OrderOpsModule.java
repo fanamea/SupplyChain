@@ -22,7 +22,6 @@ public class OrderOpsModule {
 	private HashMap<Material, ArrayList<Link>> suppliers;
 	private HashMap<Material, CopyOnWriteArrayList<Order>> orderPipeLine;
 	private HashMap<Material, CopyOnWriteArrayList<OrderReq>> orderReqPipeLine;
-	private HashMap<Link, DescriptiveStatistics> leadTimeData;	
 	
 	public OrderOpsModule(Business biz){
 		this.biz = biz;
@@ -41,9 +40,27 @@ public class OrderOpsModule {
 			orderPipeLine.put(material, new CopyOnWriteArrayList<Order>());
 			orderReqPipeLine.put(material, new CopyOnWriteArrayList<OrderReq>());
 		}		
-		this.leadTimeData = new HashMap<Link, DescriptiveStatistics>();
-		for(Link link : linkList){
-			leadTimeData.put(link, new DescriptiveStatistics());
+		
+	}
+	
+	public void dispatchReturn(Order order){
+		Material product = order.getLink().getMaterial();
+		HashMap<Material, Double> request = new HashMap<Material, Double>();
+		double stillToShip = order.getShortageSent();
+		request.put(product, stillToShip);
+		HashMap<Material, Double> shipableAmount = biz.getInventoryOpsModule().requestMaterials(request);
+		Link link = order.getLink();
+		int currentTick = (int)RepastEssentials.GetTickCount();
+		if(shipableAmount.get(product) > 0){
+			Shipment shipment = new Shipment(link, currentTick, shipableAmount.get(product), link.genDuration(), order);
+			////System.out.println("Shipment: " + shipment);
+			order.addShipment(shipment);
+			order.incrSent(shipableAmount.get(product));
+			link.induceShipmentUp(shipment);
+		}
+		////System.out.println(order.isSent());
+		if(!order.isSent()){
+			System.out.println("RETURN PROBLEM!!!!");
 		}
 	}
 	
@@ -53,6 +70,7 @@ public class OrderOpsModule {
 	 */
 	public void placeOrders(){
 		int currentTick = (int)RepastEssentials.GetTickCount();
+		boolean placed = false;
 		for(Material material : orderReqPipeLine.keySet()){
 			////System.out.println("Biz: " + biz.getId() + ", placeOrders, orderReqPipeLine.size: " + orderReqPipeLine.get(material).size());
 			CopyOnWriteArrayList<OrderReq> pipeline = orderReqPipeLine.get(material);
@@ -61,10 +79,27 @@ public class OrderOpsModule {
 					Link supplier = suppliers.get(material).get(0);
 					Order newOrder = new Order(supplier, currentTick, orderReq.getSize(), orderReq);
 					pipeline.remove(orderReq);
-					orderPipeLine.get(material).add(newOrder);
+					
 					supplier.putOrder(newOrder);
 					biz.getInformationModule().putOrderData(currentTick, newOrder.getSize());
+					double fixCost = biz.getOrderPlanModule().getOrderFixCost(material);
+					biz.getInformationModule().addOrderCost(fixCost);
+					placed = true;
+					
+					if(orderReq.getSize()>0.0){
+						orderPipeLine.get(material).add(newOrder);
+					}					
+					else if(orderReq.getSize()<0.0){
+						dispatchReturn(newOrder);
+					}
+					
+					if(orderReq.getDate()<currentTick){
+						System.out.println("ALTE ORDERREQS!!!: " + currentTick);
+					}
 				}
+			}
+			if(!placed){
+				biz.getInformationModule().putOrderData(currentTick,  0);
 			}
 			////System.out.println("OrderReqPipeLine: " + orderReqPipeLine.get(material));
 			////System.out.println("OrderPipeLine: " + orderPipeLine.get(material));
@@ -87,7 +122,7 @@ public class OrderOpsModule {
 				sum += weight*leadTime;
 			}
 		}
-		this.leadTimeData.get(shipment.getLink()).addValue(sum);
+		biz.getInformationModule().putLeadTimeData(shipment.getLink(), sum);
 		//System.out.println("LeadTimeData: " + sum);
 	}
 	
@@ -113,6 +148,16 @@ public class OrderOpsModule {
 		}
 		//System.out.println("Store Materials: " + materials);
 		biz.getInventoryOpsModule().storeMaterials(materials);
+		if(!materials.keySet().isEmpty()){
+			biz.getInformationModule().setArrivingShipments(materials.values().iterator().next());
+		}
+		else{
+			biz.getInformationModule().setArrivingShipments(0);
+		}
+	}
+	
+	public void putReturnOrder(Order order){
+		this.orderPipeLine.get(order.getLink().getMaterial()).add(order);
 	}
 	
 	public void handOrderReqs(Material material, ArrayList<OrderReq> orderReqs){
@@ -126,10 +171,6 @@ public class OrderOpsModule {
 			sum += order.getShortageArrived();
 		}
 		return sum;
-	}
-	
-	public HashMap<Link, DescriptiveStatistics> getLeadTimeData(){
-		return this.leadTimeData;
 	}
 	
 	public HashMap<Material, CopyOnWriteArrayList<OrderReq>> getOrderReqPipeLine(){

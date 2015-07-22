@@ -31,8 +31,10 @@ public class Link {
 	
 	private ArrayList<Order> orderHistory;
 	private CopyOnWriteArrayList<Order> orderPipeLine;
-	private ArrayList<Shipment> shipmentHistory;
-	private CopyOnWriteArrayList<Shipment> shipmentPipeLine;
+	private ArrayList<Shipment> shipmentHistoryDown;
+	private ArrayList<Shipment> shipmentHistoryUp;
+	private CopyOnWriteArrayList<Shipment> shipmentPipeLineDown;
+	private CopyOnWriteArrayList<Shipment> shipmentPipeLineUp;
 	
 	public Link(Node up, Node down){
 		this.Id = count++;
@@ -43,33 +45,56 @@ public class Link {
 		this.material = upstrNode.getProduct();
 		orderHistory = new ArrayList<Order>();
 		orderPipeLine = new CopyOnWriteArrayList<Order>();
-		shipmentHistory = new ArrayList<Shipment>();
-		shipmentPipeLine = new CopyOnWriteArrayList<Shipment>();
+		shipmentHistoryDown = new ArrayList<Shipment>();
+		shipmentHistoryUp = new ArrayList<Shipment>();
+		shipmentPipeLineDown = new CopyOnWriteArrayList<Shipment>();
+		shipmentPipeLineUp = new CopyOnWriteArrayList<Shipment>();
 	}
 	
 	/**
 	 * 
 	 * @return Liste von Shipments, die in diesem Tick ankommen
 	 */
-	public ArrayList<Shipment> getArrivingShipments(){
+	public ArrayList<Shipment> getArrivingShipmentsDown(){
 		ArrayList<Shipment> ret = new ArrayList<Shipment>();
 		int currentTick = (int)RepastEssentials.GetTickCount();
-		for(Shipment shipment : shipmentPipeLine){
+		for(Shipment shipment : shipmentPipeLineDown){
 			if(shipment.getDate() + shipment.getDuration() <= currentTick){
 				ret.add(shipment);
-				shipmentPipeLine.remove(shipment);	
+				shipmentPipeLineDown.remove(shipment);	
 			}
 		}
 		return ret;
 	}
 	
-	public void induceShipment(Shipment shipment){
-		shipmentHistory.add(shipment);
-		shipmentPipeLine.add(shipment);
+	/**
+	 * 
+	 * @return Liste von Shipments, die in diesem Tick ankommen
+	 */
+	public ArrayList<Shipment> getArrivingShipmentsUp(){
+		ArrayList<Shipment> ret = new ArrayList<Shipment>();
+		int currentTick = (int)RepastEssentials.GetTickCount();
+		for(Shipment shipment : shipmentPipeLineUp){
+			if(shipment.getDate() + shipment.getDuration() <= currentTick){
+				ret.add(shipment);
+				shipmentPipeLineUp.remove(shipment);	
+			}
+		}
+		return ret;
+	}
+	
+	public void induceShipmentDown(Shipment shipment){
+		shipmentHistoryDown.add(shipment);
+		shipmentPipeLineDown.add(shipment);
+	}
+	
+	public void induceShipmentUp(Shipment shipment){
+		shipmentHistoryUp.add(shipment);
+		shipmentPipeLineUp.add(shipment);
 	}
 	
 	public int genDuration(){
-		return this.distrDuration.nextInt();
+		return (int)Math.ceil(this.distrDuration.nextDouble());
 	}
 	
 	public void setDistrDuration(AbstractDistribution distr){
@@ -101,13 +126,12 @@ public class Link {
 		return copy;
 	}
 	
-	
 	public ArrayList<Order> getOrderHistory(){
 		return this.orderHistory;
 	}
 	
-	public ArrayList<Shipment> getShipmentHistory(){
-		return this.shipmentHistory;
+	public ArrayList<Shipment> getShipmentHistoryDown(){
+		return this.shipmentHistoryDown;
 	}
 	
 	public Node getDownstrNode(){
@@ -142,7 +166,7 @@ public class Link {
 		String string = "";
 		string += "Link: " + getId() + ", Up " + this.upstrNode.getId() + ", Down " + this.downstrNode.getId() + "\n"
 				+ "   Shipments:";
-		for(Shipment shipment : shipmentHistory){
+		for(Shipment shipment : shipmentHistoryDown){
 			string += "   " + shipment.getSize() + ", ";
 		}
 		return string;
@@ -157,7 +181,7 @@ public class Link {
 			string += "      " + order.toString() + "\n";
 		}
 		string += "   ShipmentList:\n";
-		for(Shipment shipment : shipmentHistory){
+		for(Shipment shipment : shipmentHistoryDown){
 			string += "      " + shipment.toString() + "\n";
 		}
 		return string;

@@ -6,15 +6,10 @@ import agents.Business;
 import artefacts.Material;
 import modules.Inventory;
 
-public class PeriodicOUT extends InventoryPolicy{
+public class PeriodicOUT extends InventoryPolicy{	
 	
-	private int period;
-	private int lastOrderDate;
-	private double outLevel;
-	
-	
-	public PeriodicOUT(Business biz, Inventory inventory) {
-		super(biz, inventory);
+	public PeriodicOUT() {
+		super();
 	}
 
 	@Override
@@ -36,18 +31,18 @@ public class PeriodicOUT extends InventoryPolicy{
 	}
 	
 	private void calcPeriod(){
-		double meanOrder = biz.getInformationModule().getMeanDemand();
-		double orderFixCost = biz.getOrderPlanModule().getOrderFixCost(inventory.getMaterial());
+		double meanOrder = getMeanDemand();
+		double orderFixCost = getOrderFixCost();
 		double eoq = planningTechniques.getEOQ(meanOrder, orderFixCost, inventory.getHoldingCost());
 		this.period = (int)Math.ceil(eoq/meanOrder);
 	}
 	
 	private void calcOutLevel(){
 		Material material = inventory.getMaterial();
-		double meanOrder = biz.getInformationModule().getMeanDemand();
-		double meanLeadTime = biz.getOrderPlanModule().calcMeanLeadTime(material);
+		double meanOrder = getMeanDemand();
+		double meanLeadTime = getMeanLeadTime();
 		double sdOrder = biz.getInformationModule().getSDDemand();
-		double sdLeadTime = biz.getOrderPlanModule().calcSDLeadTime(material);
+		double sdLeadTime = getSDLeadTime();
 		double safetyStock = planningTechniques.calcSafetyStock(sdOrder, period+meanLeadTime, inventory.getServiceLevel());
 		
 		this.outLevel = (period+meanLeadTime)*meanOrder + safetyStock;

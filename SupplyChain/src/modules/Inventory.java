@@ -8,9 +8,9 @@ import modules.InventoryOpsModule;
 import artefacts.Material;
 import InventoryPolicies.ContinuousOUT;
 import InventoryPolicies.ContinuousQ;
-import InventoryPolicies.InvPolicies;
 import InventoryPolicies.InventoryPolicy;
 import InventoryPolicies.PeriodicOUT;
+import InventoryPolicies.PeriodicOUT_Quantify;
 import InventoryPolicies.PeriodicQ;
 import repast.simphony.essentials.RepastEssentials;
 
@@ -25,6 +25,8 @@ public class Inventory {
 	private TreeMap<Integer, Double> dueList;
 	private TreeMap<Integer, Double> orderList;
 	
+	private TreeMap<Integer, Double> histDueList;
+	
 	//Parameters to define durint setup!
 	private double holdingCost;
 	private double serviceLevel;
@@ -38,6 +40,7 @@ public class Inventory {
 		this.dueList = new TreeMap<Integer, Double>();
 		this.orderList = new TreeMap<Integer, Double>();
 		this.inventoryLevel = new ArrayList<Double>();
+		this.histDueList = new TreeMap<Integer, Double>();
 		
 		inventoryLevel.add(0.0);
 	}
@@ -49,24 +52,9 @@ public class Inventory {
 	}
 	
 	
-	public void setInventoryPolicy(InvPolicies policy){
-		switch(policy){
-		case ContOUT:
-			this.policy = new ContinuousOUT(biz, this);
-			break;
-			
-		case ContQ:
-			this.policy = new ContinuousQ(biz, this);
-			break;
-		
-		case PeriodicOUT:
-			this.policy = new PeriodicOUT(biz, this);
-			break;
-		
-		case PeriodicQ:
-			this.policy = new PeriodicQ(biz, this);
-			break;					
-		}		
+	public void setInventoryPolicy(InventoryPolicy policy){
+		this.policy = policy;
+	
 	}
 	
 	public void lowerInventory(double size){
@@ -118,8 +106,16 @@ public class Inventory {
 		return this.dueList;
 	}
 	
-	public void setDueList(TreeMap<Integer, Double> list){
+	public void putDueList(TreeMap<Integer, Double> list){
 		this.dueList = list;
+		for(Integer i : list.keySet()){
+			if(this.histDueList.containsKey(i)){
+				histDueList.put(i, histDueList.get(i)-list.get(i));
+			}
+			else{
+				histDueList.put(i, list.get(i));
+			}
+		}
 	}
 	
 	public void setDueListEntry(int index, double amount){
@@ -127,7 +123,7 @@ public class Inventory {
 	}
 	
 	public double getDueListEntry(int index){
-		return this.dueList.get(index);
+		return this.histDueList.get(index);
 	}
 	
 	public double getHoldingCost(){

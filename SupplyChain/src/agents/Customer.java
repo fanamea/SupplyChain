@@ -17,12 +17,14 @@ import setups.Setup;
 
 public class Customer extends Node{
 	
+	private Setup setup;
 	private DemandPattern pattern;
 	private DemandData demandData;
 	private DescriptiveStatistics received;
 	
 	public Customer(Setup setup, DemandPattern pattern){
 		super(setup, 1);
+		this.setup = setup;
 		this.pattern = pattern;
 		this.demandData = new DemandData();
 		this.received = new DescriptiveStatistics();
@@ -69,7 +71,7 @@ public class Customer extends Node{
 	@ScheduledMethod(start=1, interval=1, priority=10)
 	public void receiveShipments(){
 		ArrayList<Shipment> shipments = new ArrayList<Shipment>();
-		shipments = this.upstrLinks.get(0).getArrivingShipments();
+		shipments = this.upstrLinks.get(0).getArrivingShipmentsDown();
 		for(Shipment shipment : shipments){
 			this.received.addValue(shipment.getSize());
 		}

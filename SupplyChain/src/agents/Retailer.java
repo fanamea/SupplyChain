@@ -1,6 +1,8 @@
 package agents;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.TreeMap;
 
 import net.sourceforge.openforecast.DataSet;
@@ -14,7 +16,6 @@ import artefacts.DemandData;
 import artefacts.Material;
 import artefacts.Order;
 import artefacts.Shipment;
-import InventoryPolicies.InvPolicies;
 import InventoryPolicies.InventoryPolicy;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
@@ -41,29 +42,45 @@ public class Retailer extends Business{
 		this.orderPlanModule = new OrderPlanModule(this);
 		this.planningTechniques = new PlanningMethods();
 		this.informationModule = new InformationModule(this);
-			
-		DemandPattern pattern = new NormalDistribution(10.0, 1.0);
+		
+		this.customer = this.searchCustomer();
 		for(int i=-100; i<1; i++){
-			this.informationModule.addIntDemandData(i, pattern.getNextDouble());
+			this.informationModule.addIntDemandData(i, customer.getSampleOrder());
+			Link link = this.getUpstrLinks().get(0);
+			this.informationModule.putLeadTimeData(link, link.genDuration());
 		}
 		
-	}	
-	
-	@ScheduledMethod(start=1, interval = 1, priority = 10)
+	}
+		
 	public void prepareTick(){
 		inventoryOpsModule.prepareTick();
 	}
 	
-	@ScheduledMethod(start=1, interval = 1, priority = 9)
+	public void planFirstPeriods(){
+		HashMap<Material, Double> initialInventory = new HashMap<Material, Double>();
+		initialInventory.put(this.product, this.initialInventory);
+		inventoryOpsModule.storeMaterials(initialInventory);
+		
+		informationModule.combineDemandData();
+		inventoryPlanModule.recalcPolicyParams();			
+	}
+	
+	public void placeOrders(){
+		inventoryPlanModule.placeOrderReqs();
+		orderOpsModule.placeOrders();
+	}
+	
 	public void receiveShipments(){
 		ArrayList<Shipment> shipments = new ArrayList<Shipment>();
 		for(Link link : this.upstrLinks){
-			shipments = link.getArrivingShipments();
-			orderOpsModule.processInShipments(shipments);
+			shipments.addAll(link.getArrivingShipmentsDown());			
 		}
+		for(Link link : this.downstrLinks){
+			shipments.addAll(link.getArrivingShipmentsUp());
+		}
+		orderOpsModule.processInShipments(shipments);
 	}
 	
-	@ScheduledMethod(start=1, interval = 1, priority = 8)
 	public void fetchOrders(){
 		ArrayList<Order> newOrders = new ArrayList<Order>();
 		for(Link link : this.downstrLinks){
@@ -73,27 +90,20 @@ public class Retailer extends Business{
 		deliveryModule.processOrders(newOrders);
 	}
 	
-	@ScheduledMethod(start=1, interval = 1, priority = 6)
 	public void dispatchShipments(){
-		this.deliveryModule.dispatchShipments();
+		this.deliveryModule.dispatchOrders();
 	}
 	
-	@ScheduledMethod(start=1, interval = 1, priority = 5)
 	public void plan(){
 		int currentTick = (int)RepastEssentials.GetTickCount();
-		informationModule.combineDemandData();
+		
 		if(currentTick % planningPeriod == 0){
+			informationModule.combineDemandData();
 			inventoryPlanModule.recalcPolicyParams();
 			////System.out.println("Planning Period:" + inventoryPlanModule.getPlanString());
 		}
 		
-	}	
-	
-	@ScheduledMethod(start=1, interval = 1, priority = 4)
-	public void placeOrders(){
-		inventoryPlanModule.placeOrderReqs();
-		orderOpsModule.placeOrders();
-	}		
+	}			
 	
 	public void addDownstrPartner(Link b){
 		downstrLinks.add(b);
@@ -141,6 +151,12 @@ public class Retailer extends Business{
 		return null;
 	}
 	
+	@Override
+	public ProductionPlanModule getProductionPlanModule() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	public String getInformationString(){
 		String string = "";
 		string += "Node: " + this.Id + ", Tier: " + this.tier + "\n";
@@ -148,7 +164,6 @@ public class Retailer extends Business{
 				+ inventoryOpsModule.getInformationString();
 		return string;
 	}
-
 	
 	
 	/*
@@ -156,10 +171,19 @@ public class Retailer extends Business{
 	 */
 	
 	
-	public void setInventoryPolicy(InvPolicies policy){
+	public void setInventoryPolicy(InventoryPolicy policy){
+		policy.setBiz(this);
 		this.inventoryPlanModule.setInventoryPolicy(policy);
 	}
 	
+	/*
+	 * -----------------Analysis------------------
+	 */
 	
-
+	
+	public double getOUTLevel(){
+		Inventory inventory = inventoryOpsModule.getInventories().get(this.product);
+		return inventory.getPolicy().getOUTLevel();
+	}
+	
 }

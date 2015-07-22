@@ -14,7 +14,6 @@ import artefacts.Material;
 import artefacts.Order;
 import artefacts.OrderComparator;
 import artefacts.Shipment;
-import InventoryPolicies.InvPolicies;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
 import setups.Setup;
@@ -63,7 +62,7 @@ public class MaterialSource extends Node{
 				orderPipeLine.remove(0);
 			}
 			////System.out.println("OrderPipeLine.size after remove: " + orderPipeLine.size());
-			link.induceShipment(newShipment);
+			link.induceShipmentDown(newShipment);
 			shipped += amount;
 		}
 	}

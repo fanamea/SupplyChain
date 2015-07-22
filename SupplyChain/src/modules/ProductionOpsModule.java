@@ -34,8 +34,9 @@ public class ProductionOpsModule {
 	public void startProdJobs(){
 		////System.out.println("startProdJobs");
 		int currentTick = (int)RepastEssentials.GetTickCount();
-		double productionCounter = 0;		
-		double capacityLeft = biz.getProductionPlanModule().getProductionCapacity();
+		double productionCounter = 0;
+		double capacity = biz.getProductionPlanModule().getProductionCapacity();
+		double capacityLeft = capacity;
 		int productionTime = biz.getProductionPlanModule().getProductionTime();
 		boolean isProdRequest = false;
 		double maxProduction = 0;
@@ -64,6 +65,8 @@ public class ProductionOpsModule {
 						pReq.incrSent(batchSize);
 						capacityLeft -= batchSize;
 						productionPipeLine.add(job);
+						double setUpCost = biz.getProductionPlanModule().getSetUpCost();
+						biz.getInformationModule().addProductionCost(setUpCost);
 					}
 					if(pReq.isSent()){
 						prodRequestPipeLine.remove(pReq);
@@ -74,7 +77,7 @@ public class ProductionOpsModule {
 			condition = !prodRequestPipeLine.isEmpty() && isProdRequest && capacityLeft>0 && batchSize>0;
 		}while(condition);
 		
-		
+		biz.getInformationModule().setStartedProduction(capacity-capacityLeft);
 		////System.out.println("ProdRequestPipeLine: " + prodRequestPipeLine);
 		////System.out.println("ProductionPipeLine: " + productionPipeLine);
 	}
@@ -85,18 +88,16 @@ public class ProductionOpsModule {
 	 */
 	public HashMap<Material, Double> getArrivingProduction(){
 		HashMap<Material, Double> output = new HashMap<Material, Double>();
-		output.put(biz.getProduct(), 0.0);
+		Material product = biz.getProduct();
+		output.put(product, 0.0);
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		for(ProdJob job : productionPipeLine){			
 			if(job.getDate() + job.getLeadTime() <= currentTick){
-				output.put(biz.getProduct(), output.get(biz.getProduct())+job.getSize());
+				output.put(product, output.get(product)+job.getSize());
 				productionPipeLine.remove(job);
 			}
 		}
-		
-		////System.out.println("getArrivingProduction");
-		////System.out.println("ProdRequestPipeLine: " + prodRequestPipeLine);
-		////System.out.println("ProductionPipeLine: " + productionPipeLine);
+		biz.getInformationModule().setArrivingProduction(output.get(product));
 		
 		return output;		
 	}
@@ -118,11 +119,11 @@ public class ProductionOpsModule {
 		double sum = 0;
 		for(ProdRequest pReq : prodRequestPipeLine){
 			if(pReq.getDate()+productionTime <= currentTick){
-				sum += pReq.getShortageArrived();
+				sum += pReq.getShortageSent();
 			}
 		}
 		for(ProdJob job : productionPipeLine){
-			if(job.getDate()+job.getLeadTime() <= currentTick){
+			if(job.getProdRequest().getDate()+job.getLeadTime() <= currentTick){
 				sum += job.getSize();
 			}
 		}

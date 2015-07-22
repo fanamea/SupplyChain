@@ -15,7 +15,6 @@ import artefacts.Material;
 import artefacts.OrderReq;
 import repast.simphony.essentials.RepastEssentials;
 import modules.Inventory;
-import InventoryPolicies.InvPolicies;
 import InventoryPolicies.InventoryPolicy;
 
 public class InventoryPlanModule{
@@ -25,19 +24,22 @@ public class InventoryPlanModule{
 	private HashMap<Material, Inventory> inventories;
 	private InventoryPlanningAlgorithm inventoryPlanningAlgorithm;
 	
-	private TreeMap<Integer, Double> demandForecast;	
+	private TreeMap<Integer, Double> demandForecast;
+	
+	boolean returnsAllowed;
 	
 	public InventoryPlanModule(Business biz){
 		this.biz = biz;
 		this.opsAgent = biz.getInventoryOpsModule();
 		this.inventoryPlanningAlgorithm = new DefaultInventoryPlanning();
 		
-		this.inventories = opsAgent.getInventories();		
+		this.inventories = opsAgent.getInventories();
 	}
 	
 	
-	public void setInventoryPolicy(InvPolicies policy){
+	public void setInventoryPolicy(InventoryPolicy policy){
 		for(Inventory inventory : inventories.values()){
+			policy.setInventory(inventory);
 			inventory.setInventoryPolicy(policy);
 		}
 	}
@@ -48,13 +50,30 @@ public class InventoryPlanModule{
 	public void placeOrderReqs(){
 		OrderOpsModule orderAgent = biz.getOrderOpsModule();		
 		int currentTick = (int)RepastEssentials.GetTickCount();
-		for(Material material : inventories.keySet()){
+		for(Material material : inventories.keySet()){			
 			ArrayList<OrderReq> orderReqs = new ArrayList<OrderReq>();
 			double amount = inventories.get(material).getOrder();
-			if(amount>0){
-				orderReqs.add(new OrderReq(material, currentTick, amount));
+			
+			if(!returnsAllowed){
+				amount = Math.max(0.0, amount);
+			}			
+			
+			if(amount<0.0){				
+				double inventoryLevel = inventories.get(material).getInventoryLevel();
+				//For negative orders which are bigger than current InventoryLevel
+				if((amount+inventoryLevel)<=0){
+					amount = inventoryLevel;
+				}				
+			}			
+			
+			if(amount!=0.0){
+				OrderReq newOrderReq = new OrderReq(material, currentTick, amount);
+				if(newOrderReq.getSize()<0.0){
+					System.out.println(newOrderReq.getSize());
+				}
+				orderReqs.add(newOrderReq);
 			}
-			orderAgent.handOrderReqs(material, orderReqs);
+			orderAgent.handOrderReqs(material, orderReqs);					
 		}				
 	}
 	
@@ -99,7 +118,7 @@ public class InventoryPlanModule{
 					double amount = productionPlanModule.getResourceDemand(date, material);
 					dueList.put(date, amount);
 				}
-				inventory.setDueList(dueList);
+				inventory.putDueList(dueList);
 				////System.out.println("inInventoryDueList: " + dueList);
 			}
 		}
@@ -117,6 +136,14 @@ public class InventoryPlanModule{
 		}
 	}
 	
+	public void setInventoryPlanningAlgorithm(InventoryPlanningAlgorithm algo){
+		this.inventoryPlanningAlgorithm = algo;
+	}
+	
+	public void setReturnsAllowed(boolean b){
+		this.returnsAllowed = b;
+	}
+	
 	public TreeMap<Integer, Double> getInventoryDueList(Material material){
 		return inventories.get(material).getDueList();
 	}
@@ -130,7 +157,7 @@ public class InventoryPlanModule{
 		Inventory outInventory = inventories.get(biz.getProduct());
 		TreeMap<Integer, Double> inventoryPlan = inventoryPlanningAlgorithm.calcInventoryPlan(this.demandForecast, outInventory.getServiceLevel());
 		////System.out.println("plannedStocks: " + plannedStocks);
-		outInventory.setDueList(inventoryPlan);
+		outInventory.putDueList(inventoryPlan);
 	}
 	
 	public void handForecast(TreeMap<Integer, Double> forecast){

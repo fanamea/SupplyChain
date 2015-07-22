@@ -1,6 +1,7 @@
 package agents;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.TreeMap;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -13,7 +14,6 @@ import artefacts.DemandData;
 import artefacts.Material;
 import artefacts.Order;
 import artefacts.Shipment;
-import InventoryPolicies.InvPolicies;
 import repast.simphony.data2.NonAggregateDataSource;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
@@ -24,6 +24,8 @@ public abstract class Business extends Node{
 	
 	protected int planningPeriod;
 	
+	protected Customer customer;
+	
 	protected DeliveryModule deliveryModule;
 	protected OrderOpsModule orderOpsModule;
 	protected InventoryOpsModule inventoryOpsModule;	
@@ -33,8 +35,12 @@ public abstract class Business extends Node{
 	protected PlanningMethods planningTechniques;
 	protected InformationModule informationModule;
 	
+	protected double initialInventory;
+	
 	public Business(Setup setup, int tier){
 		super(setup, tier);
+		
+		this.initialInventory = 0;
 	}
 	
 	public abstract void initNode();	
@@ -53,7 +59,28 @@ public abstract class Business extends Node{
 	public abstract ForecastModule getForecastModule();
 	public abstract OrderPlanModule getOrderPlanModule();
 	public abstract ProductionOpsModule getProductionOpsModule();
+	public abstract ProductionPlanModule getProductionPlanModule();
 	public abstract InformationModule getInformationModule();
+	
+	
+	
+	public void collectData(){
+		double holdingCostProduct = 0;
+		double holdingCostResources = 0;
+		for(Material material : inventoryOpsModule.getInventories().keySet()){
+			if(material==product){
+				holdingCostProduct = this.inventoryOpsModule.getInventoryLevel(product);
+			}
+			else{
+				holdingCostResources += inventoryOpsModule.getInventoryLevel(material);
+			}
+		}
+		double backlog = deliveryModule.getBacklog();
+		
+		informationModule.addHoldingCostProduct(holdingCostProduct);
+		informationModule.addHoldingCostResources(holdingCostResources);
+		informationModule.addBacklog(backlog);
+	}
 	
 	public int getPlanningPeriod(){
 		return this.planningPeriod;
@@ -61,7 +88,8 @@ public abstract class Business extends Node{
 	
 	//Setup
 	
-	//Parameter
+	//-------------------------Parameter---------------------------
+	
 	public void setHoldingCost(double holdingCost) {
 		this.inventoryPlanModule.setHoldingCosts(holdingCost);		
 	}
@@ -70,15 +98,19 @@ public abstract class Business extends Node{
 		this.inventoryPlanModule.setServiceLevels(serviceLevel);
 	}
 	
-	public void setInventoryPolicy(InvPolicies policy){
-		this.inventoryPlanModule.setInventoryPolicy(policy);
-	}
-	
 	public void setTrustLevel(double trustLevel){
 		this.informationModule.setTrustLevel(trustLevel);
 	}
 	
-	//Information Sharing
+	public void setInitialInventory(double inventory){
+		this.initialInventory = inventory;
+	}
+	
+	public void setReturnsAllowed(boolean returns){
+		this.inventoryPlanModule.setReturnsAllowed(returns);
+	}
+	
+	//------------------------Information Sharing-------------------------
 	
 	public DemandData searchCustomerDemandData() {
 		return this.informationModule.searchCustomerDemandData();
@@ -88,11 +120,16 @@ public abstract class Business extends Node{
 		this.informationModule.setCustomerDemandData();		
 	}
 	
-	//Analysis
-	public double getBWEMeasure(){
-		Customer customer = setup.getCustomers().get(0);
-		////System.out.println("BWE: " + this.informationModule.getVarianceOrders() + ", " + customer.getVarianceOrders());
-		return this.informationModule.getVarianceOrders()/customer.getVarianceOrders();
+	public void setInformationSharing(boolean b){
+		this.informationModule.setInformationSharing(b);
+	}
+	
+	
+	//------------------------Analysis-------------------------------
+	
+	public double getBWE(){
+		//System.out.println("BWE: " + this.informationModule.getVarianceOrders() + ", " + customer.getVarianceOrders());
+		return this.informationModule.getVarianceOrders()/informationModule.getVarianceCustomerOrders();
 	}
 	
 	public double getVarianceOrders(){
@@ -103,8 +140,12 @@ public abstract class Business extends Node{
 		return this.informationModule.getTrustLevel();
 	}
 	
-	public double getOrderAmount(){
-		return this.informationModule.getOrderAmount();
+	public double getOrderAmountIn(){
+		return this.informationModule.getOrderAmountIn();
+	}
+	
+	public double getOrderAmountOut(){
+		return this.informationModule.getOrderAmountOut();
 	}
 	
 	public double getInventoryLevel(){
@@ -114,6 +155,42 @@ public abstract class Business extends Node{
 	public double getBacklog(){
 		return this.deliveryModule.getBacklog();
 	}
+	
+	public double getSumBacklog(){
+		return this.informationModule.getSumBacklog();
+	}
+	
+	public double getMeanBacklog(){
+		return this.informationModule.getMeanBacklog();
+	}
+	
+	public double getArrivingShipments(){
+		return this.informationModule.getArrivingShipments();
+	}
+	
+	public double getHoldingCostProdudct(){
+		return informationModule.getHoldingCostProduct();
+	}
+	
+	public double getHoldingCostResources(){
+		return informationModule.getHoldingCostResources();
+	}
+	
+	public double getOrderCost(){
+		return informationModule.getOrderCost();
+	}
+	
+	public double getProductionCost(){
+		return informationModule.getProductionCost();
+	}
+	
+	public double getMeanLeadTimeShipments(){
+		return this.informationModule.getMeanLeadTimeAll();
+	}
+	
+	
+	
+	//------------------------------------------------------------
 	
 	public void addDownstrPartner(Link b){
 		downstrLinks.add(b);

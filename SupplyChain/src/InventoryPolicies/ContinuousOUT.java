@@ -9,13 +9,8 @@ import modules.Inventory;
 
 public class ContinuousOUT extends InventoryPolicy{
 	
-	private double outLevel;
-	private double reorderLevel;
-	private PlanningMethods planningTechniques;
-	
-	public ContinuousOUT(Business biz, Inventory inventory) {
-		super(biz, inventory);
-		this.planningTechniques = new PlanningMethods();
+	public ContinuousOUT() {
+		super();
 	}
 	
 	public void recalcParams(){
@@ -24,7 +19,7 @@ public class ContinuousOUT extends InventoryPolicy{
 	}
 	
 	public double getOrder(int currentTick, double inventoryPosition){
-		if(inventoryPosition<=reorderLevel)
+		if(inventoryPosition<=reorderPoint)
 			return outLevel - inventoryPosition;
 		else
 			return 0.0;
@@ -32,15 +27,15 @@ public class ContinuousOUT extends InventoryPolicy{
 	
 	public void calcReorderLevel(){
 		Material material = inventory.getMaterial();
-		double meanOrder = biz.getInformationModule().getMeanDemand();
-		double meanLeadTime = biz.getOrderPlanModule().calcMeanLeadTime(material);
+		double meanOrder = getMeanDemand();
+		double meanLeadTime = getMeanLeadTime();
 		double sdOrder = biz.getInformationModule().getSDDemand();
-		double sdLeadTime = biz.getOrderPlanModule().calcSDLeadTime(material);
+		double sdLeadTime = getSDLeadTime();
 		double safetyStock = planningTechniques.calcSafetyStock(sdOrder, meanLeadTime, inventory.getServiceLevel());
 		
 		//System.out.println("Tier: " + biz.getTier() + ", meanOrder: " + meanOrder + ", meanLeadTime: " + meanLeadTime + ", sdOrder: " + sdOrder + ", sdLeadTime: " + sdLeadTime + ", safetyStock: " + safetyStock);
 		
-		reorderLevel = meanLeadTime*meanOrder + safetyStock;
+		reorderPoint = meanLeadTime*meanOrder + safetyStock;
 	}
 			
 	public void calcOutLevel(){
@@ -49,13 +44,13 @@ public class ContinuousOUT extends InventoryPolicy{
 		double orderQuantity = planningTechniques.getEOQ(meanOrder, orderFixCost, inventory.getHoldingCost());
 		
 		//System.out.println("meanOrder: " + meanOrder + ", orderQuantity: " + orderQuantity);
-		this.outLevel = this.reorderLevel + orderQuantity;
+		this.outLevel = this.reorderPoint + orderQuantity;
 	}
 	
 	public String getParameterString(){
 		String string = "";
 		string += "         OUT Level: " + this.outLevel + "\n";
-		string += "         Reorderlevel: " + this.reorderLevel + "\n";
+		string += "         Reorderlevel: " + this.reorderPoint + "\n";
 		return string;
 	}
 	

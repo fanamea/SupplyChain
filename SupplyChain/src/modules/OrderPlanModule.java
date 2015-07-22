@@ -25,8 +25,6 @@ public class OrderPlanModule {
 	private HashMap<Material, CopyOnWriteArrayList<OrderReq>> orderReqPipeLine;
 	private LotSizingAlgorithm lotSizingAlgo;
 	
-	private HashMap<Link, DescriptiveStatistics> leadTimeData;
-	
 	private double serviceLevel;
 	
 	
@@ -36,7 +34,6 @@ public class OrderPlanModule {
 		this.orderReqPipeLine = biz.getOrderOpsModule().getOrderReqPipeLine();
 		this.suppliers = biz.getOrderOpsModule().getSuppliers();
 		this.lotSizingAlgo = new SilverMeal(0, 0);
-		this.leadTimeData = biz.getOrderOpsModule().getLeadTimeData();
 	}
 	
 	public void plan(){
@@ -60,19 +57,30 @@ public class OrderPlanModule {
 		this.lotSizingAlgo.setHoldingCost(holdingCost);
 		TreeMap<Integer, Double> lotPlan = lotSizingAlgo.calcLotPlan(dueList);
 		
-		double meanLeadTime = calcMeanLeadTime(supplier);
-		double sdLeadTime = calcSDLeadTime(supplier);
+		double meanLeadTime = biz.getInformationModule().getMeanLeadTime(supplier);
+		double sdLeadTime = biz.getInformationModule().getSDLeadTime(supplier);
 		double safetyLeadTime = planningTechniques.calcSafetyLeadTime(sdLeadTime, serviceLevel);
 		int totalLeadTime = (int)Math.ceil(meanLeadTime + safetyLeadTime);
 		
+		biz.getInformationModule().setPlanningLeadTimeShipments(totalLeadTime);
+		
 		for(Integer i : lotPlan.keySet()){
 			if(lotPlan.get(i)>0){
-				OrderReq orderReq = new OrderReq(material, i-totalLeadTime-3, dueList.get(i));
+				//i-totalLeadTime-3?!?!?!?!
+				OrderReq orderReq = new OrderReq(material, i-totalLeadTime, dueList.get(i));
 				//System.out.println("NEW ORDERREQ: ID: " + orderReq.getId() + ", Material: " + material + "i: " + i + ", totalLeadTime: " + totalLeadTime + ", size: " + dueList.get(i));
 				orderReqs.add(orderReq);
 			}
+			biz.getInformationModule().putOrder(i-totalLeadTime, lotPlan.get(i));
 		}
 		return orderReqs;		
+	}
+	
+	/**
+	 * Only works for only one supplier per material
+	 */
+	public Link getLink(Material material){
+		return this.suppliers.get(material).get(0);
 	}
 	
 	public double getOrderFixCost(Material material){
@@ -80,21 +88,8 @@ public class OrderPlanModule {
 		return supplier.getFixCost();
 	}
 	
-	public double calcMeanLeadTime(Link link){
-		return leadTimeData.get(link).getMean();
-	}
-	
-	public double calcSDLeadTime(Link link){
-		return leadTimeData.get(link).getStandardDeviation();
-	}
-	
-	public double calcSDLeadTime(Material material){
-		return leadTimeData.get(suppliers.get(material).get(0)).getStandardDeviation();
-	}
-	
-	public double calcMeanLeadTime(Material material){
-		double min = calcMeanLeadTime(suppliers.get(material).get(0));		
-		return min;
+	public void setLotSizingAlgorithm(LotSizingAlgorithm algo){
+		this.lotSizingAlgo = algo;
 	}
 	
 	public void setServiceLevel(double serviceLevel){

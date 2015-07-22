@@ -64,6 +64,14 @@ public class ForecastModule{
 		return sum;
 	}
 	
+	public void setForecastingModel(AbstractForecastingModel model){
+		this.fcModel = model;
+	}
+	
+	public void setReviewPeriod(int period){
+		this.reviewPeriod = period;
+	}
+	
 	public double getSDDemand(){
 		return demandData.getStandardDeviation();
 	}

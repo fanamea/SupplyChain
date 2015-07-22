@@ -6,8 +6,6 @@ import modules.Link;
 
 public class Order {
 	
-	//TODO Teillieferungen
-	
 	private static int count;
 	
 	private int Id;
@@ -61,19 +59,19 @@ public class Order {
 	}
 	
 	public boolean isSent(){
-		return size<=sent;
+		return Math.abs(size)<=sent;				
 	}
 	
 	public boolean hasArrived(){
-		return size<=arrived;
+		return Math.abs(size)<=arrived;
 	}
 	
 	public double getShortageSent(){
-		return size-sent;
+		return Math.abs(size)-sent;
 	}
 	
 	public double getShortageArrived(){
-		return size-arrived;
+		return Math.abs(size)-arrived;
 	}
 	
 	public void addShipment(Shipment shipment){

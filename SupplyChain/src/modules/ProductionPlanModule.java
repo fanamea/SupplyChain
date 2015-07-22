@@ -54,26 +54,31 @@ public class ProductionPlanModule {
 	
 	public void planProduction(){
 		TreeMap<Integer, Double> dueList = biz.getInventoryPlanModule().getInventoryDueList(biz.getProduct());
-		int pivot = dueList.lastKey()-biz.getPlanningPeriod()+1;
-		SortedMap<Integer, Double> tailmap = dueList.tailMap(pivot);
-		TreeMap<Integer, Double> periodList = new TreeMap<Integer, Double>(tailmap);
-		TreeMap<Integer, Double> adjustedDueList = adjustDueList(periodList);
-		lotPlan = this.lotSizingAlgo.calcLotPlan(adjustedDueList);
+		//int pivot = dueList.lastKey()-biz.getPlanningPeriod()+1;
+		//SortedMap<Integer, Double> tailmap = dueList.tailMap(pivot);
+		//TreeMap<Integer, Double> periodList = new TreeMap<Integer, Double>(tailmap);
+		TreeMap<Integer, Double> adjustedDueList = adjustDueList(dueList);
+		biz.getInformationModule().putAdjustedDueList(adjustedDueList);
+		TreeMap<Integer, Double> shiftedList = shiftList(adjustedDueList, -productionTime);
+		lotPlan = this.lotSizingAlgo.calcLotPlan(shiftedList);
 		
-		//System.out.println("dueList:" + dueList);
-		//System.out.println("tailmap:" + tailmap);
-		//System.out.println("periodList:" + periodList);
-		//System.out.println("adjustedDueList:" + adjustedDueList);
-		//System.out.println("lotPlan:" + lotPlan);
-		////System.out.println("ADJUSTED LOTPLAN: " + adjustedLotPlan);
 		fillProdRequestPipeLine(lotPlan);
+		System.out.println("lotPlan: " + lotPlan);
 		lotPlanHistory.putAll(lotPlan);
 	}
 	
-	private void fillProdRequestPipeLine(TreeMap<Integer, Double> lotPlan){
+	public TreeMap<Integer, Double> shiftList(TreeMap<Integer, Double> list, int shift){
+		TreeMap<Integer, Double> shiftedList = new TreeMap<Integer, Double>();
+		for(Integer i : list.keySet()){
+			shiftedList.put(i+shift, list.get(i));
+		}
+		return shiftedList;
+	}
+	
+	private void fillProdRequestPipeLine(TreeMap<Integer, Double> lotPlan){;
 		for(Integer i : lotPlan.keySet()){
 			if(lotPlan.get(i)>0){
-				this.prodRequestPipeLine.add(new ProdRequest(i-productionTime, lotPlan.get(i), this.billOfMaterial));
+				this.prodRequestPipeLine.add(new ProdRequest(i, lotPlan.get(i), this.billOfMaterial));
 				sumProdRequests+=lotPlan.get(i);
 			}			
 		}
@@ -94,9 +99,9 @@ public class ProductionPlanModule {
 		double futureProduction = biz.getProductionOpsModule().getFutureProduction();
 		double forecast = biz.getInformationModule().getSumFC(currentTick+1, pivotDate-1);			
 		//double arrivingProduction = getPlannedArrivingProduction(currentTick+1, pivotDate-1);
-		double adjustment = (forecast + backlog) - (currentInventory + futureProduction);
+		double adjustment = (backlog  + forecast) - (currentInventory + futureProduction);
 		this.adjustmentSave = adjustment;
-		//System.out.println("currentTick: " + currentTick + ", currentInventory: " + currentInventory + "forecast " + forecast + ", ADJUSTMENT:" + adjustment);
+		System.out.println("currentTick: " + currentTick + "forecast " + forecast + ", backlog: " + backlog + ", currentInventory: " + currentInventory + ", futureProduction: " + futureProduction + ", ADJUSTMENT: " + adjustment);
 		
 		if(adjustment>=0){
 			adjustedDueList.put(pivotDate, adjustedDueList.get(pivotDate)+adjustment);
@@ -131,6 +136,10 @@ public class ProductionPlanModule {
 			sum += this.lotPlanHistory.get(i);
 		}
 		return sum;
+	}
+	
+	public double getPlannedProduction(int tick){
+		return this.lotPlanHistory.get(tick);
 	}
 	
 	public double getAdjustment(){
@@ -175,6 +184,10 @@ public class ProductionPlanModule {
 	
 	public double getProductionCapacity(){
 		return this.productionCapacity;
+	}
+	
+	public double getSetUpCost(){
+		return this.setUpCost;
 	}
 	
 	public int getProductionTime(){

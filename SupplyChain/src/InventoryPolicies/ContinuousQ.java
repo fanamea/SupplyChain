@@ -8,13 +8,9 @@ import modules.PlanningMethods;
 
 public class ContinuousQ extends InventoryPolicy{
 	
-	private double orderQuantity;
-	private double reorderLevel;
-	private PlanningMethods planningTechniques;
 	
 	public ContinuousQ(Business biz, Inventory inventory) {
-		super(biz, inventory);
-		this.planningTechniques = new PlanningMethods();
+		super();
 	}
 	
 	public void recalcParams(){
@@ -23,27 +19,27 @@ public class ContinuousQ extends InventoryPolicy{
 	}
 	
 	public double getOrder(int currentTick, double inventoryPosition){
-		if(inventoryPosition<=reorderLevel)
-			return orderQuantity;
+		if(inventoryPosition<=reorderPoint)
+			return quantity;
 		else
 			return 0.0;
 	}
 	
 	public void calcReorderLevel(){
 		Material material = inventory.getMaterial();
-		double meanOrder = biz.getInformationModule().getMeanDemand();
-		double meanLeadTime = biz.getOrderPlanModule().calcMeanLeadTime(material);
-		double sdOrder = biz.getInformationModule().getSDDemand();
-		double sdLeadTime = biz.getOrderPlanModule().calcSDLeadTime(material);
+		double meanOrder = getMeanDemand();
+		double meanLeadTime = getMeanLeadTime();
+		double sdOrder = getSDDemand();
+		double sdLeadTime = getSDLeadTime();
 		double safetyStock = planningTechniques.calcSafetyStock(sdOrder, meanLeadTime, inventory.getServiceLevel());
 		
-		reorderLevel = meanLeadTime*meanOrder + safetyStock;
+		reorderPoint = meanLeadTime*meanOrder + safetyStock;
 	}
 			
 	public void calcOrderQuantity(){
 		double meanOrder = biz.getInformationModule().getMeanDemand();
 		double orderFixCost = biz.getOrderPlanModule().getOrderFixCost(inventory.getMaterial());
-		this.orderQuantity = planningTechniques.getEOQ(meanOrder, orderFixCost, inventory.getHoldingCost());
+		this.quantity = planningTechniques.getEOQ(meanOrder, orderFixCost, inventory.getHoldingCost());
 	}
 
 	@Override

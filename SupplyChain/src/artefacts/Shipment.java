@@ -26,6 +26,16 @@ public class Shipment {
 		this.arriving = d + dur;
 	}
 	
+	public Shipment(Link link, int d, double s, int dur){
+		this.Id = count++;
+		this.link = link;
+		this.material = link.getMaterial();
+		this.date = d;
+		this.size = s;
+		this.duration = dur;
+		this.arriving = d + dur;
+	}
+	
 	public int getDate(){
 		return this.date;
 	}

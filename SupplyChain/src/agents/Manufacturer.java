@@ -1,5 +1,7 @@
 package agents;
 
+import inventoryPlannningAlgorithm.InventoryPlanningAlgorithm;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
@@ -7,6 +9,7 @@ import java.util.TreeMap;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import net.sourceforge.openforecast.DataSet;
+import net.sourceforge.openforecast.models.AbstractForecastingModel;
 import lotSizingAlgorithms.LotSizingAlgorithm;
 import modules.*;
 import demandPattern.Constant;
@@ -16,7 +19,6 @@ import artefacts.DemandData;
 import artefacts.Material;
 import artefacts.Order;
 import artefacts.Shipment;
-import InventoryPolicies.InvPolicies;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.essentials.RepastEssentials;
 import setups.Setup;
@@ -50,7 +52,7 @@ public class Manufacturer extends Business{
 		
 		this.planningPeriod = 10;
 		
-		Customer customer = this.searchCustomer();
+		this.customer = this.searchCustomer();
 		for(int i=-100; i<1; i++){
 			this.informationModule.addIntDemandData(i, customer.getSampleOrder());
 		}
@@ -61,7 +63,7 @@ public class Manufacturer extends Business{
 	@ScheduledMethod(start=1, interval = 0, priority = 11)
 	public void planFirstPeriods(){
 		
-		informationModule.forecast(1, 10);
+		informationModule.forecast(1, 20);
 		inventoryPlanModule.handForecast(informationModule.getLastForecast());
 		inventoryPlanModule.planEndProduct();
 		productionPlanModule.planProduction();
@@ -78,7 +80,7 @@ public class Manufacturer extends Business{
 	public void receiveShipments(){
 		ArrayList<Shipment> shipments = new ArrayList<Shipment>();
 		for(Link link : this.upstrLinks){
-			shipments = link.getArrivingShipments();
+			shipments = link.getArrivingShipmentsDown();
 			orderOpsModule.processInShipments(shipments);
 		}
 	}
@@ -102,18 +104,18 @@ public class Manufacturer extends Business{
 	
 	@ScheduledMethod(start=1, interval = 1, priority = 6)
 	public void dispatchShipments(){
-		this.deliveryModule.dispatchShipments();
+		this.deliveryModule.dispatchOrders();
 	}
 	
 	@ScheduledMethod(start=1, interval = 1, priority = 5)
 	public void plan(){
 		////System.out.println("Biz: " + this.Id + ", plan");
 		int currentTick = (int)RepastEssentials.GetTickCount();
-		if(currentTick % planningPeriod == 1){
+		if(currentTick % planningPeriod == 0){
 			if(currentTick>20){
 				informationModule.recalcTrustLevel();
 			}			
-			informationModule.forecast(currentTick+planningPeriod, currentTick+2*planningPeriod-1);
+			informationModule.forecast(currentTick+planningPeriod+1, currentTick+2*planningPeriod);
 			inventoryPlanModule.handForecast(informationModule.getLastForecast());
 			inventoryPlanModule.planEndProduct();
 			productionPlanModule.planProduction();
@@ -126,7 +128,7 @@ public class Manufacturer extends Business{
 	@ScheduledMethod(start=1, interval = 1, priority = 4)
 	public void placeOrders(){
 		orderOpsModule.placeOrders();
-	}	
+	}
 	
 	public void setProduct(Material material){
 		this.product = material;
@@ -226,6 +228,16 @@ public class Manufacturer extends Business{
 		this.orderPlanModule.setServiceLevel(serviceLevel);
 	}
 	
+	public void setInventoryPlanningAlgorithm(InventoryPlanningAlgorithm algo){
+		this.inventoryPlanModule.setInventoryPlanningAlgorithm(algo);
+	}
+	
+	//Orders
+	
+	public void setOrderPlanningAlgorithm(LotSizingAlgorithm algo){
+		this.orderPlanModule.setLotSizingAlgorithm(algo);
+	}
+	
 	//Production
 	
 	public void setProductionTime(int productionTime){
@@ -247,6 +259,14 @@ public class Manufacturer extends Business{
 	public void setLotSizingAlgorithm(LotSizingAlgorithm lotSizingAlgo){
 		this.productionPlanModule.setLotSizingAlgorithm(lotSizingAlgo);
 	}
+	
+	public void setForecastingModel(AbstractForecastingModel fcModel){
+		this.forecastModule.setForecastingModel(fcModel);
+	}
+	
+	public void setForecastingReview(int period){
+		this.forecastModule.setReviewPeriod(period);
+	}
 
 	//Information Sharing
 	public void setTrustFeedback(){
@@ -257,8 +277,56 @@ public class Manufacturer extends Business{
 		return this.productionPlanModule.getSumProdRequests();
 	}
 	
+	//----------------------------Analysis---------------------------------
+	
 	public double getAdjustment(){
 		return this.productionPlanModule.getAdjustment();
+	}
+	
+	public double getPlannedInventory(){
+		int tick = (int)RepastEssentials.GetTickCount();
+		return this.inventoryOpsModule.getInventories().get(this.product).getDueListEntry(tick);
+	}
+	
+	public double getInventoryLevelRes(){
+		Material material = upstrLinks.get(0).getMaterial();
+		return this.inventoryOpsModule.getInventoryLevel(material);
+	}
+	
+	public double getBacklogProductionStart(){
+		return this.informationModule.getBacklogProductionStart();
+	}
+	
+	public double getBacklogProductionEnd(){
+		return this.informationModule.getBacklogProductionEnd();
+	}
+	
+	public double getStartedProduction(){
+		return this.informationModule.getStartedProduction();
+	}
+	
+	public double getArrivingProduction(){
+		return this.informationModule.getArrivingProduction();
+	}
+	
+	public double getPlanningTimeShipments(){
+		return this.informationModule.getPlanningTimeShipments();
+	}
+	
+	public double getPlannedProduction(){
+		return this.informationModule.getPlannedProduction();
+	}
+	
+	public double getPlannedOrder(){
+		return this.informationModule.getPlannedOrder();
+	}
+	
+	public double getForecast(){
+		return this.informationModule.getForecast((int)RepastEssentials.GetTickCount());
+	}
+	
+	public double getAdjustedDueList(){
+		return this.informationModule.getAdjustedDueListEntry((int)RepastEssentials.GetTickCount());
 	}
 	
 	public double getSumDueList(){

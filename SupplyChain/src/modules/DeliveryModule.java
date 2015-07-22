@@ -15,8 +15,12 @@ import agents.Business;
 import artefacts.Material;
 import artefacts.Order;
 import artefacts.OrderComparator;
+import artefacts.ReturnReq;
+import artefacts.ReturnReqComparator;
 import artefacts.Shipment;
 import repast.simphony.essentials.RepastEssentials;
+import repast.simphony.random.RandomHelper;
+import repast.simphony.util.SimUtilities;
 import modules.Link;
 
 public class DeliveryModule {
@@ -28,9 +32,9 @@ public class DeliveryModule {
 	public DeliveryModule(Business biz){
 		this.biz = biz;
 		this.orderPipeLine = new CopyOnWriteArrayList<Order>();
-
-
 	}
+	
+	
 	
 	/**
 	 * TODO: Momentan keine Angabe von DueDates für Orders, sondern werden sofort verarbeitet und
@@ -39,8 +43,7 @@ public class DeliveryModule {
 	 * 
 	 * @param orderList
 	 */
-	public void processOrders(ArrayList<Order> orderList){
-		orderPipeLine.addAll(orderList);
+	public void processOrders(ArrayList<Order> orderList){		
 		InformationModule infoModule = biz.getInformationModule();
 		int currentTick = (int)RepastEssentials.GetTickCount();		
 		double sum=0;
@@ -49,13 +52,22 @@ public class DeliveryModule {
 		}
 		////System.out.println("handDemandData: " + currentTick + ", sum: " + sum);
 		infoModule.addIntDemandData(currentTick, sum);
+		
+		for(Order order : orderList){
+			if(order.getSize()>0.0){
+				orderPipeLine.add(order);
+			}
+			else{
+				biz.getOrderOpsModule().putReturnOrder(order);
+			}
+		}		
 	}
 	
 	/**
 	 * Macht aus allen Orders in der PipeLine Shipments, sofern möglich.
 	 * Entfernt diese dann aus der PipeLine.
 	 */
-	public void dispatchShipments(){
+	public void dispatchOrders(){
 		Material endProduct = biz.getProduct();
 		ArrayList<Order> temp = new ArrayList<Order>(orderPipeLine);
 		Collections.shuffle(temp);
@@ -74,7 +86,7 @@ public class DeliveryModule {
 					////System.out.println("Shipment: " + shipment);
 					order.addShipment(shipment);
 					order.incrSent(shipableAmount.get(endProduct));
-					link.induceShipment(shipment);
+					link.induceShipmentDown(shipment);
 				}
 				////System.out.println(order.isSent());
 				if(order.isSent()){
@@ -82,6 +94,8 @@ public class DeliveryModule {
 				}
 			}		
 	}
+	
+	
 	
 	public double getBacklog(){
 		int currentTick = (int)RepastEssentials.GetTickCount();

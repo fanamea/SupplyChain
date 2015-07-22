@@ -71,16 +71,6 @@ public class InventoryOpsModule {
 		return delivery;
 	}
 	
-	public HashMap<Material, Double> getOrders(){
-		HashMap<Material, Double> orders = new HashMap<Material, Double>();
-		for(Material material : inventories.keySet()){
-			double amount = inventories.get(material).getOrder();
-			if(amount!=0.0)
-				orders.put(material, amount);
-		}
-		return orders;
-	}
-	
 	public double getInventoryPosition(Material material){
 		double inventoryLevel = getInventoryLevel(material);
 		double ordered;
