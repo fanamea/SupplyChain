@@ -53,6 +53,9 @@ public class InventoryPlanModule{
 		for(Material material : inventories.keySet()){			
 			ArrayList<OrderReq> orderReqs = new ArrayList<OrderReq>();
 			double amount = inventories.get(material).getOrder();
+			if(amount<0.0){
+				System.out.println("amount" +amount);
+			}
 			
 			if(!returnsAllowed){
 				amount = Math.max(0.0, amount);
@@ -62,14 +65,14 @@ public class InventoryPlanModule{
 				double inventoryLevel = inventories.get(material).getInventoryLevel();
 				//For negative orders which are bigger than current InventoryLevel
 				if((amount+inventoryLevel)<=0){
-					amount = inventoryLevel;
+					amount = -inventoryLevel;
 				}				
 			}			
 			
 			if(amount!=0.0){
 				OrderReq newOrderReq = new OrderReq(material, currentTick, amount);
 				if(newOrderReq.getSize()<0.0){
-					System.out.println(newOrderReq.getSize());
+					System.out.println("newOrderReq:" + newOrderReq.getSize());
 				}
 				orderReqs.add(newOrderReq);
 			}

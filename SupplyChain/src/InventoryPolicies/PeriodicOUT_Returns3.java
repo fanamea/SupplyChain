@@ -6,15 +6,15 @@ import agents.Business;
 import artefacts.Material;
 import modules.Inventory;
 
-public class PeriodicOUT_Returns extends InventoryPolicy{
+public class PeriodicOUT_Returns3 extends InventoryPolicy{
 	
 	private int periodMA;
 	
 	
-	public PeriodicOUT_Returns() {
+	public PeriodicOUT_Returns3() {
 		super();
 		this.period = 1;
-		this.periodMA = 19;
+		this.periodMA = 15;
 	}
 
 	@Override
@@ -41,8 +41,8 @@ public class PeriodicOUT_Returns extends InventoryPolicy{
 		double meanLeadTime = getMeanLeadTime();
 		double sdOrder = getSDDemand(this.periodMA);
 		double sdLeadTime = getSDLeadTime();
-		double x = (period+4)*meanOrder;
-		double z = 0.0;
+		double x = (period+meanLeadTime)*meanOrder;
+		double z = 2.0;
 		double sx = Math.sqrt((period+meanLeadTime)*Math.pow(sdOrder, 2)+Math.pow(meanOrder, 2)*Math.pow(sdLeadTime, 2));
 		
 		this.outLevel = x + z * sx;

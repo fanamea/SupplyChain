@@ -31,7 +31,6 @@ public class MaterialSource extends Node{
 		this.orderPipeLine = new CopyOnWriteArrayList<Order>();
 	}
 	
-	@ScheduledMethod(start = 1, interval = 1, priority = 4)
 	public void shipOrders(){
 		int currentTick = (int)RepastEssentials.GetTickCount();
 		double shipped = 0;
@@ -50,6 +49,10 @@ public class MaterialSource extends Node{
 		while(shipped<capacity && !orderPipeLine.isEmpty()){
 			////System.out.println("Pipeline size: " + orderPipeLine.size() + ", isEmpty: " + orderPipeLine.isEmpty());
 			Order order = orderPipeLine.get(0);
+			if(order.getSize()<0.0){
+				orderPipeLine.remove(0);
+				continue;
+			}
 			int duration = link.genDuration();
 			double amount = Math.min(capacity-shipped, order.getSize());
 			Shipment newShipment = new Shipment(link, currentTick, amount, duration, order);

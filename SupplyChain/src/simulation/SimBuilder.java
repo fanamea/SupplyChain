@@ -26,7 +26,9 @@ import repast.simphony.space.grid.SimpleGridAdder;
 import repast.simphony.space.grid.WrapAroundBorders;
 import setups.OneManufacturerConst;
 import setups.OneManufacturerNormal;
-import setups.ReturnsAndBWE;
+import setups.ReturnsAndBWE_Chatfield;
+import setups.ReturnsAndBWE_Chen;
+import setups.ReturnsAndBWE_Dejonckheere;
 import setups.Setup;
 import setups.ThreeManufacturer_Trust;
 import setups.TwoManufacturersConst;
@@ -65,10 +67,10 @@ public class SimBuilder implements ContextBuilder<Object> {
 
 		Parameters params = RunEnvironment.getInstance().getParameters();
 		
-		Setup setup = new ReturnsAndBWE();
+		Setup setup = new ReturnsAndBWE_Chatfield();
 		setup.print();
 		
-		/*
+		
 		 
 		for(MaterialSource source : setup.getMaterialSources()){
 			context.add(source);
@@ -85,12 +87,14 @@ public class SimBuilder implements ContextBuilder<Object> {
 		for(Customer customer : setup.getCustomers()){
 			context.add(customer);
 		}
-
+		
+		/*
 		for (Link link : setup.getLinks()) {
 			context.add(link);
 		}
-		
 		*/
+		
+		
 		
 		
 		context.add(setup);

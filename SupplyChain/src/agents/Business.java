@@ -80,6 +80,7 @@ public abstract class Business extends Node{
 		informationModule.addHoldingCostProduct(holdingCostProduct);
 		informationModule.addHoldingCostResources(holdingCostResources);
 		informationModule.addBacklog(backlog);
+		
 	}
 	
 	public int getPlanningPeriod(){
@@ -188,7 +189,13 @@ public abstract class Business extends Node{
 		return this.informationModule.getMeanLeadTimeAll();
 	}
 	
+	public double getProcessingOrders(){
+		return informationModule.getOrdered();
+	}
 	
+	public double getInventoryPosition(){
+		return this.inventoryOpsModule.getInventoryPosition(this.product);
+	}
 	
 	//------------------------------------------------------------
 	

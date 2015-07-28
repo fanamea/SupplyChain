@@ -2,6 +2,8 @@ package agents;
 
 import java.util.ArrayList;
 
+import modules.Link;
+
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import cern.jet.random.AbstractDistribution;
@@ -21,6 +23,7 @@ public class Customer extends Node{
 	private DemandPattern pattern;
 	private DemandData demandData;
 	private DescriptiveStatistics received;
+	private boolean negativeOrders;
 	
 	public Customer(Setup setup, DemandPattern pattern){
 		super(setup, 1);
@@ -28,6 +31,7 @@ public class Customer extends Node{
 		this.pattern = pattern;
 		this.demandData = new DemandData();
 		this.received = new DescriptiveStatistics();
+		this.negativeOrders = false;
 	}
 	
 	public void initNode(){		
@@ -42,14 +46,25 @@ public class Customer extends Node{
 	}
 	
 	
-	@ScheduledMethod(start = 1, interval = 1, priority = 10)
 	public void placeOrder(){
 		////System.out.println("placeOrderCustomer");
 		double size = pattern.getNextDouble();
+		if(!this.negativeOrders){
+			size = Math.max(0.0, size);
+		}
 		////System.out.println("Customer Order: " + size);
 		ArrayList<Order> orderList = new ArrayList<Order>();
-		orderList.add(new Order(upstrLinks.get(0),(int)RepastEssentials.GetTickCount(), size));
+		Link link = upstrLinks.get(0);
+		int currentTick = (int)RepastEssentials.GetTickCount();
+		Order newOrder = new Order(link, currentTick, size);
+		orderList.add(newOrder);
 		upstrLinks.get(0).putOrders(orderList);
+		if(size<0.0){
+			Shipment returnShipment = new Shipment(link, currentTick, newOrder.getSize(), link.genDuration(), newOrder);
+			newOrder.addShipment(returnShipment);
+			link.induceShipmentUp(returnShipment);
+			newOrder.incrSent(returnShipment.getSize());
+		}
 		this.demandData.handDemandData((int)RepastEssentials.GetTickCount(), size);
 	}
 	
@@ -66,6 +81,10 @@ public class Customer extends Node{
 	}
 	
 	public void efectShipment(Shipment shipment){		
+	}
+	
+	public void setNegativeOrders(boolean b){
+		this.negativeOrders = b;
 	}
 	
 	@ScheduledMethod(start=1, interval=1, priority=10)

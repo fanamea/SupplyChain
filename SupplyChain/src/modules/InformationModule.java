@@ -41,10 +41,11 @@ public class InformationModule {
 	private double arrivingProduction;
 	private double startedProduction;
 	private double arrivingShipments;
-	private double meanLeadTimeAll;
 	private double planningTimeShipments;
+	private double ordered;
 	private HashMap<Integer, Double> orderPlan;
 	private HashMap<Integer, Double> adjustedDueListHist;
+	
 	
 	
 	public InformationModule(Business biz){
@@ -155,6 +156,14 @@ public class InformationModule {
 			fcCombined.put(i, combined);
 		}
 		return fcCombined;
+	}
+	
+	public double getOrdered(){
+		return this.ordered;
+	}
+	
+	public void setOrdered(double d){
+		this.ordered = d;
 	}
 	
 	public void putLeadTimeData(Link link, double d){
@@ -317,10 +326,6 @@ public class InformationModule {
 	
 	public double getOrderAmountOut(){
 		return orderData.getDemandData((int)RepastEssentials.GetTickCount());
-	}
-	
-	public double getOrderVariance(){
-		return this.internDemandData.getStandardDeviation();
 	}
 	
 	public DemandData getInternDemandData(){

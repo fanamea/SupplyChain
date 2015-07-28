@@ -14,7 +14,7 @@ public class NormalDistribution extends DemandPattern {
 
 	@Override
 	public double getNextDouble(){
-		return Math.max(0, this.distribution.nextDouble());		
+		return this.distribution.nextDouble();		
 	}
 
 }

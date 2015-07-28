@@ -142,8 +142,9 @@ public class OrderOpsModule {
 				orderPipeLine.get(shipment.getMaterial()).remove(order);
 				//System.out.println("Shipment arrived: " + shipment);
 			}
-			
-			maintainLeadTimeData(shipment);
+			if(order.getSize()>0.0){
+				maintainLeadTimeData(shipment);
+			}
 			////System.out.println("maintainLeadTimeData, Tier: " + biz.getTier() + ", " + shipment);
 		}
 		//System.out.println("Store Materials: " + materials);

@@ -6,15 +6,15 @@ import agents.Business;
 import artefacts.Material;
 import modules.Inventory;
 
-public class PeriodicOUT_Returns extends InventoryPolicy{
+public class PeriodicOUT_Returns2 extends InventoryPolicy{
 	
 	private int periodMA;
 	
 	
-	public PeriodicOUT_Returns() {
+	public PeriodicOUT_Returns2() {
 		super();
 		this.period = 1;
-		this.periodMA = 19;
+		this.periodMA = 15;
 	}
 
 	@Override

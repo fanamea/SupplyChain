@@ -65,7 +65,7 @@ public abstract class Setup {
 		
 	}
 	
-	@ScheduledMethod(start=1, interval=1, priority=11)
+	@ScheduledMethod(start=1, interval=1, priority=12)
 	public void prepareTick(){		
 		for(Retailer ret : this.retailers){
 			ret.prepareTick();
@@ -80,15 +80,24 @@ public abstract class Setup {
 	}
 	
 	@ScheduledMethod(start=1, interval=1, priority=10)
-	public void activateAgents(){			
-		for(Retailer ret : this.retailers){			
+	public void activateAgents(){
+		for(Customer customer : this.customers){
+			customer.placeOrder();
+		}
+		
+		for(Retailer ret : this.retailers){		
 			ret.receiveShipments();
 			ret.fetchOrders();
 			ret.dispatchShipments();
 			ret.plan();
 			ret.placeOrders();
 			ret.collectData();
-		}		
+			ret.collectRetailerData();
+		}	
+		
+		for(MaterialSource source : this.sources){
+			source.shipOrders();
+		}
 	}
 	
 	

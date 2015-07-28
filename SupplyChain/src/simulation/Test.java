@@ -30,7 +30,7 @@ import artefacts.TierComparator;
 import cern.jet.random.AbstractDistribution;
 import cern.jet.random.Uniform;
 import repast.simphony.random.RandomHelper;
-import setups.ReturnsAndBWE;
+import setups.ReturnsAndBWE_Chen;
 import setups.Setup;
 import setups.TestSetup;
 

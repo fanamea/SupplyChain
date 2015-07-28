@@ -103,7 +103,11 @@ public class Retailer extends Business{
 			////System.out.println("Planning Period:" + inventoryPlanModule.getPlanString());
 		}
 		
-	}			
+	}
+	
+	public void collectRetailerData(){
+		informationModule.setOrdered(orderOpsModule.getProcessingOrders(this.product));
+	}
 	
 	public void addDownstrPartner(Link b){
 		downstrLinks.add(b);

@@ -15,7 +15,7 @@ public class RandomWalk extends DemandPattern{
 	
 	@Override
 	public double getNextDouble() {
-		return Math.max(0, lastValue + this.distribution.nextDouble());
+		return lastValue + this.distribution.nextDouble();
 	}
 
 }
